@@ -1,0 +1,2044 @@
+<!DOCTYPE html>
+<html><head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Dredd - Juiz Online</title>
+    <link rel="stylesheet" type="text/css" href="arquivo-texto_files/style.css">
+    <link rel="stylesheet" type="text/css" href="arquivo-texto_files/jquery-ui-1.css">
+    <script src="arquivo-texto_files/jquery-1.js"></script>
+    <script src="arquivo-texto_files/jquery-ui.js"></script>
+    <script src="arquivo-texto_files/jquery_002.js"></script>
+    <script src="arquivo-texto_files/jquery.js"></script>
+    <script>
+    $(document).ready(function() {
+        $(document).tooltip();
+        $("button, input[type='submit'], input[type='reset']").button();
+
+        $("input.date").mask("99/99/9999").attr("title","Exemplo: 11/09/2001").tooltip();
+        $("input.datetime").mask("99/99/9999 99:99:99").attr("title","Exemplo: 11/09/2001 10:17:37").tooltip();
+        $("input.integer").numeric().attr("title","Exemplo: 2").tooltip();
+        $("input.number").numeric({allow:"."}).attr("title","Exemplo: 0.5").tooltip();
+        $("textarea").keypress(function(event) {
+            if (event.ctrlKey && (event.which == 112)) {
+                event.preventDefault();
+                $("#data-view-dialog").html("<div class='data-view-box' style='width: 90%;'>"+$(this).val()+"</div>").dialog("open");
+            }
+        });
+
+        $("textarea.cpp-code-view").attr("readonly","readonly");
+        $("div.cpp-code-view").each(function() {
+            var text = $(this).html();
+            text.replace("&","&amp;");
+            text.replace("<","&lt;");
+            text.replace(">","&gt;");
+            text.replace("\r","");
+
+            // Keywords
+            text.replace("float ","<b>float</b> ");
+            text.replace("double ","<b>double</b> ");
+            text.replace("int ","<b>int</b> ");
+            text.replace("long ","<b>long</b> ");
+            text.replace("if ","<b>if</b> ");
+            text.replace("else ","<b>else</b> ");
+            text.replace("for ","<b>for</b> ");
+            text.replace("while ","<b>while</b> ");
+            text.replace("return","<b>return</b>");
+            text.replace("break","<b>break</b>");
+            text.replace("using","<b>using</b>");
+            text.replace("namespace","<b>namespace</b>");
+            text.replace("#include","<b>#include</b>");
+
+            text.replace(" ","&nbsp;");
+            text.replace("\t","&nbsp;&nbsp;&nbsp;&nbsp;");
+            text.replace("\n","<br />");
+            $(this).html(text);
+        });
+
+        $("#alert-dialog").dialog({
+            title: "Aviso",
+            width: "auto",
+            height: "auto",
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $(this).dialog("close");
+                }
+            }
+        }).dialog("close");
+
+        $("#data-view-dialog").dialog({
+            title: "",
+            width: 800,
+            height: "auto",
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $(this).dialog("close");
+                }
+            }
+        }).dialog("close");
+
+        $("form").submit(function() {
+            var $validationText = "";
+            $(this).find(".notempty").each(function() {
+                if (($(this).val() == undefined) || ($(this).val() == "")) {
+                    $validationText += "<li>"+$("label[for='"+$(this).attr('name')+"']").html()+"</li>";
+                }
+            });
+            if ($validationText != "") {
+                $validationText = "<p>Os seguintes campos não podem estar vazios:</p><ul>"+$validationText+"</ul>";
+                $("#alert-dialog").html($validationText).dialog({modal: true}).dialog("open");
+                return false;
+            } else {
+                var $form = $(this);
+                $form.find("input.passwordconfirm").each(function() {
+                    if ($(this).val() != $form.find("input.password").val()) {
+                        $validationText = "As senhas digitadas não conferem.";
+                    }
+                });
+                if ($validationText != "") {
+                    $("#alert-dialog").html($validationText).dialog({modal: true}).dialog("open");
+                    return false;
+                } else
+                    return true;
+            }
+        });
+    });
+    function openDivAsDialog(id) {
+        $("div#"+id).dialog({
+            title: "",
+            width: "auto",
+            height: "auto",
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $(this).dialog("close");
+                }
+            }
+        }).dialog("open");
+    };
+    </script>
+</head>
+<body>
+    
+    
+    <div id="topct" class="ui-corner-bottom"><div id="banner">
+        <h1>Dredd - Juiz Online</h1>
+        <div id="topmenu">
+            <button id="menu-bt-home" onclick="location.assign('./');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Principal</span></button>
+            <button id="menu-bt-profile" onclick="location.assign('./testsMine.php');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Minhas Provas</span></button>
+            <button id="menu-bt-profile" onclick="location.assign('./profile.php');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Perfil</span></button>
+            <button id="menu-bt-logout" onclick="location.assign('./logout.php');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Sair</span></button>
+        </div>
+    </div></div><div id="contentct"><div id="content">
+<div id="painel-info">
+    <b>Minutos<br>Restantes</b>:<br>
+    <span id="clock">303</span><br><br>
+    <b>Usuário</b>:<br>
+    <div id="usuario">Samir Carvalho</div><br>
+    <b>Notas</b>:<br>
+    <span id="notas">
+Q1: 100<br>Q2: 100<br>Q3: 100<br>Q4: 100<br>Q5: 90<br>Q6: 90<br>Q7: 72.9<br>Q8: 100<br>Q9: 100<br>Q10: 90<br>Q11: 100<br>Q12: 100<br>Q13: 100<br>Q14: 100<br>Q15: 81<br>    </span><br>
+</div>
+<div id="prova">
+    <h1>IALG Turmas 10/14 Lista de Arquivos</h1>
+    <p><b>Prova Aberta Até:</b>
+        27/03/2017 16:00:00</p>
+    <p><b>Número Máximo de Tentativas:</b>
+        6</p>
+    <p><b>Atenuação da Nota por Tentativa (multiplicativa):</b>
+        0.9</p>
+    <p><b>Nota Máxima por Tentativa:</b>
+        </p><ol style="text-align: left; padding-left: 12ex;">
+                            <li>100</li>
+                            <li>90</li>
+                            <li>81</li>
+                            <li>72.9</li>
+                            <li>65.61</li>
+                            <li>59.049</li>
+                            </ol><p></p>
+    <p><b>Descrição:</b></p>
+    <div class="description-display-box">
+        A prova é individual. Desligue seu celular. Não converse com os colegas. Não fique olhando para a tela dos colegas.    </div>
+    <h3>QUESTÕES</h3>
+                                <div class="problem-try-ct">
+                <a name="Q1"></a>
+                <h3>Questão 1:
+                            Arquivos - Escrita Básica em Arquivos</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que leia da entrada padrão (<code>cin</code>)
+ o nome de um arquivo e uma string qualquer. Esse programa deve abrir 
+este arquivo de texto no modo de escrita (criado se não existia, 
+esvaziado se já existia). Em seguida, você deve escrever a string no 
+arquivo.</p>
+
+<p>As entradas devem ser lidas por meio do operador de leitura (<code>&gt;&gt;</code>) e não por meio da função <code>getline</code>.</p>
+
+<ol style="text-align:left;padding-left:20px">
+<b>Entradas:</b>
+<li>Nome do arquivo de texto que será escrito.</li>
+<li>String que será escrita no arquivo.</li>
+</ol>
+
+<ul style="text-align:left;padding-left:20px">
+<b>Saída:</b>
+<li>Arquivo de texto contendo a string recebida como entrada.</li>
+</ul>
+
+<h3>Exemplos de Entradas e Saídas</h3>
+<p><b>Entradas:</b></p>
+<pre>arquivo_de_texto.txt
+AlgumConteudoParaOArquivo
+</pre>
+<p><b>Conteúdo do Arquivo de Saídas (arquivo_de_texto.txt):</b></p>
+<pre>AlgumConteudoParaOArquivo
+</pre>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ1"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    15/02/2017 13:40:58</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="498" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="39" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="1" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial39');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial39">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;string&gt;
+
+using namespace std;
+
+int main() {
+    string nomeArquivo;
+    cin &gt;&gt; nomeArquivo;
+    ofstream arquivo(nomeArquivo.c_str());
+    string palavra;
+    cin &gt;&gt; palavra;
+    arquivo &lt;&lt; palavra;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q2"></a>
+                <h3>Questão 2:
+                            Arquivos - Leitura Básica de Arquivos</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que recebe como entrada o nome de um
+ arquivo de texto. Esse programa deve abrir este arquivo de texto no 
+modo de leitura. Em seguida, você deve ler uma string deste arquivo e 
+imprimir essa string na saída padrão (cout).</p>
+
+<p>Para ler o nome do arquivo e o conteúdo do arquivo, você deve usar o operador de leitura (<code>&gt;&gt;</code>) e não a função <code>getline</code>.</p>
+
+<ul style="text-align:left;padding-left:20px">
+<b>Entrada:</b>
+<li>Nome do arquivo de texto que será lido.</li>
+</ul>
+
+<ul style="text-align:left;padding-left:20px">
+<b>Saída:</b>
+<li>String contida dentro do arquivo de texto.</li>
+</ul>
+
+<h3>Exemplos de Entradas e Saídas</h3>
+<p><b>Entradas:</b></p>
+<pre>arquivo_de_texto.txt
+</pre>
+<p><b>Saídas:</b></p>
+<pre>HelloWorld!!!
+</pre>
+<br>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ2"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    15/02/2017 13:50:25</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="498" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="38" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="2" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial38');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial38">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;fstream&gt;
+
+using namespace std;
+
+int main() {
+    string nomeArquivo;
+    cin &gt;&gt; nomeArquivo;
+    ifstream arquivo(nomeArquivo.c_str());
+    if (arquivo) {
+        string palavra;
+        arquivo &gt;&gt; palavra;
+        cout &lt;&lt; palavra &lt;&lt; endl;
+    }
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q3"></a>
+                <h3>Questão 3:
+                            Arquivos - Intercalar elementos</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>
+Faça um programa que abre dois arquivos, <b>arquivoA.txt</b> e <b>arquivoB.txt</b>, um contendo N palavras e outro M palavras (assuma que N e M não serão maiores que 100). Denote as palavras do arquivo <b>arquivoA.txt</b>, na sequência em que aparecem no arquivo, por a1, a2, ..., aN. Denote as palavras do arquivo <b>arquivoB.txt</b>, na sequência em que aparecem no arquivo, por b1, b2, ..., bM. Seu programa deverá escrever um terceiro arquivo, <b>arquivoC.txt</b>, contendo as palavras de <b>arquivoA.txt</b> e <b>arquivoB.txt</b>, na seguinte ordem:
+</p>
+<p>
+</p><center>
+a1 b1 a2 b2 ... ak bk ... aN bM
+</center>
+<p></p>
+
+<p><b>Entradas (arquivoA.txt) </b></p>
+<ol>
+<li>Sequência de N palavras: a1 a2 ... aN</li>
+</ol>
+
+<p><b>Entradas (arquivoB.txt) </b></p>
+<ol>
+<li>Sequência de N palavras: b1 b2 ... bM</li>
+</ol>
+
+<p><b>Saídas (arquivoC.txt) </b></p>
+<ol>
+<li>Sequência de N+M palavras: a1 b1 a2 b2 ... ak bk ... aN bM</li>
+</ol>
+<br>
+<br>
+<p><b>Exemplo de entrada (arquivoA.txt)</b></p>
+<pre>Copo Cadeira Janela Cavalo</pre>
+
+<p><b>Exemplo de entrada (arquivoB.txt)</b></p>
+<pre>Cachorro Café Borracha Sapato</pre>
+
+<p><b>Exemplo de saída (arquivoC.txt)</b></p>
+<pre>Copo Cachorro Cadeira Café Janela Borracha Cavalo Sapato</pre>
+
+<p> Obs: Se um arquivo acabar primeiro, somente as palavras do outro serão adicionadas a partir deste momento.                </p></div><!-- Descrição (description-display-box) -->
+                <a name="JQ3"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    15/02/2017 16:07:15</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="498" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="626" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="3" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial626');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial626">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;string&gt;
+
+using namespace std;
+
+int main() {
+    ifstream arquivoA("arquivoA.txt");
+    ifstream arquivoB("arquivoB.txt");
+    string palavra, palavraB;
+    ofstream arquivoC("arquivoC.txt");
+    bool existeB = true, existeA = true;
+    while (existeB or existeA) {
+        existeA = false;
+        existeB = false;
+        if (arquivoA &gt;&gt; palavra) {
+            arquivoC &lt;&lt; palavra &lt;&lt; " ";
+            existeA = true;
+        }
+        if (arquivoB &gt;&gt; palavra) {
+            arquivoC &lt;&lt; palavra &lt;&lt; " ";
+            existeB = true;
+        }
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q4"></a>
+                <h3>Questão 4:
+                            Arquivo - Alunos para Prova de Recuperação (Ordenação)</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Ao término do semestre, o professor de uma disciplina
+ calcula a nota de cada aluno e verifica quais alunos precisarão fazer a
+ prova de recuperação.</p>
+
+<p>Leia de um arquivo <b>"alunos.txt"</b> o número de matrícula dos 
+alunos e as respectivas notas na matéria. Calcule a nota final de todos 
+os alunos. Salve em um arquivo <b>"recupera.txt"</b> o número de 
+matrícula dos alunos que precisarão da prova de recuperação, ordenado da
+ maior nota para menor. A disciplina possui quatro avaliações, todas com
+ o mesmo peso. A média necessária para aprovação é 60.</p>
+
+<p>Se você ainda não aprendeu ordenação, a inserção em ordem pode ser usada para resolver este problema.</p>
+
+<p><b>Entradas:</b></p>
+<ul>
+<li>Arquivo <b>alunos.txt</b> com dados no formato<br>
+<pre>numero_de_alunos
+matricula nota1 nota2 nota3 nota4
+matricula nota1 nota2 nota3 nota4
+...
+matricula nota1 nota2 nota3 nota4</pre></li>
+</ul>
+
+<p><b>Saída:</b></p>
+<ul>
+<li>Arquivo <b>recupera.txt</b> com as matrículas dos alunos que 
+precisarão fazer a prova substitutiva, da maior para menor nota. Caso 
+não tenha aluno nessa situação, deve-se imprimir -1 no arquivo.</li>
+</ul>
+
+<h3>Exemplos de Entradas e Saídas:</h3>
+
+<p><b>Entradas:</b><br>
+</p><pre> 6
+ 201220892    87.5   100   100    90
+ 201315502     0      50    30    50
+ 201312204    15      50    30     0
+ 201220822   100      97.5 100    95
+ 201220155    33      12    50   100
+ 201120823    50      30     0     0</pre>
+
+<p><b>Saídas:</b><br>
+</p><pre> 201220155
+ 201315502
+ 201312204
+ 201120823</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ4"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    15/02/2017 19:17:45</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="498" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="351" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="4" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial351');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial351">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+
+using namespace std;
+
+typedef struct {
+    int matricula;
+    float nota[4];
+} alunos;
+
+typedef struct {
+    int matricula;
+    float somatorioNota;
+} recuperacao;
+
+int main() {
+    ifstream arquivoAlunos("alunos.txt");
+    int tam;
+    arquivoAlunos &gt;&gt; tam;
+    alunos aluno[tam];
+    int tamAlunos = 0;
+    recuperacao pessoas[tam];
+    for (int i = 0; i &lt; tam; ++i) {
+        arquivoAlunos &gt;&gt; aluno[i].matricula;
+        float media = 0;
+        for (int j = 0; j &lt; 4; ++j) {
+            arquivoAlunos &gt;&gt; aluno[i].nota[j];
+            media += aluno[i].nota[j];
+        }
+        if (60.0f &gt; (media/4.0f)) {
+            pessoas[tamAlunos].matricula = aluno[i].matricula;
+            pessoas[tamAlunos].somatorioNota = media;
+            ++tamAlunos;
+        }
+    }
+    ofstream arquivoAlunosRec("recupera.txt");
+    if (tamAlunos == 0) {
+        arquivoAlunosRec &lt;&lt; -1 &lt;&lt; endl;
+    }
+    else {
+        for (int i = 0; i &lt; tamAlunos; ++i) {
+            float valorNota = pessoas[i].somatorioNota;
+            int valorMatricula = pessoas[i].matricula;
+            int j = i - 1;
+            while (j &gt;= 0 and pessoas[j].somatorioNota &lt; valorNota) {
+                pessoas[j+1].somatorioNota = pessoas[j].somatorioNota;
+                pessoas[j+1].matricula = pessoas[j].matricula;
+                --j;
+            }
+            pessoas[j+1].somatorioNota = valorNota;
+            pessoas[j+1].matricula = valorMatricula;
+        }
+        for (int i = 0; i &lt; tamAlunos; ++i) {
+            arquivoAlunosRec &lt;&lt; pessoas[i].matricula &lt;&lt; endl;
+        }
+    }
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q5"></a>
+                <h3>Questão 5:
+                            Arquivos - Número áureo (recursividade)</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>O <i>número áureo</i>, frequentemente denotado pela 
+letra grega φ (phi) é um número real irracional que ocorre 
+espontaneamente na natureza e é frequentemente usado nas artes por estar
+ relacionado à nossa percepção de beleza.</p>
+<p>O <i>número áureo</i> pode ser calculado pela recorrência <b><i>φ = 1 + 1/φ</i></b>.</p>
+<p>Por ser uma recorrência infinita, ela precisa ser limitada para ser 
+usada na recursividade da Computação. Podemos definir o valor aproximado
+ de φ em função do número de termos usados no cálculo, assim:</p>
+<img src="arquivo-texto_files/phi-recursivo.png" width="418" height="81">
+<p>Faça um programa que tem uma função que calcula uma aproximação do <i>número áureo</i>,
+ usando recursão. A função deve retornar o valor aproximado de φ. Não é 
+permitido o uso de variáveis "globais", ou melhor, variáveis definidas 
+fora de alguma função.</p>
+<p>O <i>número áureo,</i> deve ser do tipo <i>ponto flutuante de precisão dupla</i> (<code>double</code>) para possibilitar a precisão necessária nos cálculos.</p>
+<p>Para facilitar a análise da convergência da função, você deve colocar
+ nela uma operação de escrita, de tal forma que os valores 
+intermediários ficarão escritos num arquivo cujo nome é "<code>phi.txt</code>".
+ Assim, a resposta final fica será escrita sozinha na saída padrão, 
+facilmente identificável, mas os valores intermediários podem ser 
+consultados no arquivo.</p>
+<p>Entradas:</p>
+<ol>
+<li>O número de termos para o cálculo da aproximação do <i>número áureo</i>.</li>
+</ol>
+<p>Saídas:</p>
+<ul>
+<li>O valor aproximado do <i>número áureo</i> (na saída padrão).</li>
+<li>Cada valor intermediário (inclusive o último) do cálculo (no arquivo "<code>phi.txt</code>").
+</li></ul>
+<p>Exemplo de Entrada:</p>
+<pre>3</pre>
+<p>Exemplo de Saída (saída padrão):</p>
+<pre>1.5</pre>
+<p>Exemplo de Saída (arquivo "<code>phi.txt</code>"):</p>
+<pre>1
+2
+1.5</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ5"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    16/02/2017 00:48:21</p>
+                <p><b>Tentativas:</b>
+                    2 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    90</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="498" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="574" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="3" type="hidden">
+            <input name="atenuacao" value="0.81" type="hidden">
+            <input name="nroQuestao" value="5" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial574');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial574">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+
+using namespace std;
+
+double phi(int num, ofstream&amp; arquivo) {
+    double retornaValor;
+    if (num == 1) {
+        arquivo &lt;&lt; num &lt;&lt; endl;
+        return 1;
+    }
+    retornaValor = 1 + 1/phi(num-1, arquivo);
+    arquivo &lt;&lt; retornaValor &lt;&lt; endl;    
+    return retornaValor;
+}
+
+int main() {
+    int numeroTermos;
+    cin &gt;&gt; numeroTermos;
+    ofstream novoArquivo("phi.txt");   
+    cout &lt;&lt; phi(numeroTermos, novoArquivo) &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q6"></a>
+                <h3>Questão 6:
+                            Arquivo - Cópia de arquivo.</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que lê um arquivo texto e produz 
+outro arquivo, com o mesmo conteúdo do primeiro, exceto pelos caracteres
+ brancos que devem ser eliminados. Os nomes dos arquivos de entrada e 
+saída devem ser lidos pelo programa. Não é permitido ler o arquivo de 
+entrada todo para a memória antes de escrever o arquivo de saída.</p>
+<p>Entradas:</p>
+<ol>
+<li>Nome do arquivo de entrada (sequência de caracteres).</li>
+<li>Nome do arquivo de saída (sequência de caracteres).</li>
+</ol>
+<p>Saídas:</p>
+<ol>
+<li>Criar uma cópia do arquivo.</li>
+</ol>
+<p>Exemplo de entrada (entrada padrão):</p>
+<pre>Entrada.txt
+Saida.txt</pre>
+<p>Exemplo de entrada (arquivo Entrada.txt):</p>
+<pre>Espero que o dredd te de 100</pre>
+<p>Exemplo de saída (arquivo Saida.txt):</p>
+<pre>Esperoqueodreddtede100</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ6"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    16/02/2017 00:56:26</p>
+                <p><b>Tentativas:</b>
+                    2 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    90</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="498" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="565" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="3" type="hidden">
+            <input name="atenuacao" value="0.81" type="hidden">
+            <input name="nroQuestao" value="6" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial565');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial565">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;string&gt;
+
+using namespace std;
+
+int main() {
+    string nomeEntrada;
+    cin &gt;&gt; nomeEntrada;
+    ifstream arquivoEntrada(nomeEntrada.c_str());
+    string nomeSaida;
+    cin &gt;&gt; nomeSaida;
+    ofstream arquivoSaida(nomeSaida.c_str());
+    string palavra;
+    while (arquivoEntrada &gt;&gt; palavra) {
+        arquivoSaida &lt;&lt; palavra;
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q7"></a>
+                <h3>Questão 7:
+                            Arquivo - Até o número primo</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que leia números inteiros de um 
+arquivo, cujo nome será fornecido pelo usuário até encontrar um número 
+primo. Depois do primo existirá mais uma string que deverá ser o nome do
+ arquivo onde será escrito os dois menores (menor seguido do segundo 
+menor) e a soma dos outros (todos os números, exceto os dois menores).</p>
+
+<p>Exemplo de entrada:
+</p><pre>entrada.txt</pre><p></p>
+
+<p>Conteúdo do arquivo entrada.txt:
+</p><pre>4 6 8 9 10 12 11 saida.txt</pre><p></p>
+
+<p>Exemplo de saída (no arquivo saida.txt):
+</p><pre>4 6 50</pre><p></p>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ7"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    21/02/2017 22:46:07</p>
+                <p><b>Tentativas:</b>
+                    4 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    72.9</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="498" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="267" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="5" type="hidden">
+            <input name="atenuacao" value="0.6561" type="hidden">
+            <input name="nroQuestao" value="7" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial267');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial267">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;string&gt;
+
+using namespace std;
+
+int main() {
+    string arquivoEntrada;
+    cin &gt;&gt; arquivoEntrada;
+    ifstream entrada(arquivoEntrada.c_str());
+    int numero;
+    int vetor[50];
+    int j = 0;
+    bool naoPrimo;
+    do {
+        naoPrimo = true;
+        if (entrada &gt;&gt; numero) {
+            for (int i = 2; i &lt; numero; ++i) {
+                if (numero % i == 0) {
+                    naoPrimo = false;
+                }
+            }
+        }
+        vetor[j] = numero;
+        ++j;
+    }while (!naoPrimo);
+    string palavra;
+    entrada &gt;&gt; palavra;
+    ofstream saida(palavra.c_str());
+    int menor = vetor[0], segMenor = vetor[1], somatorio;
+    somatorio = vetor[0] + vetor[1];
+    for (int i = 2; i &lt; j; ++i) {
+        if (vetor[i] &lt; menor) {
+            segMenor = menor;
+            menor = vetor[i];
+        }
+        else if (vetor[i] &lt; segMenor) {
+            segMenor = vetor[i];
+        }
+        somatorio += vetor[i];
+    }
+    somatorio -= (menor + segMenor);
+    saida &lt;&lt; menor &lt;&lt; " " &lt;&lt; segMenor &lt;&lt; " " &lt;&lt; somatorio &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q8"></a>
+                <h3>Questão 8:
+                            Arquivo - As Grandes Casas de Westeros</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>No mundo criado nas Crônicas de Gelo e Fogo o 
+continente de Westeros é dividido em sete reinos e, cada reino, é 
+governado por uma Grande Casa (uma família nobre) a partir de sua cidade
+ sede. Essas famílias possuem sobrenomes famosos e seus brasões contêm 
+símbolos conhecidos por todo o povo (geralmente um animal ou outra coisa
+ relacionada à natureza). A Casa <i>Stark</i>, por exemplo, tem sua sede em <i>Winterfell</i> e seu brasão possui como símbolo um <i>Lobo</i> gigante.</p>
+<p>Como fã dos livros você resolveu fazer um programa que, usando um 
+arquivo com as informações das famílias nobres de Westeros, permite que 
+um usuário digite o nome de uma das Grandes Casas de Westeros e uma 
+opção (<b>'c'</b> ou <b>'b'</b>) e o programa então exibe a cidade sede ou o símbolo do brasão da família. Seu programa precisa ter um <b>subprograma</b>
+ que receba as informações das casas, o nome da casa digitada pelo 
+usuário e a opção que ele escolheu e retorne a resposta esperada pelo 
+programa.</p>
+<p>Obs1: considere que não existem espaços, nem acentos, nos nomes das 
+casas, cidades e símbolos dos brasões. Considere ainda que não existem 
+mais que 100 Grandes Casas em Westeros.</p>
+<p>Obs2: todas as operações de leitura e escrita, tanto de arquivos 
+quanto da entrada/saída padrão, devem ser feitas no subprograma 
+principal.</p>
+<p><b>Entrada (<i>arquivo "casas.txt"</i>):</b></p>
+<ol>
+<li>Cada linha tem nessa ordem: nome da Casa, cidade sede e símbolo do brasão.</li>
+</ol>
+<p><b>Entrada (<i>ATENÇÃO: da entrada padrão</i>):</b></p>
+<ol>
+<li>Um nome de uma Casa de Westeros.</li>
+<li>Um caractere representado a escolha do usuário (<b>'c'</b> para cidade sede e <b>'b'</b> para símbolo do brasão).</li>
+</ol>
+<p><b>Saídas (<i>ATENÇÃO: na saída padrão</i>):</b></p>
+<ol>
+<li>A cidade sede (se a opção for <b>'c'</b>) ou o símbolo do brasão (se a opção for <b>'b'</b>) da Casa digitada pelo usuário.</li>
+</ol>
+<p><b>Exemplo de Entrada (<i>arquivo "casas.txt"</i>):</b></p>
+<pre>Stark Winterfell Lobo
+Targaryen PedraDoDragao Dragao
+Lannister RochedoCasterly Leao
+Greyjoy Pyke Lula
+</pre>
+<p><b>Exemplo de entrada (<i>ATENÇÃO: da entrada padrão</i>):</b></p>
+<pre>Greyjoy
+c
+</pre>
+<p><b>Exemplo de Saída: (<i>ATENÇÃO: na saída padrão</i>)</b></p>
+<pre>Pyke
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ8"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    18/02/2017 01:11:13</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="498" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="572" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="8" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial572');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial572">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;fstream&gt;
+
+using namespace std;
+
+string informacao(ifstream&amp; arquivoCasas, char tipo, string nome) {
+    string palavra;
+    bool parar = true;
+    while (parar and arquivoCasas &gt;&gt; palavra) {
+        if (palavra == nome) {
+            if (tipo == 'c') {
+                arquivoCasas &gt;&gt; palavra;
+                parar = false;
+            }
+            else {
+                arquivoCasas &gt;&gt; palavra;
+                arquivoCasas &gt;&gt; palavra;
+                parar = false;
+            }
+        }
+    }
+    return palavra;
+}
+
+int main() {
+    ifstream arquivo("casas.txt");
+    string nomeCasa;
+    cin &gt;&gt; nomeCasa;
+    char tipoInformacao;
+    cin &gt;&gt; tipoInformacao;
+    cout &lt;&lt; informacao(arquivo, tipoInformacao, nomeCasa) &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q9"></a>
+                <h3>Questão 9:
+                            Arquivo - Tropas na Fortaleza Vermelha</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Porto Real é a capital e a maior cidade dos Sete 
+Reinos, localizada na costa leste de Westeros, lugar no qual se localiza
+ a Fortaleza Vermelha, onde está o Trono de Ferro. A Mão do Rei é o 
+principal conselheiro do Rei e executor de seus comandos nos Sete 
+Reinos.</p>
+
+<p>Sabendo que Westeros está em guerra e que a Mão do Rei precisa alocar
+ suas tropas ao redor da Fortaleza Vermelha. Faça um programa que leia 
+de um arquivo texto chamado <b>tropas.txt</b> dois caracteres distintos.
+ O primeiro caractere representa o símbolo das tropas de Westeros e o 
+segundo caractere representa o símbolo das tropas inimigas. Seu programa
+ deverá gerar uma matriz de tamanho 10x10 cujos elementos serão do tipo 
+caractere. A matriz representa um mapeamento das áreas ao redor da 
+Fortaleza Vermelha e deve ser preenchida com os símbolos das tropas de 
+Westeros e das tropas inimigas. A seguir, para o preenchimento da 
+matriz, seu programa deverá ler do arquivo <b>tropas.txt</b> um número inteiro indicando a quantidade de tropas de Westeros a serem alocadas na matriz e uma sequência de coordenadas <b>x</b> e <b>y</b> indicando o posicionamento destas tropas. Onde <b>x</b> indica uma linha e <b>y</b>
+ indica uma coluna na matriz. Seu programa deverá ler do mesmo arquivo 
+texto um novo número inteiro indicando a quantidade de tropas inimigas e
+ uma nova sequência de pares de coordenadas <b>x</b> e <b>y</b> indicando o posicionamento destas novas tropas. Em seguida, leia do arquivo <b>tropas.txt</b>,
+ um caractere para definir as coordenadas na matriz que não estejam 
+associadas a nenhuma das tropas. Seu programa deverá exibir no 
+dispositivo de saída padrão a matriz resultante que descreva o 
+posicionamento das tropas ao redor da Fortaleza Vermelha.</p>
+
+<p>Por fim, exiba no dispositivo de saída padrão as frentes de batalha 
+nas quais as tropas de Westeros possuem maior potencial de vitória. As 
+frentes de batalha são dadas pelas linhas da matriz. As tropas Westeros 
+possuem maior potencial de vitória em uma determinada frente de batalha 
+se a quantidade de tropas de Westeros naquela frente (ou seja, em uma 
+determinada linha da matriz) for superior a quantidade de tropas 
+inimigas na mesma linha. Para isso, utilize uma mensagem de saída no 
+formato <b>Símbolo de Westeros: f1 f2 … fn</b>. Onde <b>f1, f2, …, fn</b>
+ denotam as frentes de batalha (índices das linhas da matriz). Note que 
+há um caractere de espaço separando as frentes de batalha.</p>
+
+<p>Entradas (arquivo <b>tropas.txt</b>):</p>
+<ol>
+<li>Caractere simbolizando o símbolo das tropas de Westeros.</li>
+<li>Caractere simbolizando o símbolo das tropas inimigas.</li>
+<li>Inteiro indicando a quantidade de tropas de Westeros.</li>
+<li>Sequência de coordenadas <b>x, y</b> indicando o posicionamento das tropas de Westeros.</li>
+<li>Inteiro indicando a quantidade de tropas inimigas.</li>
+<li>Sequência de coordenadas <b>x, y</b> indicando o posicionamento das tropas inimigas.</li>
+<li>Caractere simbolizando posições no mapa (matriz) sem nenhuma tropa.</li>
+</ol>
+<p>Saídas (dispositivo de saída padrão):</p>
+<ol>
+<li>Matriz 10x10 de caracteres simbolizando o posicionamento das tropas e as áreas livres ao redor da Fortaleza Vermelha</li>
+<li>Símbolo da casa de Westeros seguido do símbolo de ":" e a sequência 
+de números inteiros que indicam as frentes de batalha (linhas) nas quais
+ as tropas de Westeros estão em maior número</li>
+</ol>
+
+<p>Exemplo de Entrada (arquivo <b>tropas.txt</b>):</p>
+<pre>W
+I
+
+19
+0 9
+1 8
+1 9
+2 7
+2 8
+2 9
+3 7
+3 8 
+3 9 
+4 8
+5 6
+5 7
+5 8
+6 6
+6 7
+6 8
+7 7
+7 8
+8 8
+
+15
+0 3
+1 3
+2 4
+3 4
+3 5
+4 4
+4 5
+5 4
+6 3
+7 3
+7 2
+8 3
+8 2
+9 2
+9 1
+
+*
+</pre>
+<p>Exemplo de Saída (dispositivo de saída padrão):</p>
+<pre>* * * I * * * * * W 
+* * * I * * * * W W 
+* * * * I * * W W W 
+* * * * I I * W W W 
+* * * * I I * * W * 
+* * * * I * W W W * 
+* * * I * * W W W * 
+* * I I * * * W W * 
+* * I I * * * * W * 
+* I I * * * * * * * 
+W: 1 2 3 5 6
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ9"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    18/02/2017 07:42:58</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="498" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="563" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="9" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial563');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial563">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+
+using namespace std;
+
+int main() {
+    ifstream tropas("tropas.txt");
+    char westeros, inimigo;
+    tropas &gt;&gt; westeros &gt;&gt; inimigo;
+    char campo[10][10] = {0};
+    int qtdTropas;
+    tropas &gt;&gt; qtdTropas;
+    unsigned int x, y;
+    for (int i = 0; i &lt; qtdTropas; ++i) {
+        tropas &gt;&gt; x &gt;&gt; y;
+        campo[x][y] = westeros;
+    }
+    tropas &gt;&gt; qtdTropas;
+    for (int i = 0; i &lt; qtdTropas; ++i) {
+        tropas &gt;&gt; x &gt;&gt; y;
+        campo[x][y] = inimigo;
+    }
+    char livre;
+    tropas &gt;&gt; livre;
+    unsigned int vetor[10];
+    unsigned int pos = 0;
+    for (unsigned int lin = 0; lin &lt; 10; ++lin) {
+        int ali = 0, ini = 0;
+        for (unsigned int col = 0; col &lt; 10; ++col) {
+            if (campo[lin][col] != westeros and campo[lin][col] != inimigo) {
+                campo[lin][col] = livre;
+            }
+            else {
+                if (campo[lin][col] == inimigo) {
+                    ++ini;
+                }
+                else {
+                    ++ali;
+                }
+            }
+        }
+        if (ali &gt; ini) {
+            vetor[pos] = lin;
+            ++pos;
+        }
+    }
+    for (unsigned int i = 0; i &lt; 10; ++i) {
+        for (unsigned int j = 0; j &lt; 10; ++j) {
+            cout &lt;&lt; campo[i][j] &lt;&lt; " ";
+        }
+        cout &lt;&lt; endl;
+    }
+    cout &lt;&lt; westeros &lt;&lt; ": ";
+    for (unsigned int i = 0; i &lt; pos; ++i) {
+        cout &lt;&lt; vetor[i] &lt;&lt; " ";
+    }
+    cout &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q10"></a>
+                <h3>Questão 10:
+                            Arquivos - Intercalação de dois arquivos</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>
+Faça um programa que abre dois arquivos, <b>arquivoA.txt</b> e <b>arquivoB.txt</b>, ambos contendo N palavras (assuma que N não será maior que 100). Denote as palavras do arquivo <b>arquivoA.txt</b>, na sequência em que aparecem no arquivo, por a1, a2, ..., aN. Denote as palavras do arquivo <b>arquivoB.txt</b>, na sequência em que aparecem no arquivo, por b1, b2, ..., bN. Seu programa deverá escrever um terceiro arquivo, <b>arquivoC.txt</b>, contendo as palavras de <b>arquivoA.txt</b> e <b>arquivoB.txt</b>, na seguinte ordem:
+</p>
+<p>
+</p><center>
+a1 bN a2 bN-1 ... ak bN-k+1 ... aN b1.
+</center>
+<p></p>
+
+<p><b>Entradas (arquivoA.txt) </b></p>
+<ol>
+<li>Sequência de N palavras: a1 a2 ... aN</li>
+</ol>
+
+<p><b>Entradas (arquivoB.txt) </b></p>
+<ol>
+<li>Sequência de N palavras: b1 b2 ... bN</li>
+</ol>
+
+<p><b>Saídas (arquivoC.txt) </b></p>
+<ol>
+<li>Sequência de 2N palavras: a1 bN a2 bN-1 ... ak bN-k+1 ... aN b1</li>
+</ol>
+<br>
+<br>
+<p><b>Exemplo de entrada (arquivoA.txt)</b></p>
+<pre>Copo Cadeira Janela Cavalo</pre>
+
+<p><b>Exemplo de entrada (arquivoB.txt)</b></p>
+<pre>Cachorro Café Borracha Sapato</pre>
+
+<p><b>Exemplo de saída (arquivoC.txt)</b></p>
+<pre>Copo Sapato Cadeira Borracha Janela Café Cavalo Cachorro</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ10"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    15/02/2017 16:22:44</p>
+                <p><b>Tentativas:</b>
+                    2 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    90</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="498" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="403" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="3" type="hidden">
+            <input name="atenuacao" value="0.81" type="hidden">
+            <input name="nroQuestao" value="10" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial403');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial403">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;string&gt;
+#include &lt;cstring&gt;
+
+using namespace std;
+
+int main() {
+    ifstream arquivoA("arquivoA.txt");
+    ifstream arquivoB("arquivoB.txt");
+    string palavra;
+    ofstream arquivoC("arquivoC.txt");
+    char vetor[100][30];
+    int tam = 0;
+    while (arquivoB &gt;&gt; palavra) {
+        strcpy(vetor[tam], palavra.c_str());
+        ++tam;
+    }
+    tam -= 1;
+    bool existeA = true;
+    while (existeA or tam &gt;= 0) {
+        existeA = false;
+        if (arquivoA &gt;&gt; palavra) {
+            arquivoC &lt;&lt; palavra &lt;&lt; " ";
+            existeA = true;
+        }
+        if (tam &gt;= 0) {
+            arquivoC &lt;&lt; vetor[tam] &lt;&lt; " ";
+            --tam;
+        }
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q11"></a>
+                <h3>Questão 11:
+                            Arquivos (registros, funções) - Normalizar notas</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que normaliza notas de alunos. 
+Normalizar as notas, neste contexto, significa alterar todas as notas 
+proporcionalmente, para que a maior nota passe a ter o maior valor 
+possível (ex.: 100).
+Naturalmente deverá haver arredondamento para o valor inteiro mais 
+próximo durante a normalização.</p>
+
+<p>Os dados de entrada devem vir de um arquivo chamado <b><code>notas.txt</code></b>
+ em que cada linha tem um número de matricula seguido de uma nota. Uma 
+nota é um número inteiro entre 0 e 100. O arquivo deverá ter sido criado
+ antes da execução do programa.</p>
+<p>As notas normalizadas devem ser escritas no mesmo arquivo, seguindo o mesmo formato, mantendo a mesma ordem que existia.</p>
+<p>Para facilitar a alteração do arquivo, seu programa deverá ter ao menos 3 módulos:</p>
+<ul>
+<li>Um módulo para ler todos os registros de nota do arquivo,</li>
+<li>um módulo para normalizar todas as notas e</li>
+<li>um módulo para escrever todos os registros de nota de volta no arquivo.</li>
+</ul>
+<p>Naturalmente, deverá existir um módulo principal que interliga os outros.</p>
+<p>O programa deve usar registros para representar os registros de notas. Números de matrícula e notas devem ser números inteiros.</p>
+<p>Exemplo de entrada (conteúdo do arquivo <code>notas.txt</code> antes da execução):</p>
+<pre>201110004 80
+201210264 65
+201210969 0
+201210267 42</pre>
+<p>Exemplo de saída (conteúdo do arquivo <code>notas.txt</code> depois da execução):</p>
+<pre>201110004 100
+201210264 81
+201210969 0
+201210267 53</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ11"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    18/02/2017 08:47:21</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="498" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="327" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="11" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial327');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial327">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;cmath&gt;
+
+using namespace std;
+
+typedef struct {
+    int matricula;
+    int nota;
+} notas;
+
+void lernota(notas aluno[], int&amp; tam) {
+    ifstream arquivo("notas.txt");
+    tam = 0;
+    while (arquivo &gt;&gt; aluno[tam].matricula) {
+        arquivo &gt;&gt; aluno[tam].nota;
+        ++tam;
+    }
+}
+
+void normaliza(notas aluno[], int tam) {
+    int maiorNota = aluno[0].nota;
+    for (int i = 1; i &lt; tam; ++i) {
+        if (maiorNota &lt; aluno[i].nota) {
+            maiorNota = aluno[i].nota;
+        }
+    }
+    float proporcao = 100.0f / float(maiorNota);
+    float valor;
+    for (int i = 0; i &lt; tam; ++i) {
+        valor = float(aluno[i].nota) * proporcao;
+        if ((valor + 0.5) &gt;= ceil(valor)) {
+            aluno[i].nota = int(ceil(valor));
+        }
+        else {
+            aluno[i].nota = int(valor);
+        }
+    }
+}
+
+void escreve(notas aluno[], int tam) {
+    ofstream arquivo("notas.txt");
+    for (int i = 0; i &lt; tam; ++i) {
+        arquivo &lt;&lt; aluno[i].matricula &lt;&lt; " " &lt;&lt; aluno[i].nota &lt;&lt; endl;
+    }
+}
+
+int main() {
+    int tam = 100;
+    notas aluno[tam];
+    lernota(aluno, tam);
+    normaliza(aluno, tam);
+    escreve(aluno, tam);
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q12"></a>
+                <h3>Questão 12:
+                            Arquivos - Cifra de César</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>A cifra de César é uma forma de criptografia antiga, 
+onde cada letra de uma determinada mensagem é trocada pela letra que a 
+sucede em 3 posições. Por exemplo, a palavra <b>AJUDA</b> seria transformada em <b>DMXGD</b>. Escreva uma função que leia um arquivo texto e escreva a cifra de César correspondente em um outro arquivo texto.</p>
+<p>A letra <i>X</i> é trocada por <i>A</i>, <i>Y</i> por <i>B</i> e <i>Z</i> por <i>C</i>.</p>
+<p>O programa deve ler um nome de arquivo da entrada padrão, e aplicar a
+ cifra de César em seu conteúdo, escrevendo o resultado num arquivo cujo
+ nome é "<code>cifrado</code>". Suponha que no arquivo de entrada só 
+existem letras maiúsculas sem qualquer tipo de acentos, além espaços e 
+finais de linha. Os caracteres brancos não podem ser modificados.</p>
+<p>Entradas:</p>
+<ol>
+<li>Nome de um arquivo a ser lido (não há espaços no nome).</li>
+<li>Conteúdo do arquivo informado.</li>
+</ol>
+<p>Saída:</p>
+<ol>
+<li>Um arquivo cujo nome é "<code>cifrado</code>", contendo o resultado da aplicação da cifra ao conteúdo do arquivo da entrada.</li>
+</ol>
+<p>Exemplo de entrada (conteúdo do arquivo):</p>
+<pre>GALLIA EST OMNIS DIVISA IN PARTES TRES
+QUARUM UNAM INCOLUNT BELGAE</pre>
+<p>Exemplo de saída (conteúdo do arquivo cujo nome é "cifrado"):</p>
+<pre>JDOOLD HVW RPQLV GLYLVD LQ SDUWHV WUHV
+TXDUXP XQDP LQFROXQW EHOJDH</pre>
+
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ12"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    18/02/2017 09:54:31</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="498" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="40" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="12" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial40');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial40">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;string&gt;
+
+using namespace std;
+
+int main() {
+    char nome[30];
+    cin &gt;&gt; nome;
+    ifstream arquivo(nome);
+    string palavra;
+    ofstream cifrado("cifrado");
+    while (arquivo &gt;&gt; palavra) {
+        for (unsigned int i = 0; i &lt; palavra.size(); ++i) {
+            if(palavra.at(i) == 'X') {
+                palavra.at(i) = 'A';
+            }
+            else {
+                if (palavra.at(i) == 'Y') {
+                    palavra.at(i) = 'B';
+                }
+                else {
+                    if (palavra.at(i) == 'Z') {
+                        palavra.at(i) = 'C';
+                    }
+                    else {
+                        ++(++(++palavra.at(i)));
+                    }
+                }
+            }
+        }
+        cifrado &lt;&lt; palavra &lt;&lt; " ";
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q13"></a>
+                <h3>Questão 13:
+                            Arquivos - Desenhando árvores (recursão)</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>A recursão, sendo uma forma intuitiva de repetição permite descrever soluções complexas facilmente. A recursão
+pode ser encontrada com frequência na natureza, produzindo elementos complexos com regras de formação simples.</p>
+<p>Uma árvore, por exemplo, pode ser tomada como um exemplo de recursão. Cada pedaço de uma árvore (um galho)
+tem a mesma estrutura, ou regra de formação, da árvore toda.</p>
+<p>Você deve fazer um programa que desenha árvores, usando da recursão 
+para facilitar o programa. Para que não seja preciso aprender a usar 
+comandos de desenho, seu programa deverá escrever comandos um arquivo 
+texto e então um programa de terceiros vai interpretar os comandos e 
+fazer o desenho para você.</p>
+<p>Seu programa deverá <b>gerar um arquivo chamado "arvore.ps"</b>. Esse arquivo deve ter o seguinte formato:</p>
+<pre>newpath
+...
+2 setlinewidth
+stroke</pre>
+<p>Ou seja, um início fixo, um final fixo e, na parte das reticências, 
+ficarão comandos que serão gerados recursivamente, de acordo com as 
+entradas passadas para seu programa.</p>
+<p>Para desenhar uma árvore recursivamente, é preciso determinar:</p>
+<ul>
+<li>Uma posição inicial (x,y);</li>
+<li>um tamanho (para fazer um risco a partir da posição inicial);</li>
+<li>um ângulo (que determina a inclinação do risco a partir da posição inicial);</li>
+<li>um nível (que controla a hora de terminar a recursão).</li>
+</ul>
+<p>Então desenhar uma árvore, fica sendo: a) fazer um risco na direção 
+desejada, com o tamanho desejado; b) desenhar uma arvore com tamanho 
+menor, ângulo menor e nível menor e c) desenhar uma árvore com tamanho 
+menor, ângulo maior e nível menor.</p>
+<p>Para fazer um risco na direção desejada, é preciso calcular a posição final do risco. Da geometria vem que a posição final é (<i>novoX</i>, <i>novoY</i>) = (<i>cosseno(angulo)*tamanho+x</i>, <i>seno(angulo)*tamanho+y</i>). Assim, é só escrever no arquivo os comandos:</p>
+<pre>x y moveto
+novoX novoY lineto</pre>
+<p>A cada recursão, faça o <b>tamanho diminuir 10%</b> e o <b>ângulo da árvore variar 0,26 radianos para mais e para menos</b> (dois galhos). O tamanho inicial e o nível de recursões são entradas do problema. <b>A primeira posição inicial deve ser (300,10)</b>.</p>
+<p>Entradas:</p>
+<ol>
+<li>Tamanho (um número real que é o comprimento do primeiro risco).</li>
+<li>Número de níveis (o número de recursões a ser feito).</li>
+</ol>
+<p>Saída: Um arquivo PostScript no formato acima. Mandando abrir o 
+arquivo gerado, um visualizador de PostScript já instalado no computador
+ vai desenhar a árvore. Uma árvore de 8 níveis será desenhada assim:</p>
+<img src="arquivo-texto_files/arvore-recursao.png">
+<p>Exemplo de Entrada:</p>
+<pre>50
+2
+</pre>
+<p>Exemplo de Saída (arquivo <code>arvore.ps</code>):</p>
+<pre>newpath
+300 10 moveto
+300 60 lineto
+300 60 moveto
+288.431 103.488 lineto
+300 60 moveto
+311.569 103.488 lineto
+2 setlinewidth
+stroke</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ13"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    25/02/2017 20:08:04</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="498" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="812" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="13" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial812');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial812">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;cmath&gt;
+
+using namespace std;
+
+void desenhaArvore(double tam, int qtd, ofstream&amp; arquivo, double x, double y, double angulo) {
+    if (qtd == 0) {
+        return;
+    }
+    else {
+        arquivo &lt;&lt; x &lt;&lt; " " &lt;&lt; y &lt;&lt; " moveto" &lt;&lt; endl;
+        double copiaX = (cos(angulo)*tam)+x, copiaY = (sin(angulo)*tam)+y;
+        arquivo &lt;&lt; copiaX &lt;&lt; " " &lt;&lt; copiaY &lt;&lt; " lineto" &lt;&lt; endl;
+        desenhaArvore(tam*0.9, qtd-1, arquivo, copiaX, copiaY, angulo+0.26);
+        desenhaArvore(tam*0.9, qtd-1, arquivo, copiaX, copiaY, angulo-0.26);
+    }
+}
+
+void arvore(double tam, int qtd, ofstream&amp; arquivo) {
+    arquivo &lt;&lt; "newpath" &lt;&lt; endl;
+    desenhaArvore(tam, qtd, arquivo, 300, 10, (M_PI/2));
+    arquivo &lt;&lt; 2 &lt;&lt; " setlinewidth" &lt;&lt; endl
+            &lt;&lt; "stroke" &lt;&lt; endl;
+}
+
+int main() {
+    double tam;
+    cin &gt;&gt; tam;
+    int qtdGalhos;
+    cin &gt;&gt; qtdGalhos;
+    ofstream arvoreArquivo("arvore.ps");
+    arvore(tam, qtdGalhos, arvoreArquivo);
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q14"></a>
+                <h3>Questão 14:
+                            Arquivo - Crivo de Eratóstenes</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>O <b>Crivo de Eratóstenes</b> é um algoritmo e um método simples e prático para encontrar <b>números primos</b>
+ até um certo valor limite. Segundo a tradição, foi criado pelo 
+matemático grego Eratóstenes (c. 285-194 a.C.), o terceiro 
+bibliotecário-chefe da Biblioteca de Alexandria.</p>
+
+<p>Este algoritmo consiste em pegar o primeiro elemento do intervalo <b>[2, limite]</b>
+ como pivô, sendo um número primo, e excluir todos os valores que podem 
+ser divididos pelo pivô. Feito isso troque de pivô, sendo o próximo 
+valor da lista, sendo também um número primo.</p>
+
+<p>Faça um programa que utilize este algoritmo para o cálculo de todos 
+os números primos de um dado intervalo. O usuário entrará com o limite e
+ os números primos devem ser salvos em um arquivo <b>"saida.txt"</b></p>
+
+<p><b>Entradas:</b></p>
+<ul style="text-align:left;padding-left:20px;">
+<li><code>int limite</code> - Valor limite do intervalo no qual os números primos serão calculados.</li>
+</ul>
+
+<p><b>Saída:</b></p>
+<ul style="text-align:left;padding-left:20px;">
+<li>Arquivo "saida.txt", contendo os números primos do intervalo <b>[2, limite]</b>.</li>
+</ul><br>
+
+<h3>Exemplos de Entradas e Saídas:</h3>
+
+<p><b>Entradas:</b></p>
+<pre> 100
+</pre>
+
+<p><b>Saídas:</b></p>
+<pre>  2    3    5    7   11   13
+ 17   19   23   29   31   37
+ 41   43   47   53   59   61
+ 67   71   73   79   83   89
+ 97
+</pre>
+
+<p><b>Referências:</b></p>
+<ul style="text-align:left;padding-left:20px;">
+<li><a href="http://pt.wikipedia.org/wiki/Crivo_de_Erat%C3%B3stenes">Crivo de Eratóstenes (Wikipédia).</a></li>
+</ul>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ14"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    25/02/2017 22:47:30</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="498" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="250" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="14" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial250');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial250">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;cmath&gt;
+
+using namespace std;
+
+int main() {
+    int limite;
+    cin &gt;&gt; limite;
+    int limitante = int(sqrt(limite));
+    int tam = limite-1, num = 2;
+    int vetor[tam];
+    for (int i = 0; i &lt; tam; ++i) {
+        vetor[i] = num;
+        ++num;
+    }
+    int resultado[tam], indLimitante = 0;
+    num = vetor[indLimitante];
+    while (num &lt;= limitante) {
+        int tamResult = 0;
+        for (int i = 0; i &lt; tam; ++i) {
+            if ((vetor[i] % num != 0) or vetor[i] == num) {
+                resultado[tamResult] = vetor[i];
+                ++tamResult;
+            }
+        }
+        int y = 0;
+        for (int x = 0; x &lt; tamResult; ++x) {
+            vetor[y] = resultado[x];
+            ++y;
+        }
+        tam = tamResult;
+        ++indLimitante;
+        num = vetor[indLimitante];
+    }
+    ofstream arquivo("saida.txt");
+    for (int i = 0; i &lt; tam; ++i) {
+        arquivo &lt;&lt; vetor[i] &lt;&lt; " ";
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q15"></a>
+                <h3>Questão 15:
+                            Arquivos - Caminho na Matriz em Quatro Direções</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Como no exercício "Caminho na Matriz", dada uma 
+matriz para representar posições no espaço, devemos novamente encontrar 
+um caminho entre duas posições. Encontrar um caminho significa encontrar
+ posições por onde é possível passar.</p>
+<p>O progama deve ser implementado de maneira recursiva, porém desta vez
+ será possível caminhar em quadro direções na matriz, seguindo a 
+seguinte ordem: <b>Direita,Baixo,Esquerda,Cima.</b>O movimento pelo caminho pode ser descrito da seguinte forma:</p>
+<li>O caminho é mover-se para posição da direita e depois percorrer o 
+caminho da posição da direita até o destino, se é possível mover-se para
+ direita e se o caminho da posição da direita até o caminho existe.</li>
+<li>O caminho é mover-se para posição de baixo e depois percorrer o 
+caminho da posição de baixo até o destino, se a alternativa anterior não
+ resolveu o problema, se é possível mover-se para baixo e se o caminho 
+da posição de baixo até o destino existe.</li>
+<li>O caminho é mover-se para posição de esquerda e depois percorrer o 
+caminho da posição de esquerda até o destino, se a alternativa anterior 
+não resolveu o problema, se é possível mover-se para esquerda e se o 
+caminho da posição de esquerda até o destino existe.</li>
+<li>O caminho é mover-se para posição de cima e depois percorrer o 
+caminho da posição de cima até o destino, se a alternativa anterior não 
+resolveu o problema, se é possível mover-se para cima e se o caminho da 
+posição de cima até o destino existe.</li>
+<p>Faça um programa que lê uma matriz 18x30 de caracteres representando 
+um lugar. Nessa matriz haverá o caractere '.' (ponto) nas posições em 
+que é possível transitar e haverá o caractere '#' (cerquilha) nas 
+posições em que não é possível transitar (obstáculos). Encontre na 
+matriz um caminho do canto superior esquerdo até o canto inferior 
+direito usando a estratégia acima. O programa deve alterar a matriz, 
+alterando todas as posições analisadas com um 'x' (xis), o que permite 
+não apenas ver o caminho encontrado, mas também quanto processamento foi
+ necessário para encontrá-lo.O programa também deverá marcar com "O" 
+(letra 'O' maiúscula), o caminho correto em que foi usado para se 
+encontrar a saída.</p>
+<p><b>OBS.:Ele nunca irá percorrer o mesmo caminho, ou seja, ele nunca irá passar novamente por um espaço já marcado por 'x'.</b></p>
+<p>Seu programa deverá ter uma função recursiva que encontra caminhos 
+numa matriz e faz as marcações das posições analizadas. Planeje os 
+parâmetros com cuidado. Não é permitido o uso de variáveis globais.</p>
+<p>A função principal deve escrever a matriz com as posições marcadas depois do caminho ter sido encontrado.</p>
+
+<p><b>OBS.: O programa irá receber a entrada de um arquivo de nome "entrada.txt", e irá escrever em outro arquivo de nome "saida.txt".</b></p>
+
+<p>Exemplo de Entrada: entrada.txt</p>
+<pre>.............................#
+.###########################.#
+...........#################..
+##########.#...............###
+.........#.#..................
+.........#.#..................
+.........#.#..................
+.........#....................
+############.#################
+#............................#
+#..........################..#
+#..........#..............#..#
+#..........#.##############..#
+#..........#.##############..#
+#..........#.................#
+#..........###################
+#####.........................
+#####.........................</pre>
+<p>Exemplo de Saída: saida.txt</p>
+<pre>Oxxxxxxxxxxxxxxxxxxxxxxxxxxxx#
+O###########################x#
+OOOOOOOOOOO#################xx
+##########O#xxxxxxxxxxxxxxx###
+.........#O#xxxxxxxxxxxxxxxxxx
+.........#O#xxxxxxxxxxxxxxxxxx
+.........#O#xxxxxxxxxxxxxxxxxx
+.........#OOOxxxxxxxxxxxxxxxxx
+############O#################
+#.........OOOxxxxxxxxxxxxxxxx#
+#.........O################xx#
+#.........O#xxxxxxxxxxxxxx#xx#
+#.........O#x##############xx#
+#.........O#x##############xx#
+#.........O#xxxxxxxxxxxxxxxxx#
+#.........O###################
+#####.....OOOOOOOOOOOOOOOOOOOO
+#####........................O</pre>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ15"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    27/03/2017 10:48:05</p>
+                <p><b>Tentativas:</b>
+                    3 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    81</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="498" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="921" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="4" type="hidden">
+            <input name="atenuacao" value="0.729" type="hidden">
+            <input name="nroQuestao" value="15" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial921');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial921">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+
+using namespace std;
+
+bool PathFinder(char matriz[][30], int lin, int col) {
+    if (lin &gt; 17 or col &gt; 29 or lin &lt; 0 or col &lt; 0)
+        return false;
+    if (matriz[lin][col] != '.')
+        return false;
+    matriz[lin][col] = 'O';
+    if (lin == 17 and col == 29)
+    return true;
+    if (PathFinder(matriz, lin, col+1)) {
+        return true;
+    }
+    else {
+        if (PathFinder(matriz, lin+1, col))  {
+            return true;
+        }
+        else {
+            if (PathFinder(matriz, lin, col-1)) {
+                return true;
+            }
+            else {
+                if (PathFinder(matriz, lin-1, col)) {
+                    return true;
+                }
+            }
+        }
+    }
+    matriz[lin][col] = 'x';
+    return false;
+}
+
+int main() {
+    ifstream arquivo("entrada.txt");
+    char matriz[18][30];
+    for (int i = 0; i &lt; 18; ++i) {
+        for (int j = 0; j &lt; 30; ++j) {
+            arquivo &gt;&gt; matriz[i][j];
+        }
+    }
+    PathFinder(matriz, 0, 0);
+    ofstream resposta("saida.txt");
+    for (int i = 0; i &lt; 18; ++i) {
+        for (int j = 0; j &lt; 30; ++j) {
+            resposta &lt;&lt; matriz[i][j];
+        }
+        resposta &lt;&lt; endl;
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                </div><!-- prova -->
+<script type="text/javascript">
+    var serverTime = 1490622486000;
+    var localTime = +Date.now();
+    var timeDiff = serverTime - localTime;
+    var closingTime = 1490641200000;
+    var nomeUsuario = "Samir Carvalho";
+    $('#usuario').text(nomeUsuario);
+    if (true) {
+        setInterval(function () {
+            var realtime = +Date.now() + timeDiff;
+            var minutosRestantes = (closingTime - realtime) / 60000;
+            if (minutosRestantes < 0)
+                window.location = 'testTrials.php?encerrar';
+            else if (minutosRestantes < 5)
+                minutosRestantes = minutosRestantes.toFixed(1)
+            else
+                minutosRestantes = minutosRestantes.toFixed(0);
+            $('#clock').text(minutosRestantes);
+        }, 5000);
+    }
+    else
+        $('#clock').text('ENCERRADO');
+    //window.onclose = function() {alert("Close window?");}
+</script>
+    <br></div></div><div id="bottomct" class="ui-corner-top"><div id="footer">
+        <table boder="0" style="width: 100%;">
+            <tbody><tr>
+                <td style="width:33%;">
+                    <a href="http://www.ufla.br/" style="float:left;">
+                        <img src="arquivo-texto_files/ufla.png" width="92" height="40">
+                    </a>
+                </td>
+                <td style="width:34%;text-align: center;">
+                    Desenvolvido por <a href="http://www.dcc.ufla.br/%7Ebruno/" style="color: #DDF">Bruno Schneider</a>
+                    a partir do programa original (Algod) de Renato R. R. de Oliveira (GPLv3).
+                </td>
+                <td style="width:33%;">
+                    <a href="http://www.dcc.ufla.br/">
+                        <img src="arquivo-texto_files/logo-dcc.png" style="float:right" width="128" height="40">
+                    </a>
+                </td>
+            </tr>
+        </tbody></table>
+    </div></div>
+
+
+<div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable ui-dialog-buttons" style="outline: 0px none; z-index: 1002; position: absolute; height: auto; width: auto; top: 20726.5px; left: 632px; display: none;" tabindex="-1" role="dialog" aria-labelledby="ui-id-1"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-1" class="ui-dialog-title">Aviso</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div><div id="alert-dialog" style="width: auto; min-height: 32px; height: auto;" class="ui-dialog-content ui-widget-content" scrolltop="0" scrollleft="0"></div><div class="ui-resizable-handle ui-resizable-n" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-e" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-s" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se ui-icon-grip-diagonal-se" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 1000;"></div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button></div></div></div><div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable ui-dialog-buttons" style="outline: 0px none; z-index: 1002; position: absolute; height: auto; width: 800px; top: 20726.5px; left: 272.5px; display: none;" tabindex="-1" role="dialog" aria-labelledby="ui-id-2"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-2" class="ui-dialog-title">&nbsp;</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div><div id="data-view-dialog" style="text-align: center; width: auto; min-height: 32px; height: auto;" class="ui-dialog-content ui-widget-content" scrolltop="0" scrollleft="0"></div><div class="ui-resizable-handle ui-resizable-n" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-e" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-s" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se ui-icon-grip-diagonal-se" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 1000;"></div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button></div></div></div></body></html>

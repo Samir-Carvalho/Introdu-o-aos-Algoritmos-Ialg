@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html><head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Dredd - Juiz Online</title>
+    <link rel="stylesheet" type="text/css" href="arquivo-tipado_files/style.css">
+    <link rel="stylesheet" type="text/css" href="arquivo-tipado_files/jquery-ui-1.css">
+    <script src="arquivo-tipado_files/jquery-1.js"></script>
+    <script src="arquivo-tipado_files/jquery-ui.js"></script>
+    <script src="arquivo-tipado_files/jquery_002.js"></script>
+    <script src="arquivo-tipado_files/jquery.js"></script>
+    <script>
+    $(document).ready(function() {
+        $(document).tooltip();
+        $("button, input[type='submit'], input[type='reset']").button();
+
+        $("input.date").mask("99/99/9999").attr("title","Exemplo: 11/09/2001").tooltip();
+        $("input.datetime").mask("99/99/9999 99:99:99").attr("title","Exemplo: 11/09/2001 10:17:37").tooltip();
+        $("input.integer").numeric().attr("title","Exemplo: 2").tooltip();
+        $("input.number").numeric({allow:"."}).attr("title","Exemplo: 0.5").tooltip();
+        $("textarea").keypress(function(event) {
+            if (event.ctrlKey && (event.which == 112)) {
+                event.preventDefault();
+                $("#data-view-dialog").html("<div class='data-view-box' style='width: 90%;'>"+$(this).val()+"</div>").dialog("open");
+            }
+        });
+
+        $("textarea.cpp-code-view").attr("readonly","readonly");
+        $("div.cpp-code-view").each(function() {
+            var text = $(this).html();
+            text.replace("&","&amp;");
+            text.replace("<","&lt;");
+            text.replace(">","&gt;");
+            text.replace("\r","");
+
+            // Keywords
+            text.replace("float ","<b>float</b> ");
+            text.replace("double ","<b>double</b> ");
+            text.replace("int ","<b>int</b> ");
+            text.replace("long ","<b>long</b> ");
+            text.replace("if ","<b>if</b> ");
+            text.replace("else ","<b>else</b> ");
+            text.replace("for ","<b>for</b> ");
+            text.replace("while ","<b>while</b> ");
+            text.replace("return","<b>return</b>");
+            text.replace("break","<b>break</b>");
+            text.replace("using","<b>using</b>");
+            text.replace("namespace","<b>namespace</b>");
+            text.replace("#include","<b>#include</b>");
+
+            text.replace(" ","&nbsp;");
+            text.replace("\t","&nbsp;&nbsp;&nbsp;&nbsp;");
+            text.replace("\n","<br />");
+            $(this).html(text);
+        });
+
+        $("#alert-dialog").dialog({
+            title: "Aviso",
+            width: "auto",
+            height: "auto",
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $(this).dialog("close");
+                }
+            }
+        }).dialog("close");
+
+        $("#data-view-dialog").dialog({
+            title: "",
+            width: 800,
+            height: "auto",
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $(this).dialog("close");
+                }
+            }
+        }).dialog("close");
+
+        $("form").submit(function() {
+            var $validationText = "";
+            $(this).find(".notempty").each(function() {
+                if (($(this).val() == undefined) || ($(this).val() == "")) {
+                    $validationText += "<li>"+$("label[for='"+$(this).attr('name')+"']").html()+"</li>";
+                }
+            });
+            if ($validationText != "") {
+                $validationText = "<p>Os seguintes campos não podem estar vazios:</p><ul>"+$validationText+"</ul>";
+                $("#alert-dialog").html($validationText).dialog({modal: true}).dialog("open");
+                return false;
+            } else {
+                var $form = $(this);
+                $form.find("input.passwordconfirm").each(function() {
+                    if ($(this).val() != $form.find("input.password").val()) {
+                        $validationText = "As senhas digitadas não conferem.";
+                    }
+                });
+                if ($validationText != "") {
+                    $("#alert-dialog").html($validationText).dialog({modal: true}).dialog("open");
+                    return false;
+                } else
+                    return true;
+            }
+        });
+    });
+    function openDivAsDialog(id) {
+        $("div#"+id).dialog({
+            title: "",
+            width: "auto",
+            height: "auto",
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $(this).dialog("close");
+                }
+            }
+        }).dialog("open");
+    };
+    </script>
+</head>
+<body>
+    
+    
+    <div id="topct" class="ui-corner-bottom"><div id="banner">
+        <h1>Dredd - Juiz Online</h1>
+        <div id="topmenu">
+            <button id="menu-bt-home" onclick="location.assign('./');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Principal</span></button>
+            <button id="menu-bt-profile" onclick="location.assign('./testsMine.php');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Minhas Provas</span></button>
+            <button id="menu-bt-profile" onclick="location.assign('./profile.php');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Perfil</span></button>
+            <button id="menu-bt-logout" onclick="location.assign('./logout.php');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Sair</span></button>
+        </div>
+    </div></div><div id="contentct"><div id="content">
+<div id="painel-info">
+    <b>Minutos<br>Restantes</b>:<br>
+    <span id="clock">9</span><br><br>
+    <b>Usuário</b>:<br>
+    <div id="usuario">Samir Carvalho</div><br>
+    <b>Notas</b>:<br>
+    <span id="notas">
+Q1: 0<br>Q2: 0<br>Q3: 0<br>Q4: ?<br>Q5: 90<br>    </span><br>
+</div>
+<div id="prova">
+    <h1>Exercícios Arquivo Tipado - 10/14 A/B/C</h1>
+    <p><b>Prova Aberta Até:</b>
+        25/03/2017 13:00:00</p>
+    <p><b>Número Máximo de Tentativas:</b>
+        6</p>
+    <p><b>Atenuação da Nota por Tentativa (multiplicativa):</b>
+        0.9</p>
+    <p><b>Nota Máxima por Tentativa:</b>
+        </p><ol style="text-align: left; padding-left: 12ex;">
+                            <li>100</li>
+                            <li>90</li>
+                            <li>81</li>
+                            <li>72.9</li>
+                            <li>65.61</li>
+                            <li>59.049</li>
+                            </ol><p></p>
+    <p><b>Descrição:</b></p>
+    <div class="description-display-box">
+        A prova é individual. Desligue seu celular. Não converse com os colegas. Não fique olhando para a tela dos colegas.    </div>
+    <h3>QUESTÕES</h3>
+                                <div class="problem-try-ct">
+                <a name="Q1"></a>
+                <h3>Questão 1:
+                            Arquivo Tipado - Controle de Compromissos</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <h2>Visão Geral</h2>
+
+<p>Faça parte de um programa para fazer controle de compromissos. O programa deve ser capaz de inserir e listar registros.</p>
+
+<p>Os dados do programa devem ser persistentes e ser carregados no 
+início da execução do programa. O nome do arquivo com os dados deve ser 
+"compromissos".</p>
+
+<p>O arquivo deve ter um cabeçalho que indica quantos registros existem 
+no arquivo (número inteiro), para suportar as funcionalidades que seriam
+ acrescentadas mais tarde ao programa.</p>
+
+<p>A interface deve ser baseada num menu numérico. O usuário do programa
+ poderá solicitar tantas operações quantas desejar numa mesma execução. 
+As operações possíveis são (os números das opções devem ser conforme 
+esta listagem):</p>
+<pre>1. Listar todos registros
+2. Adicionar registro
+3. Terminar execução
+</pre>
+
+<p>Cada registro é representado por:
+</p><ol style="text-align:left; padding-left:3em">
+<li>descrição do compromisso (string com capacidade 50),</li>
+<li>local (string com capacidade 30),</li>
+<li>horário.</li>
+</ol><p></p>
+
+<p>Cada horario é um registro representado por (todas as partes são números inteiros):
+</p><ol style="text-align:left; padding-left:3em">
+<li>dia,</li>
+<li>mes,</li>
+<li>ano,</li>
+<li>hora,</li>
+<li>minuto.</li>
+</ol><p></p>
+
+<h2>Menu</h2>
+<p>As opções do menu são escolhidas pela leitura do número 
+correspondente. Não é necessário considerar a possibilidade de uso 
+incorreto do menu.</p>
+
+<h2>Listar Registros</h2>
+<p>O programa deve escrever na saída padrão (cout) cada registro do 
+arquivo. A listagem deve refletir o estado atual do arquivo. Cada campo 
+de um registro deve usar uma linha e deve existir uma linha em branco 
+entre cada registro. Os horários devem ser escritos com barras separando
+ o dia, mês e ano, um espaço deve separar o dia da hora e um sinal de 
+dois pontos deve separar as horas dos minutos.</p>
+<p>A listagem deve ser baseada na informação do cabeçalho. Não é 
+aceitável supor que todos os registros do arquivo são válidos, para que 
+não seja necessário refazer tudo depois de uma possível implementação de
+ remoção de registros.</p>
+
+<h2>Adicionar Registro</h2>
+<p>O programa deve ler da entrada padrão (cin) todos os dados de um 
+registro, atualizar o arquivo e voltar ao menu. A leitura de horários 
+pode ser feita com espaços entre cada número, na ordem descrita neste 
+enunciado.</p>
+<p>A adição de um novo registro deve ser baseada na informação do 
+cabeçalho. Não é aceitável supor que todos os registros do arquivo são 
+válidos, para que não seja necessário refazer tudo depois de uma 
+possível implementação de remoção de registros.</p>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ1"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    24/03/2017 22:12:02</p>
+                <p><b>Tentativas:</b>
+                    2 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    0</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Aguardando correção manual.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="523" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="294" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="3" type="hidden">
+            <input name="atenuacao" value="0.81" type="hidden">
+            <input name="nroQuestao" value="1" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial294');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial294">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include
+ &lt;iostream&gt;
+#include &lt;fstream&gt;
+
+using namespace std;
+
+typedef struct {
+    int dia;
+    int mes;
+    int ano;
+    int hora;
+    int minuto;
+} Horarios;
+
+typedef struct {
+    char descricao[30];
+    char local[30];
+    Horarios horario;
+} Compromissos;
+
+typedef int Cabecalho;
+
+void EscreverCabecalho(fstream&amp; arquivo, Cabecalho cabecalho) {
+    arquivo.seekp(0);
+    arquivo.write(reinterpret_cast&lt;char*&gt;(&amp;cabecalho), 
+sizeof(Cabecalho));
+}
+
+Cabecalho LerCabecalho(fstream&amp; arquivo) {
+    Cabecalho cabecalho;
+    arquivo.seekg(0);
+    arquivo.read(reinterpret_cast&lt;char*&gt;(&amp;cabecalho), 
+sizeof(cabecalho));
+    return cabecalho;
+}
+
+void LerCompromisso(fstream&amp; arquivo, Compromissos* ptCompromisso, 
+int pos) {
+    arquivo.seekg(sizeof(Compromissos)*pos + sizeof(Cabecalho));
+    arquivo.read(reinterpret_cast&lt;char*&gt;(ptCompromisso), 
+sizeof(Compromissos));
+}
+
+void ListarCompromissos(fstream&amp; arquivo) {
+    Cabecalho tam = LerCabecalho(arquivo);
+    Compromissos compromisso;
+    for (int i = 0; i &lt; tam; ++i) {
+        LerCompromisso(arquivo, &amp;compromisso, i);
+        cout &lt;&lt; compromisso.descricao &lt;&lt; ' ' &lt;&lt; 
+compromisso.local &lt;&lt; ' ' &lt;&lt; compromisso.horario.dia &lt;&lt;
+ '/' &lt;&lt; compromisso.horario.mes &lt;&lt; '/' &lt;&lt; 
+compromisso.horario.ano &lt;&lt; ' ' &lt;&lt; compromisso.horario.hora 
+&lt;&lt; ':' &lt;&lt; compromisso.horario.minuto &lt;&lt; endl &lt;&lt; 
+endl;
+    }
+}
+
+void EscreverCompromisso(fstream&amp; arquivo, int pos, Compromissos* 
+ptCompromisso) {
+    arquivo.seekp(sizeof(Compromissos)*pos + sizeof(Cabecalho));
+    arquivo.write(reinterpret_cast&lt;char*&gt;(ptCompromisso), 
+sizeof(Compromissos));
+}
+
+void InserirCompromisso(fstream&amp; arquivo, Compromissos* 
+ptCompromisso) {
+    Cabecalho cabecalho = LerCabecalho(arquivo);
+    EscreverCompromisso(arquivo, cabecalho, ptCompromisso);
+    EscreverCabecalho(arquivo, cabecalho+1);
+}
+
+bool NaoExisteArquivo(char nome[]) {
+    fstream arquivo(nome);
+    return not arquivo;
+}
+
+int main() {
+    char nome[] = "compromissos";
+    bool faltaInicializarCabecalho = false;
+    if (NaoExisteArquivo(nome)) {
+        ofstream arquivo(nome);
+        faltaInicializarCabecalho = true;
+    }
+    fstream arquivo(nome);
+    if (faltaInicializarCabecalho) {
+        EscreverCabecalho(arquivo, 0);
+    }
+    int opcao;
+    Compromissos compromisso;
+    do {
+        cin &gt;&gt; opcao;
+        switch (opcao) {
+            case 1:
+                ListarCompromissos(arquivo);
+                break;
+            case 2:
+                cin &gt;&gt; compromisso.descricao &gt;&gt; 
+compromisso.local &gt;&gt; compromisso.horario.dia &gt;&gt; 
+compromisso.horario.mes &gt;&gt; compromisso.horario.ano &gt;&gt; 
+compromisso.horario.hora &gt;&gt; compromisso.horario.minuto;
+                InserirCompromisso(arquivo, &amp;compromisso);
+                break;
+            default:
+                break;
+        }
+    } while (opcao != 3);
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q2"></a>
+                <h3>Questão 2:
+                            Arquivo Tipado - Controle de Frequência</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <h2>Visão Geral</h2>
+<p>Faça uma parte de um programa para fazer o controle de frequência de 
+alunos. O programa deve ser capaz de inserir e listar registros.</p>
+
+<p>Os dados do programa devem ser persistentes e ser carregados no 
+início da execução do programa. O nome do arquivo com os dados deve ser 
+"frequencia".</p>
+
+<p>O arquivo deve ter um cabeçalho que indica quantos registros existem 
+no arquivo (número inteiro), para suportar as funcionalidades que seriam
+ acrescentadas mais tarde ao programa.</p>
+
+<p>A interface deve ser baseada num menu numérico. O usuário do programa
+ poderá solicitar tantas operações quantas desejar numa mesma execução. 
+As operações possíveis são (os números das opções devem ser conforme 
+esta listagem):</p>
+<pre>1. Listar todos registros
+2. Adicionar registro
+3. Terminar execução
+</pre>
+
+<p>Cada registro é representado por:
+</p><ol style="text-align:left; padding-left:3em">
+<li>número de matricula (número inteiro),</li>
+<li>status (string com capacidade 9, que pode ser presente, ausente, atrasado ou abono),</li>
+<li>data.</li>
+</ol><p></p>
+
+<p>Cada data é um registro representado por (cada parte é um número inteiro):
+</p><ol style="text-align:left; padding-left:3em">
+<li>dia,</li>
+<li>mes,</li>
+<li>ano.</li>
+</ol><p></p>
+
+<h2>Menu</h2>
+<p>As opções do menu são escolhidas pela leitura do número 
+correspondente. Não é necessário considerar a possibilidade de uso 
+incorreto do menu.</p>
+
+<h2>Listar Registros</h2>
+<p>O programa deve escrever na saída padrão (cout) todos os registros do
+ arquivo. Cada campo de um registro deve usar uma linha e deve existir 
+uma linha em branco entre cada registro. As datas devem ser escrita com 
+barras separando o dia, mês e ano.</p>
+<p>A listagem deve ser baseada na informação do cabeçalho. Não é 
+aceitável supor que todos os registros do arquivo são válidos, para que 
+não seja necessário refazer tudo depois de uma possível implementação de
+ remoção de registros.</p>
+
+<h2>Adicionar Registro</h2>
+<p>O programa deve ler da entrada padrão (cin) todos os dados de um registro, atualizar o arquivo e voltar ao menu.</p>
+<p>A adição de registros deve ser baseada na informação do cabeçalho. 
+Não é aceitável supor que todos os registros do arquivo são válidos, 
+para que não seja necessário refazer tudo depois de uma possível 
+implementação de remoção de registros.</p>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ2"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    24/03/2017 22:44:16</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    0</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Aguardando correção manual.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="523" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="278" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="2" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial278');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial278">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include
+ &lt;iostream&gt;
+#include &lt;fstream&gt;
+
+using namespace std;
+
+typedef struct {
+    int dia;
+    int mes;
+    int ano;
+} Datas;
+
+typedef struct {
+    int matricula;
+    char status[9];
+    Datas data;
+} Alunos;
+
+typedef int Cabecalho;
+
+void EscreverCabecalho(fstream&amp; arquivo, Cabecalho cabecalho) {
+    arquivo.seekp(0);
+    arquivo.write(reinterpret_cast&lt;char*&gt;(&amp;cabecalho), 
+sizeof(Cabecalho));
+}
+
+Cabecalho LerCabecalho(fstream&amp; arquivo) {
+    Cabecalho cabecalho;
+    arquivo.seekg(0);
+    arquivo.read(reinterpret_cast&lt;char*&gt;(&amp;cabecalho), 
+sizeof(Cabecalho));
+    return cabecalho;
+}
+
+void LerAluno(fstream&amp; arquivo, int pos, Alunos* ptAluno) {
+    arquivo.seekg(sizeof(Alunos)*pos + sizeof(Cabecalho));
+    arquivo.read(reinterpret_cast&lt;char*&gt;(ptAluno), 
+sizeof(Alunos));
+}
+
+void ListarAlunos(fstream&amp; arquivo) {
+    Alunos aluno;
+    Cabecalho tamanho = LerCabecalho(arquivo);
+    for (int i = 0; i &lt; tamanho; ++i) {
+        LerAluno(arquivo, i, &amp;aluno);
+        cout &lt;&lt; aluno.matricula &lt;&lt; ' ' &lt;&lt; aluno.status
+ &lt;&lt; ' ' &lt;&lt; aluno.data.dia &lt;&lt; '/' &lt;&lt; 
+aluno.data.mes &lt;&lt; '/' &lt;&lt; aluno.data.ano &lt;&lt; endl 
+&lt;&lt; endl;
+    }
+}
+
+void EscreverAluno(fstream&amp; arquivo, int pos, Alunos* aluno) {
+    arquivo.seekp(sizeof(Alunos)*pos + sizeof(Cabecalho));
+    arquivo.write(reinterpret_cast&lt;char*&gt;(aluno), sizeof(Alunos));
+}
+
+void InserirAluno(fstream&amp; arquivo, Alunos* aluno) {
+    Cabecalho pos = LerCabecalho(arquivo);
+    EscreverAluno(arquivo, pos, aluno);
+    EscreverCabecalho(arquivo, pos+1);
+}
+
+bool NaoExisteArquivo(char nome[]) {
+    fstream arquivo(nome);
+    return not arquivo;
+}
+
+int main() {
+    char nome[] = "frequencia";
+    bool naoExisteCabecalho = false;
+    if (NaoExisteArquivo(nome)) {
+        ofstream arquivo(nome);
+        naoExisteCabecalho = true;
+    }
+    fstream arquivo(nome);
+    if (naoExisteCabecalho) {
+        EscreverCabecalho(arquivo, 0);
+    }
+    int opcao;
+    Alunos aluno;
+    do {
+        cin &gt;&gt; opcao;
+        switch (opcao) {
+            case 1:
+                ListarAlunos(arquivo);
+                break;
+            case 2:
+                cin &gt;&gt; aluno.matricula &gt;&gt; aluno.status 
+&gt;&gt; aluno.data.dia &gt;&gt; aluno.data.mes &gt;&gt; aluno.data.ano;
+                InserirAluno(arquivo, &amp;aluno);
+                break;
+            default:
+                break;
+        }
+    } while (opcao &lt; 3);
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q3"></a>
+                <h3>Questão 3:
+                            Arquivo Tipado - Agenda</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <h2>Visão Geral</h2>
+<p>Faça um programa que controla os vários contatos de uma agenda. O 
+programa deve ser capaz de adicionar, modificar, remover e buscar 
+contatos.</p>
+
+<p>Os dados do programa devem ser persistentes e ser carregados no 
+início da execução do programa. O nome do arquivo com os dados deve ser 
+"agenda".</p>
+
+<p>A interface deve ser baseada num menu numérico com as seguintes opções:
+</p><pre>1. Buscar contato
+2. Adicionar contato
+3. Modificar contato
+4. Remover contato
+5. Terminar execução
+</pre><p></p>
+
+<p>Cada contato é representado por:
+</p><ol style="text-align:left; padding-left:3em">
+<li>nome,</li>
+<li>telefone (número inteiro),</li>
+<li>endereço eletrônico.</li>
+</ol><p></p>
+
+<h2>Menu</h2>
+<p>As opções do menu são escolhidas pela leitura do número 
+correspondente. Não é necessário considerar a possibilidade de uso 
+incorreto do menu.</p>
+
+<h2>Buscar Contato</h2>
+<p>O programa deve perguntar o nome para informar o telefone e o endereço eletrônico do contato e depois voltar ao menu.</p>
+<p>Caso não haja nenhum contato com o nome, o programa deve escrever 
+"Contato inexistente." (Atenção às letras maiúsculas/minúsculas e o 
+ponto final) e voltar ao menu.</p>
+
+<h2>Adicionar Contato</h2>
+<p>O programa deve solicitar todos os dados do contanto, na ordem que eles são apresentados na seção <b>Visão Geral</b>, armazenar o contato e voltar ao menu.</p>
+
+<h2>Modificar Contato</h2>
+<p>O programa deve perguntar o nome do contato, seguido dos outros dados, na ordem que eles são apresentados na seção <b>Visão Geral</b>, fazer as modificações na agenda e voltar ao menu.</p>
+<p>Caso não haja nenhum contato com o nome informado, o programa deve escrever "Contato inexistente." e voltar ao menu.</p>
+
+<h2>Remover contato</h2>
+<p>O programa deve perguntar o nome do contato, excluí-lo da agenda e voltar ao menu.</p>
+<p>Se não houver nenhum contato com o nome indicado, o programa deve escrever "Contato inexistente." e voltar ao menu.</p>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ3"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    25/03/2017 10:20:02</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    0</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Aguardando correção manual.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="523" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="272" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="3" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial272');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial272">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;cstring&gt;
+
+using namespace std;
+
+typedef struct {
+    char nome[30];
+    int telefone;
+    char email[100];
+} Contatos;
+
+typedef unsigned int Cabecalho;
+
+void EscreverCabecalho(fstream&amp; arquivo, Cabecalho cabecalho) {
+    arquivo.seekp(0);
+    arquivo.write(reinterpret_cast&lt;char*&gt;(&amp;cabecalho), sizeof(Cabecalho));
+}
+
+Cabecalho LerCabecalho(fstream&amp; arquivo) {
+    arquivo.seekg(0);
+    Cabecalho cabecalho;
+    arquivo.read(reinterpret_cast&lt;char*&gt;(&amp;cabecalho), sizeof(Cabecalho));
+    return cabecalho;
+}
+
+void LerContato(fstream&amp; arquivo, int pos, Contatos* ptContato) {
+    arquivo.seekg(sizeof(Contatos)*pos + sizeof(Cabecalho));
+    arquivo.read(reinterpret_cast&lt;char*&gt;(ptContato), sizeof(Contatos));
+}
+
+void ListarContatos(fstream&amp; arquivo) {
+    Cabecalho tamanho = LerCabecalho(arquivo);
+    Contatos contato;
+    for (unsigned int i = 0; i &lt; tamanho; ++i) {
+        LerContato(arquivo, i, &amp;contato);
+        cout &lt;&lt; contato.nome &lt;&lt; ' ' &lt;&lt; contato.telefone &lt;&lt; ' ' &lt;&lt; contato.email &lt;&lt; endl;
+    }
+}
+
+void EscreverContato(fstream&amp; arquivo, Contatos* ptContatos, int pos) {
+    arquivo.seekp(sizeof(Contatos)*pos + sizeof(Cabecalho));
+    arquivo.write(reinterpret_cast&lt;char*&gt;(ptContatos), sizeof(Contatos));
+}
+
+char* LerNome(fstream&amp; arquivo, Contatos* contato, int pos) {
+    LerContato(arquivo, pos, contato);
+    return contato-&gt;nome;
+}
+
+void InserirContato(fstream&amp; arquivo, Contatos* ptContato) {
+    Cabecalho pos = LerCabecalho(arquivo);
+    Cabecalho tamanho = pos;
+    Contatos contato;
+    while (pos &gt; 0 and strcmp(ptContato-&gt;nome, LerNome(arquivo, &amp;contato, pos-1)) &lt; 0) {
+        LerContato(arquivo, pos-1, &amp;contato);
+        EscreverContato(arquivo, &amp;contato, pos);
+        --pos;
+    }
+    EscreverContato(arquivo, ptContato, pos);
+    EscreverCabecalho(arquivo, tamanho+1);
+}
+
+int BuscarContato(fstream&amp; arquivo, char nome[]) {
+    int inicio = 0;
+    int fim = LerCabecalho(arquivo) - 1;
+    int meio = (inicio+fim) / 2;
+    Contatos contato;
+    while (inicio &lt;= fim) {
+        if (strcmp(nome, LerNome(arquivo, &amp;contato, meio)) == 0) {
+            return meio;
+        }
+        else {
+            if (strcmp(nome, LerNome(arquivo, &amp;contato, meio)) &lt; 0) {
+                fim = meio - 1;
+            }
+            else {
+                inicio = meio + 1;
+            }
+        }
+        meio = (inicio + fim) / 2;
+    }
+    return -1;
+}
+
+void EditarContato(fstream&amp; arquivo, Contatos* ptContato) {
+    int pos = BuscarContato(arquivo, ptContato-&gt;nome);
+    if (pos &gt; -1) {
+        EscreverContato(arquivo, ptContato, pos);
+    }
+    else {
+        cout &lt;&lt; "Contato inexistente.\n";
+    }
+}
+
+void RemoverContato(fstream&amp; arquivo, char nome[]) {
+    int pos = BuscarContato(arquivo, nome);
+    if (pos &gt; -1) {
+        Cabecalho tamanho = LerCabecalho(arquivo);
+        Contatos contato;
+        for (unsigned int i = pos; i &lt; tamanho-1; ++i) {
+            LerContato(arquivo, i+1, &amp;contato);
+            EscreverContato(arquivo, &amp;contato, i);
+        }
+        EscreverCabecalho(arquivo, tamanho-1);
+    }
+    else {
+        cout &lt;&lt; "Contato inexistente.\n";
+    }
+}
+
+void InformarContato(fstream&amp; arquivo, char nome[]) {
+    int pos = BuscarContato(arquivo, nome);
+    if (pos &gt; -1) {
+        Contatos contato;
+        LerContato(arquivo, pos, &amp;contato);
+        cout &lt;&lt; contato.nome &lt;&lt; ' ' &lt;&lt; contato.telefone &lt;&lt; ' ' &lt;&lt; contato.email &lt;&lt; endl;
+    }
+    else {
+        cout &lt;&lt; "Contato inexistente.\n";
+    }
+}
+
+bool NaoExisteArquivo(char nome[]) {
+    fstream arquivo(nome);
+    return not arquivo;
+}
+
+int main() {
+    char nome[] = "agenda";
+    bool naoExisteCabecalho = false;
+    if (NaoExisteArquivo(nome)) {
+        ofstream arquivo(nome);
+        naoExisteCabecalho = true;
+    }
+    fstream arquivo(nome);
+    if (naoExisteCabecalho) {
+        EscreverCabecalho(arquivo, 0);
+    }
+    Contatos contato;
+    int opcao;
+    char nomeContato[30];
+    do {
+        cin &gt;&gt; opcao;
+        switch (opcao) {
+            case 1:
+               // ListarContatos(arquivo);
+                cin &gt;&gt; nomeContato;
+                InformarContato(arquivo, nomeContato);
+                break;
+            case 2:
+                cin &gt;&gt; contato.nome &gt;&gt; contato.telefone &gt;&gt; contato.email;
+                InserirContato(arquivo, &amp;contato);
+                break;
+            case 3:
+                cin &gt;&gt; contato.nome &gt;&gt; contato.telefone &gt;&gt; contato.email;
+                EditarContato(arquivo, &amp;contato);
+                break;
+            case 4:
+                cin &gt;&gt; nomeContato;
+                RemoverContato(arquivo, nomeContato);
+                break;
+            //~ case 5:
+                //~ cin &gt;&gt; nomeContato;
+                //~ InformarContato(arquivo, nomeContato);
+            //~ default:
+                break;
+        }
+    } while (opcao &lt; 5);
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q4"></a>
+                <h3>Questão 4:
+                            Arquivo Tipado - Videolocadora</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <h2>Visão Geral</h2>
+<p>Faça um programa que controla o acervo de uma videolocadora. O 
+programa deve ser capaz de adicionar, remover, alugar e receber 
+devolução de filmes.</p>
+
+<p>Os dados do programa devem ser persistentes e ser carregados no 
+início da execução do programa. O nome do arquivo com os dados deve ser 
+"videolocadora".</p>
+
+<p>A interface deve ser baseada num menu numérico com as seguintes opções:
+</p><pre>1. Alugar filme
+2. Receber devolução de filme
+3. Adicionar filme
+4. Remover filme
+5. Terminar execução.
+</pre><p></p>
+
+<p>Cada filme é representado por:
+</p><ol style="text-align:left; padding-left:3em">
+<li>título,</li>
+<li>identificador da mídia (a locadora pode ter várias cópias do mesmo filme),</li>
+<li>status (a mídia pode estar alugada ou não).</li>
+</ol><p></p>
+
+<h2>Menu</h2>
+<p>As opções do menu são escolhidas pela leitura do número 
+correspondente. Não é necessário considerar a possibilidade de uso 
+incorreto do menu.</p>
+
+<h2>Alugar</h2>
+<p>O procedimento para alugar é o seguinte: Dado um título, o programa 
+procura um identificador de mídia daquele título que não esteja alugado.
+ Existindo mídia disponível para aluguel, o programa deve informar o seu
+ identificador para o usuário, para que ele possa buscar a mídia nas 
+prateleiras. Este item de menu permite o aluguel de único filme.</p>
+
+<p>Se não houver nenhuma mídia disponível com o título informado, o 
+programa deve escrever a mensagem "Todos alugados." (mantenha as 
+maiúsculas/minúsculas e o ponto final).</p>
+
+<p>Se não houve nenhum filme com o título informado, o programa deve escrever a mensagem "Filme inexistente.".</p>
+
+<h2>Devolução</h2>
+<p>É feita para um única filme, pelo identificador da mídia.</p>
+
+<p>Se o identificador da mídia não for encontrado, o programa deve escrever "Filme inexistente." e retornar ao menu.</p>
+
+<p>Se o identificador for encontrado mas o a mídia não estiver alugada, o programa deve escrever "Nao estava alugado.".</p>
+
+<h2>Adição de filme</h2>
+<p>É feita para um único filme. Os dados devem ser lidos na ordem em que foram apresentados na visão geral.</p>
+
+<h2>Remoção de filme</h2>
+<p>É feita para um único filme, pelo identificador da mídia.</p>
+
+<p>Se o identificador da mídia não for encontrado, o programa deve escrever "Filme inexistente." e retornar ao menu.</p>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ4"></a>
+                <p><b>Peso:</b> 1</p>
+                <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="523" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="271" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="1" type="hidden">
+            <input name="atenuacao" value="1" type="hidden">
+            <input name="nroQuestao" value="4" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q5"></a>
+                <h3>Questão 5:
+                            Arquivo Tipado - Busca Binária em Arquivo Binário</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que leia n registros e os aloque 
+dinamicamente em um vetor. O registro deve conter um nome e uma chave 
+(valor inteiro positivo). Seu programa também deve ordenar o vetor (em 
+ordem crescente de chaves) e armazená-lo em um arquivo binário, 
+escolhido pelo usuário. Por fim o programa deverá realizar uma busca 
+binária de um nome a partir de uma chave digitada pelo usuário. Caso a 
+chave não seja encontrada seu programa deverá escrever ‘-1’.</p>
+<p>Observações: 
+</p><ol>
+<li> A ordenação deve ser feita utilizando MergeSort ou QuickSort. </li>
+<li> A busca binária deve ser feita em arquivo, sem o uso de vetores. Não haverá chaves de valores repetidos. </li>
+<li> Deverá haver uma função para a ordenação e uma para a busca. </li>
+</ol>
+<p></p>
+<p>Entradas:</p>
+<ol>
+<li> Número de registros. </li>
+<li> Registros a serem lidos. </li>
+<li> Arquivo no qual devem ser inseridos os registros. </li>
+<li> Chave do registro a ser buscado. </li>
+
+</ol>
+<p>Saídas:</p>
+<ol>
+<li> Campo nome do registro encontrado. </li>
+</ol>
+<p>Exemplo de Entrada:</p>
+<pre>5
+Joao 5
+Lucas 9
+Carol 3
+Paulo 4
+Jaco 2
+nomes.bin
+3
+</pre>
+<p>Exemplo de Saída:</p>
+<pre>Carol
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ5"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    25/03/2017 12:50:51</p>
+                <p><b>Tentativas:</b>
+                    2 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    90</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="523" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="976" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="3" type="hidden">
+            <input name="atenuacao" value="0.81" type="hidden">
+            <input name="nroQuestao" value="5" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial976');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial976">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+
+using namespace std;
+
+typedef struct {
+    char nome[30];
+    unsigned int chave;
+} Registros;
+
+typedef unsigned int Cabecalho;
+
+void Merge(int inicio, int meio, int fim, Registros registro[], Registros aux[]) {
+    int esq = inicio;
+    int dir = meio;
+    for (int i = inicio; i &lt; fim; ++i) {
+        if ((esq &lt; meio) and ((dir &gt;= fim) or (registro[esq].chave &lt; registro[dir].chave))) {
+            aux[i] = registro[esq];
+            ++esq;
+        }
+        else {
+            aux[i] = registro[dir];
+            ++dir;
+        }
+    }
+    for (int i = inicio; i &lt; fim; ++i) {
+        registro[i] = aux[i];
+    }
+}
+
+void MergeSort(int inicio, int fim, Registros registro[], Registros aux[]) {
+    if (fim - inicio &gt; 1) {
+        int meio = (fim + inicio) / 2;
+        MergeSort(inicio, meio, registro, aux);
+        MergeSort(meio, fim, registro, aux);
+        Merge(inicio, meio, fim, registro, aux);
+    }
+}
+
+void MergeSort(Registros registro[], int tam) {
+    Registros aux[tam];
+    MergeSort(0, tam, registro, aux);
+}
+
+void EscreverCabecalho(fstream&amp; arquivo, Cabecalho cabecalho) {
+    arquivo.seekp(0);
+    arquivo.write(reinterpret_cast&lt;char*&gt;(&amp;cabecalho), sizeof(Cabecalho));
+}
+
+Cabecalho LerCabecalho(fstream&amp; arquivo) {
+    Cabecalho cabecalho;
+    arquivo.seekg(0);
+    arquivo.read(reinterpret_cast&lt;char*&gt;(&amp;cabecalho), sizeof(Cabecalho));
+    return cabecalho;
+}
+
+void EscreverRegistro(fstream&amp; arquivo, Registros* ptRegistro, int pos) {
+    arquivo.seekp(sizeof(Registros)*pos + sizeof(Cabecalho));
+    arquivo.write(reinterpret_cast&lt;char*&gt;(ptRegistro), sizeof(Registros));
+}
+
+void LerRegistro(fstream&amp; arquivo, Registros* ptRegistro, int pos) {
+    arquivo.seekg(sizeof(Registros)*pos + sizeof(Cabecalho));
+    arquivo.read(reinterpret_cast&lt;char*&gt;(ptRegistro), sizeof(Registros));
+}
+
+unsigned int LerChave(fstream&amp; arquivo, int pos) {
+    Registros registro;
+    LerRegistro(arquivo, ®istro, pos);
+    int chave = registro.chave;
+    return chave;
+}
+
+int BuscarRegistro(fstream&amp; arquivo, unsigned int chaveProcurada) {
+    int inicio = 0;
+    int fim = LerCabecalho(arquivo) - 1;
+    int meio = (inicio + fim) / 2;
+    while (inicio &lt;= fim) {
+        if (chaveProcurada == LerChave(arquivo, meio)) {
+            return meio;
+        }
+        else {
+            if (chaveProcurada &lt; LerChave(arquivo, meio)) {
+                fim = meio - 1;
+            }
+            else {
+                inicio = meio + 1;
+            }
+        }
+        meio = (inicio + fim) / 2;
+    }
+    return -1;
+}
+
+bool NaoExisteArquivo(char nome[]) {
+    fstream arquivo(nome);
+    return not arquivo;
+}
+
+int main() {
+    int n;
+    cin &gt;&gt; n;
+    Registros* registro = new Registros[n];
+    for (int i = 0; i &lt; n; ++i) {
+        cin &gt;&gt; registro[i].nome &gt;&gt; registro[i].chave;
+    }
+    MergeSort(registro, n);
+    char nomeArquivo[50];
+    cin &gt;&gt; nomeArquivo;
+    bool naoExisteCabecalho = false;
+    if (NaoExisteArquivo(nomeArquivo)) {
+        ofstream arquivo(nomeArquivo);
+        naoExisteCabecalho = true;
+    }
+    fstream arquivo(nomeArquivo);
+    if (naoExisteCabecalho) {
+        EscreverCabecalho(arquivo, 0);
+    }
+    for (int i = 0; i &lt; n; ++i) {
+        Registros regis = registro[i];
+        Cabecalho cabecalho = LerCabecalho(arquivo);
+        EscreverRegistro(arquivo, ®is, cabecalho);
+        EscreverCabecalho(arquivo, cabecalho+1);
+    }
+    unsigned int chaveProcurada;
+    cin &gt;&gt; chaveProcurada;
+    int pos = BuscarRegistro(arquivo, chaveProcurada);
+    if (pos &gt; -1) {
+        cout &lt;&lt; registro[pos].nome &lt;&lt; endl;
+    }
+    else {
+        cout &lt;&lt; -1 &lt;&lt; endl;
+    }
+    delete[] registro;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                </div><!-- prova -->
+<script type="text/javascript">
+    var serverTime = 1490457052000;
+    var localTime = +Date.now();
+    var timeDiff = serverTime - localTime;
+    var closingTime = 1490457600000;
+    var nomeUsuario = "Samir Carvalho";
+    $('#usuario').text(nomeUsuario);
+    if (true) {
+        setInterval(function () {
+            var realtime = +Date.now() + timeDiff;
+            var minutosRestantes = (closingTime - realtime) / 60000;
+            if (minutosRestantes < 0)
+                window.location = 'testTrials.php?encerrar';
+            else if (minutosRestantes < 5)
+                minutosRestantes = minutosRestantes.toFixed(1)
+            else
+                minutosRestantes = minutosRestantes.toFixed(0);
+            $('#clock').text(minutosRestantes);
+        }, 5000);
+    }
+    else
+        $('#clock').text('ENCERRADO');
+    //window.onclose = function() {alert("Close window?");}
+</script>
+    <br></div></div><div id="bottomct" class="ui-corner-top"><div id="footer">
+        <table boder="0" style="width: 100%;">
+            <tbody><tr>
+                <td style="width:33%;">
+                    <a href="http://www.ufla.br/" style="float:left;">
+                        <img src="arquivo-tipado_files/ufla.png" width="92" height="40">
+                    </a>
+                </td>
+                <td style="width:34%;text-align: center;">
+                    Desenvolvido por <a href="http://www.dcc.ufla.br/%7Ebruno/" style="color: #DDF">Bruno Schneider</a>
+                    a partir do programa original (Algod) de Renato R. R. de Oliveira (GPLv3).
+                </td>
+                <td style="width:33%;">
+                    <a href="http://www.dcc.ufla.br/">
+                        <img src="arquivo-tipado_files/logo-dcc.png" style="float:right" width="128" height="40">
+                    </a>
+                </td>
+            </tr>
+        </tbody></table>
+    </div></div>
+
+
+<div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable ui-dialog-buttons" style="outline: 0px none; z-index: 1002; position: absolute; height: auto; width: auto; top: 7803.5px; left: 632px; display: none;" tabindex="-1" role="dialog" aria-labelledby="ui-id-1"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-1" class="ui-dialog-title">Aviso</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div><div id="alert-dialog" style="width: auto; min-height: 32px; height: auto;" class="ui-dialog-content ui-widget-content" scrolltop="0" scrollleft="0"></div><div class="ui-resizable-handle ui-resizable-n" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-e" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-s" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se ui-icon-grip-diagonal-se" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 1000;"></div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button></div></div></div><div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable ui-dialog-buttons" style="outline: 0px none; z-index: 1002; position: absolute; height: auto; width: 800px; top: 7803.5px; left: 272.5px; display: none;" tabindex="-1" role="dialog" aria-labelledby="ui-id-2"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-2" class="ui-dialog-title">&nbsp;</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div><div id="data-view-dialog" style="text-align: center; width: auto; min-height: 32px; height: auto;" class="ui-dialog-content ui-widget-content" scrolltop="0" scrollleft="0"></div><div class="ui-resizable-handle ui-resizable-n" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-e" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-s" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se ui-icon-grip-diagonal-se" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 1000;"></div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button></div></div></div></body></html>

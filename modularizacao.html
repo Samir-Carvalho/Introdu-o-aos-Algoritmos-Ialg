@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html><head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Dredd - Juiz Online</title>
+    <link rel="stylesheet" type="text/css" href="modularizacao_files/style.css">
+    <link rel="stylesheet" type="text/css" href="modularizacao_files/jquery-ui-1.css">
+    <script src="modularizacao_files/jquery-1.js"></script>
+    <script src="modularizacao_files/jquery-ui.js"></script>
+    <script src="modularizacao_files/jquery_002.js"></script>
+    <script src="modularizacao_files/jquery.js"></script>
+    <script>
+    $(document).ready(function() {
+        $(document).tooltip();
+        $("button, input[type='submit'], input[type='reset']").button();
+
+        $("input.date").mask("99/99/9999").attr("title","Exemplo: 11/09/2001").tooltip();
+        $("input.datetime").mask("99/99/9999 99:99:99").attr("title","Exemplo: 11/09/2001 10:17:37").tooltip();
+        $("input.integer").numeric().attr("title","Exemplo: 2").tooltip();
+        $("input.number").numeric({allow:"."}).attr("title","Exemplo: 0.5").tooltip();
+        $("textarea").keypress(function(event) {
+            if (event.ctrlKey && (event.which == 112)) {
+                event.preventDefault();
+                $("#data-view-dialog").html("<div class='data-view-box' style='width: 90%;'>"+$(this).val()+"</div>").dialog("open");
+            }
+        });
+
+        $("textarea.cpp-code-view").attr("readonly","readonly");
+        $("div.cpp-code-view").each(function() {
+            var text = $(this).html();
+            text.replace("&","&amp;");
+            text.replace("<","&lt;");
+            text.replace(">","&gt;");
+            text.replace("\r","");
+
+            // Keywords
+            text.replace("float ","<b>float</b> ");
+            text.replace("double ","<b>double</b> ");
+            text.replace("int ","<b>int</b> ");
+            text.replace("long ","<b>long</b> ");
+            text.replace("if ","<b>if</b> ");
+            text.replace("else ","<b>else</b> ");
+            text.replace("for ","<b>for</b> ");
+            text.replace("while ","<b>while</b> ");
+            text.replace("return","<b>return</b>");
+            text.replace("break","<b>break</b>");
+            text.replace("using","<b>using</b>");
+            text.replace("namespace","<b>namespace</b>");
+            text.replace("#include","<b>#include</b>");
+
+            text.replace(" ","&nbsp;");
+            text.replace("\t","&nbsp;&nbsp;&nbsp;&nbsp;");
+            text.replace("\n","<br />");
+            $(this).html(text);
+        });
+
+        $("#alert-dialog").dialog({
+            title: "Aviso",
+            width: "auto",
+            height: "auto",
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $(this).dialog("close");
+                }
+            }
+        }).dialog("close");
+
+        $("#data-view-dialog").dialog({
+            title: "",
+            width: 800,
+            height: "auto",
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $(this).dialog("close");
+                }
+            }
+        }).dialog("close");
+
+        $("form").submit(function() {
+            var $validationText = "";
+            $(this).find(".notempty").each(function() {
+                if (($(this).val() == undefined) || ($(this).val() == "")) {
+                    $validationText += "<li>"+$("label[for='"+$(this).attr('name')+"']").html()+"</li>";
+                }
+            });
+            if ($validationText != "") {
+                $validationText = "<p>Os seguintes campos não podem estar vazios:</p><ul>"+$validationText+"</ul>";
+                $("#alert-dialog").html($validationText).dialog({modal: true}).dialog("open");
+                return false;
+            } else {
+                var $form = $(this);
+                $form.find("input.passwordconfirm").each(function() {
+                    if ($(this).val() != $form.find("input.password").val()) {
+                        $validationText = "As senhas digitadas não conferem.";
+                    }
+                });
+                if ($validationText != "") {
+                    $("#alert-dialog").html($validationText).dialog({modal: true}).dialog("open");
+                    return false;
+                } else
+                    return true;
+            }
+        });
+    });
+    function openDivAsDialog(id) {
+        $("div#"+id).dialog({
+            title: "",
+            width: "auto",
+            height: "auto",
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $(this).dialog("close");
+                }
+            }
+        }).dialog("open");
+    };
+    </script>
+</head>
+<body>
+    
+    
+    <div id="topct" class="ui-corner-bottom"><div id="banner">
+        <h1>Dredd - Juiz Online</h1>
+        <div id="topmenu">
+            <button id="menu-bt-home" onclick="location.assign('./');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Principal</span></button>
+            <button id="menu-bt-profile" onclick="location.assign('./testsMine.php');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Minhas Provas</span></button>
+            <button id="menu-bt-profile" onclick="location.assign('./profile.php');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Perfil</span></button>
+            <button id="menu-bt-logout" onclick="location.assign('./logout.php');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Sair</span></button>
+        </div>
+    </div></div><div id="contentct"><div id="content">
+<div id="painel-info">
+    <b>Minutos<br>Restantes</b>:<br>
+    <span id="clock">14463</span><br><br>
+    <b>Usuário</b>:<br>
+    <div id="usuario">Samir Carvalho</div><br>
+    <b>Notas</b>:<br>
+    <span id="notas">
+Q1: 54.9<br>Q2: 100<br>Q3: 100<br>Q4: 81<br>Q5: 81<br>Q6: 65.6<br>Q7: 100<br>Q8: 100<br>Q9: 100<br>Q10: 100<br>Q11: 100<br>Q12: 100<br>Q13: 100<br>    </span><br>
+</div>
+<div id="prova">
+    <h1>IAlg - Exercícios Modularização</h1>
+    <p><b>Prova Aberta Até:</b>
+        18/03/2017 12:50:00</p>
+    <p><b>Número Máximo de Tentativas:</b>
+        6</p>
+    <p><b>Atenuação da Nota por Tentativa (multiplicativa):</b>
+        0.9</p>
+    <p><b>Nota Máxima por Tentativa:</b>
+        </p><ol style="text-align: left; padding-left: 12ex;">
+                            <li>100</li>
+                            <li>90</li>
+                            <li>81</li>
+                            <li>72.9</li>
+                            <li>65.61</li>
+                            <li>59.049</li>
+                            </ol><p></p>
+    <p><b>Descrição:</b></p>
+    <div class="description-display-box">
+        Lista de exercícios de IAlg. Pode ser acessada de casa.    </div>
+    <h3>QUESTÕES</h3>
+                                <div class="problem-try-ct">
+                <a name="Q1"></a>
+                <h3>Questão 1:
+                            Modularização - Capicuas</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Um número é dito ser capicua quando lido da esquerda 
+para a direita é o mesmo que quando lido da direita para a esquerda. O 
+ano 2002, por exemplo, é capicua. Implemente uma função que receba como 
+parâmetro <b>um inteiro</b> e retorne um valor lógico que indica se o número tem essa características.</p>
+Uma outra função deve receber todos os números que são capicuas e devolver ao módulo principal o maior e o menor deles.
+<p>As funções serão parte de um programa cujo módulo principal lê a 
+quantidade de números a serem analisados e escreve os números que não 
+são capicuas, e dentre os capicuas, o menor e o maior valores.
+
+</p><p><b>Entrada do programa:</b></p>
+<ol>
+<li>Número inteiro representando a quantidade de valores a serem testados.</li>
+<li>Números inteiros a serem testados.</li>
+</ol>
+
+<p><b>Saída do programa:</b></p>
+<ol>
+<li>Números que não são capicuas </li>
+<li>Menor número capicua lido</li>
+<li>Maior número capicua lido</li>
+</ol>
+
+<p><b>Exemplo de entrada do programa:</b></p>
+<pre>7</pre>
+<pre>12</pre>
+<pre>1122</pre>
+<pre>131</pre>
+<pre>13412</pre>
+<pre>344312</pre>
+<pre>1111111</pre>
+<pre>4578754</pre>
+
+<p><b>Exemplo de saída do programa:</b></p>
+<pre>12</pre>
+<pre>1122</pre>
+<pre>13412</pre>
+<pre>344312</pre>
+<pre>131</pre>
+<pre>4578754</pre>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ1"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    24/01/2017 20:38:52</p>
+                <p><b>Tentativas:</b>
+                    6 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    54.9</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    A quantidade de dados escritos pelo programa é diferente da quantidade de dados esperados.</p>
+                                    <p><i>Você esgotou o máximo de tentativas nesta questão.</i></p>
+                    </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q2"></a>
+                <h3>Questão 2:
+                            Modularização - Filtro de vetor</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que tenha um subprograma (função) 
+que receba um vetor de números inteiros e que retorne um novo vetor com 
+os valores do primeiro que são divisíveis por 2 e por 3. Esse 
+subprograma não pode ter nenhuma operação de leitura nem de escrita. Ele
+ também não pode alterar o vetor com os valores de entrada. Um bom 
+planejamento dos parâmetros é fundamental e será parte importante da 
+avaliação.</p>
+<p>O programa principal deverá ler os valores e escrever todos os números que passaram pelo filtro da função.</p>
+<p><b>OBS.:</b> A verificação de divisibilidade dos números só pode ser feita dentro da função.<br>
+<b>OBS2:</b> Vetores em Python são implementados como listas cujos elementos são todos homogêneos.</p>
+<p><b>Entradas:</b></p>
+<ol>
+<li>A quantidade de números.</li>
+<li>Os números inteiros que devem passar pelo filtro da função.</li>
+</ol>
+<p><b>Saídas:</b></p>
+<ol><li>Todos os números que passaram pelo filtro, na mesma ordem em que foram lidos.</li></ol>
+<p><b>Exemplo de entrada:</b></p>
+<pre>7
+36 37 0 41 7 12 -9</pre>
+<p><b>Exemplo de saída:</b></p>
+<pre>36 0 12</pre>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ2"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    22/01/2017 20:09:48</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="482" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="393" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="2" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial393');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial393">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+using namespace std;
+
+vector&lt;int&gt; funcao(int quantidade, int vet[]) {
+    vector&lt;int&gt; result;
+    for (int i = 0; i &lt; quantidade; ++i) {
+        if (vet[i]%2 == 0 or vet[i]%3 == 0) {
+            result.push_back(vet[i]);
+        }
+    }
+    return result;
+}
+
+int main() {
+    int qtd;
+    cin &gt;&gt; qtd;
+    int vetor[qtd];
+    for (int i = 0; i &lt; qtd; ++i) {
+        cin &gt;&gt; vetor[i];
+    }
+    funcao(qtd, vetor);
+    vector&lt;int&gt; total = funcao(qtd, vetor);
+    for (unsigned int i = 0; i &lt; total.size(); ++i) {
+        cout &lt;&lt; total.at(i) &lt;&lt; " ";
+    }
+    cout &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q3"></a>
+                <h3>Questão 3:
+                            Modularizacao - Palindromos</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Um palíndromo é um texto que pode ser lido tanto da 
+esquerda para a direita como da direita para a esquerda. Por exemplo, 
+sem considerar sinais gráficos, acentos e letras maiúsculas e 
+minúsculas: "socorram me subi no onibus em marrocos".</p>
+
+<p>Implemente uma função que receba como parâmetro <b>uma palavra</b> e 
+retorne um valor lógico que indica se a palavra tem essa característica.
+ Uma outra função deve receber todas as palavras que são palíndromos e 
+devolver ao módulo principal a maior e a menor delas.</p>
+
+<p>As funções serão parte de um programa cujo módulo principal lê a 
+quantidade de palavras a serem analisadas e escreve aquelas que não são 
+palíndromos, e dentre os palíndromos, a menor e a maior delas (a menor é
+ a primeira das palavras quando ordenadas em ordem alfabética, e a maior
+ é a última).
+
+</p><p><b>Entradas:</b></p>
+<ol>
+<li>Número inteiro representando a quantidade de palavras a serem testadas.</li>
+<li>Palavras a serem testadas (uma em cada linha).</li>
+</ol>
+
+<p><b>Saídas:</b></p> 
+<ol>
+<li>Palavras que não são palíndromos </li>
+<li>Menor palavra palíndromo lida</li>
+<li>Maior palavra palíndromo lida</li>
+</ol>
+
+<p><b>Exemplo de entrada:</b></p>
+<pre>7
+casa
+ovo
+pelo
+tomate
+arara
+papa
+ama</pre>
+
+<p><b>Exemplo de saída:</b></p>
+<pre>casa
+pelo
+tomate
+papa
+ama
+ovo</pre>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ3"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    22/01/2017 22:43:50</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="482" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="628" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="3" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial628');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial628">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;cstring&gt;
+
+using namespace std;
+
+bool palindromo(char palavra[], int qtd) {
+    int tam = int(strlen(palavra));
+    --tam;
+    for (int i = 0; i &lt; qtd/2; ++i) {
+        if (palavra[i] != palavra[tam]) {
+            return false;
+        }
+        --tam;
+    }
+    return true;
+}
+typedef struct {
+    char menor[30];
+    char maior[30];
+} resultado;
+resultado tesMenorMaior(char palavras[][30], int tam) {
+    char maior[30], menor[30];
+    strcpy(maior, palavras[0]);
+    strcpy(menor, palavras[0]);
+    for (int i = 0; i &lt; tam; ++i) {
+        if (strcmp(menor, palavras[i]) &gt; 0) {
+            strcpy(menor, palavras[i]);
+        }
+        else if (strcmp(maior, palavras[i]) &lt; 0) {
+            strcpy(maior, palavras[i]);
+        }
+    }
+    resultado result;
+    strcpy(result.menor, menor);
+    strcpy(result.maior, maior);
+    return result;
+}
+
+int main() {
+    int qtd;
+    cin &gt;&gt; qtd;
+    char palavra[30], naoPalin[qtd][30], palind[qtd][30];
+    int u = 0, x = 0;
+    for (int i = 0; i &lt; qtd; ++i) {
+        cin &gt;&gt; palavra;
+        if (palindromo(palavra, qtd)) {
+            strcpy(palind[x], palavra);
+            ++x;
+        }
+        else {
+            strcpy(naoPalin[u], palavra);
+            ++u;
+        }
+    }
+    tesMenorMaior(palind, x);
+    for (int i = 0; i &lt; u; ++i) {
+        cout &lt;&lt; naoPalin[i] &lt;&lt; endl;
+    }
+    cout &lt;&lt; tesMenorMaior(palind, x).menor &lt;&lt; endl
+         &lt;&lt; tesMenorMaior(palind, x).maior &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q4"></a>
+                <h3>Questão 4:
+                            Modularização - Dígitos de um número</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que tem um subprograma que recebe um
+ número inteiro não negativo e retorna um vetor com todos os seus 
+dígitos. Esse subprograma não pode ter nenhuma operação de leitura nem 
+de escrita. Os números podem ser retornados na ordem direta ou inversa 
+pelo subprograma. Um bom planejamento dos parâmetros é fundamental e 
+será parte importante da avaliação.</p>
+<p>É permitido fazer outros subprogramas para auxiliar a criação deste.</p>
+<p>O subprograma principal deverá ler o número inteiro e escrever todos os dígitos encontradas pelo outro subprograma.</p><br> <b>Obs.:</b>Vetores em Python são implementados como listas cujos elementos são todos homogêneos.
+<p><b>Entradas:</b></p>
+<ol>
+<li>Um número inteiro.</li>
+</ol>
+<p><b>Saídas:</b></p>
+<p>Todos os dígitos do número da entrada na mesma ordem, separados com espaços.</p>
+<p><b>Exemplo de entrada:</b></p>
+<pre>812</pre>
+<p><b>Exemplo de saída:</b></p>
+<pre>8 1 2</pre>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ4"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    23/01/2017 19:04:20</p>
+                <p><b>Tentativas:</b>
+                    3 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    81</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="482" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="392" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="4" type="hidden">
+            <input name="atenuacao" value="0.729" type="hidden">
+            <input name="nroQuestao" value="4" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial392');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial392">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+void separaNum(int numero, int vetor[], int&amp; tam) {
+    tam = 0;
+    do {
+        vetor[tam] = numero % 10;
+        numero /= 10;
+        ++tam;
+    } while (numero != 0);
+}
+
+int main() {
+    int numero;
+    cin &gt;&gt; numero;
+    int numSeparados[10], tam;
+    separaNum(numero, numSeparados, tam);
+    for (int i = tam-1; i &gt;= 0; --i) {
+        cout &lt;&lt; numSeparados[i] &lt;&lt; " ";
+    }
+    cout &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q5"></a>
+                <h3>Questão 5:
+                            Modularização - Busca Binária</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Implemente um programa que tem uma função para realizar a busca binária em um vetor ordenado de números inteiros.</p>
+
+<p>Toda entrada e saída de dados (leituras e escritas) deve ficar a 
+cargo do módulo principal, enquanto que o processamento propriamente 
+dito (a busca binária) deve ficar numa função específica. Um bom 
+planejamento dos parâmetros da função de busca é importante para uma boa
+ nota.</p>
+
+<p>A função principal deverá ler os dados de entrada, passar as 
+informações para a função e escrever os resultados calculados pela 
+função. Não é permitido fazer a busca duas vezes para obter os dois 
+valores da resposta.</p>
+<p>Quando a quantidade de elementos for par, a escolha do meio deve favorecer o elemento da esquerda.</p>
+<p><b>Entradas do programa:</b></p>
+<ol>
+<li>Tamanho do vetor.</li>
+<li>Os elementos (números inteiros) do vetor ordenado (já em ordem crescente).</li>
+<li>Elemento a ser buscado.</li>
+</ol>
+
+<p><b>Saídas do programa:</b>
+</p><ol>
+<li>Posição do elemento no vetor (escreva -1 caso o elemento não tenha sido encontrado).</li>
+<li>Número de comparações (quantos elementos do vetor foram comparados ao elemento buscado).</li>
+</ol><p></p>
+
+<h3>Exemplos de entradas e saídas do programa:</h3>
+
+<p><b>Entradas:</b></p>
+<pre>6
+1  4  6  7  8  9
+4
+</pre>
+
+<p><b>Saídas:</b></p>
+<pre>1
+3</pre>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ5"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    23/01/2017 22:52:02</p>
+                <p><b>Tentativas:</b>
+                    3 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    81</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="482" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="150" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="4" type="hidden">
+            <input name="atenuacao" value="0.729" type="hidden">
+            <input name="nroQuestao" value="5" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial150');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial150">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+void buscaBinaria(int vetor[], int tam, int numProcurado, int&amp; pos, int&amp; numBusca) {
+    int inicio = 0;
+    int fim = tam - 1;
+    int meio;
+    numBusca = 0;
+    bool naoAchouNum = true;
+    while (inicio &lt;= fim and naoAchouNum) {
+        meio = (inicio + fim)/2;
+        ++numBusca;
+        if (vetor[meio] == numProcurado) {
+            pos = meio;
+            naoAchouNum = false;
+        }
+        else if (vetor[meio] &gt; numProcurado) {
+                fim = meio - 1;
+        }
+        else if (vetor[meio] &lt; numProcurado) {
+            inicio = meio + 1;
+        }
+        if (naoAchouNum) {
+            pos = -1;
+        }
+    }
+}
+
+int main() {
+    int tamanho;
+    cin &gt;&gt; tamanho;
+    int vetor[tamanho];
+    for (int i = 0; i &lt; tamanho; ++i) {
+        cin &gt;&gt; vetor[i];
+    }
+    int elemBuscado;
+    cin &gt;&gt; elemBuscado;
+    int posicao, numBusca;
+    buscaBinaria(vetor, tamanho, elemBuscado, posicao, numBusca);
+    cout &lt;&lt; posicao &lt;&lt; endl &lt;&lt; numBusca &lt;&lt; endl; 
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q6"></a>
+                <h3>Questão 6:
+                            Modularização - Escrever vetor</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que lê vários números inteiros, guarda-os num vetor e escreve o conteúdo do vetor.</p>
+<p>Deverá existir um subprograma que recebe um vetor via parâmetros e 
+escreve o seu conteúdo. O vetor pode ter tamanho zero. A escrita do 
+vetor deve ser formatada, com os seguintes itens:</p>
+<ul>
+<li>Deve haver um "[" (abre colchetes) antes do primeiro elemento. Não deve haver qualquer espaço entre o "[" e o primeiro elemento.</li>
+<li>Deve haver uma vírgula seguida de espaço entre cada elemento.</li>
+<li>Deve haver um "]" (fecha colchetes) depois do último elemento. Não deve haver qualquer espaço entre o último elemento e o "]".</li>
+</ul>
+<p>O subprograma principal deverá escrever um final de linha depois de escrever o conteúdo do vetor.</p>
+<p><b>Obs.:</b> Vetores em Python são implementados como listas cujos elementos são todos homogêneos.</p>
+<p><b>Entradas:</b></p>
+<ol>
+<li>A quantidade de números a serem lidos.</li>
+<li>Vários números inteiros.</li>
+</ol>
+<p><b>Saídas:</b></p>
+<ol>
+<li>O conteúdo do vetor criado, conforme a formatação acima.</li>
+</ol>
+<p><b>Exemplo de Entrada:</b></p>
+<pre>4
+2 3 4 1</pre>
+<p><b>Exemplo de Saída:</b></p>
+<pre>[2, 3, 4, 1]</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ6"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    18/02/2017 10:12:42</p>
+                <p><b>Tentativas:</b>
+                    5 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    65.6</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="482" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="399" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="6" type="hidden">
+            <input name="atenuacao" value="0.59049" type="hidden">
+            <input name="nroQuestao" value="6" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial399');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial399">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+void escreveVetor(unsigned int tam, int vetor[]) {
+        cout &lt;&lt; "[";
+        if (tam &gt; 0) {
+            for (unsigned int i = 0; i &lt; tam-1; ++i) {
+                cout &lt;&lt; vetor[i] &lt;&lt; ", ";
+            }
+            cout &lt;&lt; vetor[tam-1];
+        }
+        cout &lt;&lt; "]";
+}
+
+int main() {
+    unsigned int qtd;
+    cin &gt;&gt; qtd;
+    int vetor[qtd];
+    for (unsigned int i = 0; i &lt; qtd; ++i) {
+        cin &gt;&gt; vetor[i];
+    }
+    escreveVetor(qtd, vetor);
+    cout &lt;&lt; endl;
+
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q7"></a>
+                <h3>Questão 7:
+                            Modularização - Inserir em ordem</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que cadastra nomes e telefones de 
+pessoas. Para simplificar o desenvolvimento, considere que os nomes não 
+possuem espaços ou seja: "Carlos" é um nome válido para este problema, 
+mas "Carlos Silva" não é. Considere também que telefones são números 
+inteiros de 8 dígitos. </p>
+
+<p>O programa deve manter os nomes cadastrados sempre em ordem 
+alfabética. Para tanto, ele deve ter uma sub-rotina que insere um 
+registro num vetor de registros, mantendo a ordenação no vetor. Um bom 
+planejamento dos parâmetros dessa sub-rotina é parte da avaliação.</p>
+
+<p>Não deve ser implementada uma função de ordenação neste programa. 
+Manter os dados ordenados por repetidas ordenações toda vez que um novo 
+elemento aparece, é extremamente lento e não é uma solução aceitável.</p>
+
+<p>Para comparação de nomes usando vetores de <code>char</code>, é permitido usar a função <code>strcmp</code> da biblioteca <code>cstring</code>.
+ Essa função recebe apenas duas strings e retorna um número inteiro que é
+ negativo se a primeira for menor que a segunda; zero se as strings 
+forem iguais ou um número positivo se a segunda for menor.</p>
+
+<p>Toda entrada e saída de dados (operações de leitura e escrita) deve 
+ser feita no módulo principal. Ele deve ler vários pares (nome, 
+telefone) e, para cada par lido, escrever todos os registros que constam
+ na memória.</p>
+
+<p>Entradas do programa:</p>
+<ol>
+<li>o número de registros que serão lidos.</li>
+<li>diversos pares de nomes e telefones.</li>
+</ol>
+
+<p>Saídas do programa:</p>
+<ol>
+<li>O conjunto completo de registros, cada vez que um novo registro for lido.</li>
+</ol>
+
+<p><b>Exemplo de entrada</b>:</p>
+<pre>3
+Cristina 38210000
+Carlos 38221234
+Maria 38212121</pre>
+
+<p><b>Exemplo de saída</b>:</p>
+<pre>Cristina 38210000
+
+Carlos 38221234
+Cristina 38210000
+
+Carlos 38221234
+Cristina 38210000
+Maria 38212121</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ7"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    24/01/2017 15:03:51</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="482" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="257" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="7" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial257');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial257">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;cstring&gt;
+
+using namespace std;
+
+typedef struct {
+    char nome[30];
+    int telefone;
+} registro;
+
+void ordenaNome(registro cadastro[], int tam) {
+    int copiaTelefone;
+    char copiaNome[30];
+    bool naoParar = true;
+    for (int i = 0; i &lt; tam and naoParar; ++i) {
+        if (strcmp(cadastro[tam].nome, cadastro[i].nome) &lt; 0) {
+            strcpy(copiaNome, cadastro[tam].nome);
+            copiaTelefone = cadastro[tam].telefone;
+            for (int u = tam; u &gt; i; --u) {
+                strcpy(cadastro[u].nome, cadastro[u-1].nome);
+                cadastro[u].telefone = cadastro[u-1].telefone;
+            }
+            strcpy(cadastro[i].nome, copiaNome);
+            cadastro[i].telefone = copiaTelefone;
+            naoParar = false;
+        }
+    }
+}
+
+int main() {
+    int qtd;
+    cin &gt;&gt; qtd;
+    registro cadastrados[qtd];
+    for (int i = 0; i &lt; qtd; ++i) {
+        cin &gt;&gt; cadastrados[i].nome &gt;&gt; cadastrados[i].telefone;
+        ordenaNome(cadastrados, i);
+        for (int u = 0; u &lt;= i; ++u) {
+            cout &lt;&lt; cadastrados[u].nome &lt;&lt; " " &lt;&lt; cadastrados[u].telefone &lt;&lt; endl;
+        }
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q8"></a>
+                <h3>Questão 8:
+                            Modularização - Mediana de um vetor</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Escreva um programa que recebe vários números inteiros, em ordem crescente e então determina sua mediana.</p>
+<p>Deverá existir um subprograma que recebe um vetor ordenado e retorna a mediana.</p>
+<p>Todas as operações de leitura e escrita devem ser realizadas no módulo principal.</p>
+<p>A mediana de uma sequência ordenada de N elementos (e0, e1, ..., en-1) é definida da seguinte forma:</p>
+<ol>
+<li>Se N for ímpar, então a mediana é dada pelo elemento da posição central.</li>
+<li>Se N for par, então a mediana é dada pela média aritmética dos dois elementos nas posições centrais.</li>
+</ol>
+
+<p><b>Obs.:</b> Vetores em Python são implementados como listas cujos elementos são todos homogêneos.</p>
+
+<p><b>Entradas:</b></p>
+<ol>
+<li>Número de elementos no vetor (maior que 0).</li>
+<li>Elementos do vetor. Os elementos têm tipo inteiro.</li>
+</ol>
+
+<p><b>Saídas:</b></p>
+<ol>
+<li>Mediana.</li>
+</ol>
+
+<p><b>Exemplo de entrada 1:</b></p>
+<pre>5
+1 3 9 12 20
+</pre>
+
+<p><b>Exemplo de saída 1:</b></p>
+<pre>9</pre>
+
+<p><b>Exemplo de entrada 2:</b></p>
+<pre>4
+1 4 7 9
+</pre>
+
+<p><b>Exemplo de saída 2:</b></p>
+<pre>5.5</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ8"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    23/01/2017 23:48:44</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="482" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="374" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="8" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial374');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial374">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+float mediana(int vetor[], int tamVetor) {
+    float med;
+    int meio = tamVetor / 2, soma;
+    if (tamVetor % 2 == 0) {
+        soma = vetor[meio - 1] + vetor[meio];
+        med = float(soma);
+        med = med / 2;
+        return med;
+    }
+    else {
+        med = float(vetor[meio]);
+        return med;
+    }
+}
+
+int main() {
+    int qtdElem;
+    cin &gt;&gt; qtdElem;
+    int vetor[qtdElem];
+    for (int i = 0; i &lt; qtdElem; ++i) {
+        cin &gt;&gt; vetor[i];
+    }
+    cout &lt;&lt; mediana(vetor, qtdElem) &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q9"></a>
+                <h3>Questão 9:
+                            Modularização - Imposto </h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa para calcular o valor de imposto 
+pago por uma empresa em uma nota fiscal. Para isso o programa deve ser 
+capaz de receber as alíquotas de cada tipo de imposto e os dados da 
+notas fiscais emitidas pela empresa.
+</p>
+<p>Além disso, o programa deve ser organizado como pedido abaixo:
+</p>
+<ul>
+<li>Os impostos serão armazenados em um vetor de registros contendo o nome do imposto e o valor da alíquota (Ex: ICMS, 0.25).
+</li>
+<li>A nota fiscal será armazenada em um vetor de registros de itens de nota fiscal, que contêm: descrição, valor e nome do imposto.
+</li>
+<li>Cada item abaixo deve ser feito em um subprograma específico
+<ul>
+<li>A leitura de cada registro de alíquota de imposto.</li>
+<li>A leitura de cada item da nota fiscal.</li>
+<li>A leitura da nota fiscal.</li>
+<li>O cálculo do imposto pago para cada item da nota.</li>
+<li>O cálculo do total de imposto pago na nota.</li>
+
+</ul>
+</li></ul>
+<p>Exemplo de Entrada:</p>
+<pre>3  				→ Quantidade de alíquotas
+ICMS 0.25 IPI 0.11 IIS 0.06
+2 				→ Quantidade de itens da nota fiscal
+Carro 40000 IPI
+Computador 3000 IIS
+</pre>
+<p>Exemplo de Saída:</p>
+<pre>4580</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ9"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    25/01/2017 16:48:51</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="482" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="616" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="9" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial616');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial616">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;cstring&gt;
+
+using namespace std;
+
+typedef struct {
+    char nome[30];
+    float aliquota;
+} impostos;
+
+typedef struct {
+    char descricao[30];
+    float valor;
+    char nome[30];
+} notaFiscal;
+
+void lerImposto(int tamAliquota, impostos imposto[]) {
+    for (int i = 0; i &lt; tamAliquota; ++i) {
+        cin &gt;&gt; imposto[i].nome &gt;&gt; imposto[i].aliquota;
+    }
+}
+
+void lerNota(int tamNota, notaFiscal nota[]) {
+    for (int i = 0; i &lt; tamNota; ++i) {
+        cin &gt;&gt; nota[i].descricao &gt;&gt; nota[i].valor &gt;&gt; nota[i].nome;
+    }
+}
+
+float impostoItem(notaFiscal nota[], int tam, impostos imposto[], int pos) {
+    float resultado = 0;
+    for (int i = 0; i &lt; tam; ++i) {
+        if (strcmp(nota[pos].nome, imposto[i].nome) == 0) {
+            resultado = nota[pos].valor * imposto[i].aliquota;
+            break;
+        }
+    }
+    return resultado;
+}
+
+float total(notaFiscal nota[], int tamNota, impostos imposto[], int tamImposto) {
+    float impostoTotal = 0;
+    for (int i = 0; i &lt; tamNota; ++i) {
+        impostoTotal += impostoItem(nota, tamImposto, imposto, i);
+    }
+    return impostoTotal;
+}
+
+int main() {
+    int tamAliquota;
+    cin &gt;&gt; tamAliquota;
+    impostos imposto[tamAliquota];
+    lerImposto(tamAliquota, imposto);
+    int tamNota;
+    cin &gt;&gt; tamNota;
+    notaFiscal nota[tamNota];
+    lerNota(tamNota, nota);
+    cout &lt;&lt; total(nota, tamNota, imposto, tamAliquota) &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q10"></a>
+                <h3>Questão 10:
+                            Modularização - Fogueira de Ingaí</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>A cidade de Ingaí, próxima a Lavras, realiza todos os
+ anos a Festa de São João na qual a grande atração é a tradicional 
+fogueira. Isso porque não é uma fogueira qualquer, mas sim uma das mais 
+altas do Brasil. Antigamente a cada ano a fogueira era mais alta que a 
+do ano anterior. Mas ultimamente, por questões de segurança, a altura da
+ fogueira tem variado a cada ano (não sendo necessariamente maior que a 
+do ano anterior).</p>
+<p>Para registrar a altura da fogueira a cada festa, alguém anotou a partir de um determinado ano <b>A</b>,
+ qual era a altura da fogueira naquele ano, e depois anotou em cada ano o
+ quanto a fogueira foi mais alta ou mais baixa que no anterior. Faça 
+então um programa que receba como entrada o ano <b>A</b>, a altura da fogueira no ano <b>A</b>, o tamanho do vetor e o vetor de inteiros contendo a diferença de altura da fogueira a cada ano. Construa também um <b>subprograma</b> que receba os dados necessários por parâmetro, e retorne, <b>por referência</b>,
+ os dois anos nos quais a fogueira foi mais alta. Por fim, exiba os dois
+ anos retornados (primeiro o que teve a fogueira mais alta e depois o 
+que teve a segunda fogueira mais alta).</p>
+<p><b>Obs</b>: toda operação de leitura e escrita deve ser feita no 
+subprograma principal; considere que não existem alturas mais altas 
+repetidas.<br><b>Obs.2: </b> Em Python os vetores são representados como listas<br><b>Obs. 3:</b> Passegem por referência só se aplica a exercícios resolvidos em C++
+</p><p><b>Entradas:</b></p>
+<ol>
+<li>Ano inicial <b>A</b> quando foi feita a primeira medição da altura da fogueira.</li>
+<li>Altura da fogueira no ano <b>A</b> (número inteiro).</li>
+<li>Tamanho do vetor de inteiros com as diferenças de altura.</li>
+<li>Vetor de inteiros com as diferenças de altura da fogueira a partir do ano <b>A</b>. Ou seja, o primeiro elemento do vetor tem a diferença da altura da fogueira do ano <b>A</b>+1 para o ano <b>A</b>; o segundo elemento a diferença de altura do ano <b>A</b>+2 para o ano <b>A</b>+1, e assim sucessivamente.</li>
+</ol>
+<p><b>Saídas:</b></p>
+<ol>
+<li>Ano que teve a fogueira mais alta.</li>
+<li>Ano que teve a fogueira com a segunda maior altura.</li>
+</ol>
+<p><b>Exemplo de Entrada:</b></p>
+<pre>2000
+30
+6
+3 -5 4 2 -2 -1
+</pre>
+<p>Nesse exemplo, a altura da fogueira em 2000 foi 30m, em 2001 foi 33m, em 2002 foi 28m, em 2003 foi 32m, e assim sucessivamente.</p>
+<p><b>Exemplo de Saída:</b></p>
+<pre>2004
+2001
+</pre>
+<p><b>Exemplo de Entrada:</b></p>
+<pre>2011
+40
+5
+-10 8 -6 4 -2
+</pre>
+<p><b>Exemplo de Saída:</b></p>
+<pre>2011
+2013
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ10"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    24/01/2017 01:16:52</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="482" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="554" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="10" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial554');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial554">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+void anoMaisAlto(int vetor[], int tam, int ano, int altura, int&amp; alto, int&amp; segAlto) {
+    int vet[tam];
+    int alt = altura;
+    for (int i = 0; i &lt; tam; ++i) {
+        alt += vetor[i];
+        vet[i] = alt;
+    }
+    alto = altura;
+    segAlto = vet[0];
+    int contA = -1, contS = 0;
+    for (int i = 0; i &lt; tam; ++i) {
+        if (vet[i] &gt; alto) {
+            segAlto = alto;
+            contS = contA;
+            alto = vet[i];
+            contA = i;
+        }
+        else if (vet[i] &gt; segAlto) {
+            segAlto = vet[i];
+            contS = i;
+        }
+    }
+    alto = ano + contA + 1;
+    segAlto = ano + contS + 1;
+}
+
+int main() {
+    int anoA;
+    cin &gt;&gt; anoA;
+    int altA;
+    cin &gt;&gt; altA;
+    int tam;
+    cin &gt;&gt; tam;
+    int vetor[tam];
+    for (int i = 0; i &lt; tam; ++i) {
+        cin &gt;&gt; vetor[i];
+    }
+    int alto, segAlto;
+    anoMaisAlto(vetor, tam, anoA, altA, alto, segAlto);
+    cout &lt;&lt; alto &lt;&lt; endl
+         &lt;&lt; segAlto &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q11"></a>
+                <h3>Questão 11:
+                            Modularização - Subsequências decrescentes</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça uma função que receba como parâmetros um vetor 
+de números inteiros e o tamanho deste vetor. Assuma que todos os valores
+ armazenados no vetor são diferentes entre si. Sua função deve retornar a
+ quantidade de subsequências decrescentes presentes no vetor. Por 
+exemplo, assumindo um vetor com os valores {6, 5, 1, 2, 3, 9, 8, 4, 7, 
+10} é possível identificar as subsequências decrescentes {6, 5, 1} e {9,
+ 8, 4}. Sendo assim, a função a ser desenvolvida deve retornar o valor 
+2. A função deve ser implementada de modo que nenhuma operação de 
+entrada e saída de dados seja realizada na mesma.</p>
+<p><b>Obs.:</b> Vetores em Python são implementados como listas cujos elementos são todos homogêneos.</p>
+
+<p><b>Entrada:</b></p>
+<ol>
+	<li>Número inteiro denotando o tamanho do vetor;</li>
+	<li>Sequência de números inteiros denotando os valores a serem armazenados no vetor.</li>
+</ol>
+
+<p><b>Saída:</b></p>
+<ol>
+	<li>Número inteiro denotando a quantidade de subsequências decrescentes no vetor.</li>
+</ol>
+
+
+<p><b>Exemplo de entrada</b>:</p>
+<pre>10
+6 5 1 2 3 9 8 4 7 10
+</pre>
+
+<p><b>Exemplo de saída</b>:</p>
+<pre>2
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ11"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    24/01/2017 22:39:56</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="482" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="546" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="11" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial546');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial546">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int subsequencia(int vetor[], int tam) {
+    int contSequencia = 0;
+    for (int i = 0; i &lt; (tam-1); ++i) {
+        if (vetor[i] &gt; vetor[i+1]) {
+            while (vetor[i] &gt; vetor[i+1]) {
+                ++i;
+            }
+            ++contSequencia;
+        }
+    }
+    return contSequencia;
+}
+
+int main() {
+    int tam;
+    cin &gt;&gt; tam;
+    int vetor[tam];
+    for (int i = 0; i &lt; tam; ++i) {
+        cin &gt;&gt; vetor[i];
+    }
+    cout &lt;&lt; subsequencia(vetor, tam) &lt;&lt; endl;
+    
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q12"></a>
+                <h3>Questão 12:
+                            Modularização – Sequência de Fibonacci</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Crie um algoritmo que imprima os <b>n</b> primeiros 
+termos da sequência de Fibonacci, utilizando uma função que retorna o 
+n-ésimo termo da referida série. Os termos dessa série são definidos da 
+seguinte forma:</p>
+
+<p>Fib(0) = 0<br>
+Fib(1) = 1<br>
+Fib(n) = Fib(n-1) + Fib(n-2), para <b>n</b> maior ou igual à 2</p>
+
+<p><b>Entradas:</b></p>
+<ol>
+<li>Um número inteiro (n).</li>
+</ol>
+<p><b>Saídas:</b></p>
+<ol>
+<li>Sequência de Fibonacci começando do 0. </li>
+</ol>
+
+<p><b>Exemplo de Entradas:</b></p>
+<pre>10
+</pre>
+
+<p><b>Exemplo de Saída:</b></p>
+<pre>0 1 1 2 3 5 8 13 21 34
+</pre>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ12"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    24/01/2017 21:03:17</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="482" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="535" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="12" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial535');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial535">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+void fibonacci(int tam, int vetor[]) {
+    vetor[0] = 0;
+    vetor[1] = 1;
+    for (int i = 2; i &lt; tam; ++i) {
+        vetor[i] = vetor[i-1] + vetor[i-2];
+    }
+}
+
+int main() {
+    int tam;
+    cin &gt;&gt; tam;
+    int vetor[tam];
+    fibonacci(tam, vetor);
+    for (int i = 0; i &lt; tam; ++i) {
+        cout &lt;&lt; vetor[i] &lt;&lt; " ";
+    }
+    cout &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q13"></a>
+                <h3>Questão 13:
+                            Modularização - Série de Fetuccine.</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Crie um algoritmo que imprima os n primeiros termos 
+da sequência de Fetuccine, utilizando uma função que retorna o n-­ésimo 
+termo da referida série. Nesta série, os dois primeiros termos são 
+fornecidos pelos usuários e os demais obedecem à seguinte regra de 
+recorrência:</p>
+<p>F(n)  = F(n­-1) + F(n-­2),  para n ≥ 2,  se n é ímpar;</p>
+<p>F(n)  = F(n­-1) ­- F(n-­2),  para n ≥ 2,  se n é par.</p>
+<p>Entradas:</p>
+<ol>
+<li>Número de termos da sequência(int).</li>
+<li>Dois primeiros termos da sequência(int).</li>
+</ol>
+<p>Saídas:</p>
+<ol>
+<li>N primeiros termos da sequência de Fetuccine.</li>
+</ol>
+<p>Exemplo de Entrada:</p>
+<pre>10
+1 2</pre>
+<p>Exemplo de Saída:</p>
+<pre>1 2 3 1 4 3 7 4 11 7</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ13"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    24/01/2017 21:21:46</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="482" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="538" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="13" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial538');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial538">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+void fetuccine(int tam, int term1, int term2, int vetor[]) {
+    vetor[0] = term1;
+    vetor[1] = term2;
+    int i = 2;
+    while (i &lt; tam) {
+        if ((i+1) % 2 == 0) {
+            vetor[i] = vetor[i-1]-vetor[i-2];
+            ++i;
+        }
+        else {
+            vetor[i] = vetor[i-1]+vetor[i-2];
+            ++i;
+        }
+    }
+}
+
+int main() {
+    int tam;
+    cin &gt;&gt; tam;
+    int term1, term2;
+    cin &gt;&gt; term1 &gt;&gt; term2;
+    int vetor[tam];
+    fetuccine(tam, term1, term2, vetor);
+    for (int i = 0; i &lt; tam; ++i) {
+        cout &lt;&lt; vetor[i] &lt;&lt; " ";
+    }
+    cout &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                </div><!-- prova -->
+<script type="text/javascript">
+    var serverTime = 1488984432000;
+    var localTime = +Date.now();
+    var timeDiff = serverTime - localTime;
+    var closingTime = 1489852200000;
+    var nomeUsuario = "Samir Carvalho";
+    $('#usuario').text(nomeUsuario);
+    if (true) {
+        setInterval(function () {
+            var realtime = +Date.now() + timeDiff;
+            var minutosRestantes = (closingTime - realtime) / 60000;
+            if (minutosRestantes < 0)
+                window.location = 'testTrials.php?encerrar';
+            else if (minutosRestantes < 5)
+                minutosRestantes = minutosRestantes.toFixed(1)
+            else
+                minutosRestantes = minutosRestantes.toFixed(0);
+            $('#clock').text(minutosRestantes);
+        }, 5000);
+    }
+    else
+        $('#clock').text('ENCERRADO');
+    //window.onclose = function() {alert("Close window?");}
+</script>
+    <br></div></div><div id="bottomct" class="ui-corner-top"><div id="footer">
+        <table boder="0" style="width: 100%;">
+            <tbody><tr>
+                <td style="width:33%;">
+                    <a href="http://www.ufla.br/" style="float:left;">
+                        <img src="modularizacao_files/ufla.png" width="92" height="40">
+                    </a>
+                </td>
+                <td style="width:34%;text-align: center;">
+                    Desenvolvido por <a href="http://www.dcc.ufla.br/%7Ebruno/" style="color: #DDF">Bruno Schneider</a>
+                    a partir do programa original (Algod) de Renato R. R. de Oliveira (GPLv3).
+                </td>
+                <td style="width:33%;">
+                    <a href="http://www.dcc.ufla.br/">
+                        <img src="modularizacao_files/logo-dcc.png" style="float:right" width="128" height="40">
+                    </a>
+                </td>
+            </tr>
+        </tbody></table>
+    </div></div>
+
+
+<div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable ui-dialog-buttons" style="outline: 0px none; z-index: 1002; position: absolute; height: auto; width: auto; top: 261.467px; left: 632px; display: none;" tabindex="-1" role="dialog" aria-labelledby="ui-id-1"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-1" class="ui-dialog-title">Aviso</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div><div id="alert-dialog" style="width: auto; min-height: 32px; height: auto;" class="ui-dialog-content ui-widget-content" scrolltop="0" scrollleft="0"></div><div class="ui-resizable-handle ui-resizable-n" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-e" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-s" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se ui-icon-grip-diagonal-se" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 1000;"></div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button></div></div></div><div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable ui-dialog-buttons" style="outline: 0px none; z-index: 1002; position: absolute; height: auto; width: 800px; top: 261.467px; left: 272.5px; display: none;" tabindex="-1" role="dialog" aria-labelledby="ui-id-2"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-2" class="ui-dialog-title">&nbsp;</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div><div id="data-view-dialog" style="text-align: center; width: auto; min-height: 32px; height: auto;" class="ui-dialog-content ui-widget-content" scrolltop="0" scrollleft="0"></div><div class="ui-resizable-handle ui-resizable-n" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-e" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-s" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se ui-icon-grip-diagonal-se" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 1000;"></div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button></div></div></div></body></html>

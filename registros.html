@@ -1,0 +1,2143 @@
+<!DOCTYPE html>
+<html><head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Dredd - Juiz Online</title>
+    <link rel="stylesheet" type="text/css" href="registros_arquivos/style.css">
+    <link rel="stylesheet" type="text/css" href="registros_arquivos/jquery-ui-1.css">
+    <script src="registros_arquivos/jquery-1.js"></script>
+    <script src="registros_arquivos/jquery-ui.js"></script>
+    <script src="registros_arquivos/jquery_002.js"></script>
+    <script src="registros_arquivos/jquery.js"></script>
+    <script>
+    $(document).ready(function() {
+        $(document).tooltip();
+        $("button, input[type='submit'], input[type='reset']").button();
+
+        $("input.date").mask("99/99/9999").attr("title","Exemplo: 11/09/2001").tooltip();
+        $("input.datetime").mask("99/99/9999 99:99:99").attr("title","Exemplo: 11/09/2001 10:17:37").tooltip();
+        $("input.integer").numeric().attr("title","Exemplo: 2").tooltip();
+        $("input.number").numeric({allow:"."}).attr("title","Exemplo: 0.5").tooltip();
+        $("textarea").keypress(function(event) {
+            if (event.ctrlKey && (event.which == 112)) {
+                event.preventDefault();
+                $("#data-view-dialog").html("<div class='data-view-box' style='width: 90%;'>"+$(this).val()+"</div>").dialog("open");
+            }
+        });
+
+        $("textarea.cpp-code-view").attr("readonly","readonly");
+        $("div.cpp-code-view").each(function() {
+            var text = $(this).html();
+            text.replace("&","&amp;");
+            text.replace("<","&lt;");
+            text.replace(">","&gt;");
+            text.replace("\r","");
+
+            // Keywords
+            text.replace("float ","<b>float</b> ");
+            text.replace("double ","<b>double</b> ");
+            text.replace("int ","<b>int</b> ");
+            text.replace("long ","<b>long</b> ");
+            text.replace("if ","<b>if</b> ");
+            text.replace("else ","<b>else</b> ");
+            text.replace("for ","<b>for</b> ");
+            text.replace("while ","<b>while</b> ");
+            text.replace("return","<b>return</b>");
+            text.replace("break","<b>break</b>");
+            text.replace("using","<b>using</b>");
+            text.replace("namespace","<b>namespace</b>");
+            text.replace("#include","<b>#include</b>");
+
+            text.replace(" ","&nbsp;");
+            text.replace("\t","&nbsp;&nbsp;&nbsp;&nbsp;");
+            text.replace("\n","<br />");
+            $(this).html(text);
+        });
+
+        $("#alert-dialog").dialog({
+            title: "Aviso",
+            width: "auto",
+            height: "auto",
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $(this).dialog("close");
+                }
+            }
+        }).dialog("close");
+
+        $("#data-view-dialog").dialog({
+            title: "",
+            width: 800,
+            height: "auto",
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $(this).dialog("close");
+                }
+            }
+        }).dialog("close");
+
+        $("form").submit(function() {
+            var $validationText = "";
+            $(this).find(".notempty").each(function() {
+                if (($(this).val() == undefined) || ($(this).val() == "")) {
+                    $validationText += "<li>"+$("label[for='"+$(this).attr('name')+"']").html()+"</li>";
+                }
+            });
+            if ($validationText != "") {
+                $validationText = "<p>Os seguintes campos não podem estar vazios:</p><ul>"+$validationText+"</ul>";
+                $("#alert-dialog").html($validationText).dialog({modal: true}).dialog("open");
+                return false;
+            } else {
+                var $form = $(this);
+                $form.find("input.passwordconfirm").each(function() {
+                    if ($(this).val() != $form.find("input.password").val()) {
+                        $validationText = "As senhas digitadas não conferem.";
+                    }
+                });
+                if ($validationText != "") {
+                    $("#alert-dialog").html($validationText).dialog({modal: true}).dialog("open");
+                    return false;
+                } else
+                    return true;
+            }
+        });
+    });
+    function openDivAsDialog(id) {
+        $("div#"+id).dialog({
+            title: "",
+            width: "auto",
+            height: "auto",
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $(this).dialog("close");
+                }
+            }
+        }).dialog("open");
+    };
+    </script>
+</head>
+<body>
+    
+    
+    <div id="topct" class="ui-corner-bottom"><div id="banner">
+        <h1>Dredd - Juiz Online</h1>
+        <div id="topmenu">
+            <button id="menu-bt-home" onclick="location.assign('./');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Principal</span></button>
+            <button id="menu-bt-profile" onclick="location.assign('./testsMine.php');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Minhas Provas</span></button>
+            <button id="menu-bt-profile" onclick="location.assign('./profile.php');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Perfil</span></button>
+            <button id="menu-bt-logout" onclick="location.assign('./logout.php');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Sair</span></button>
+        </div>
+    </div></div><div id="contentct"><div id="content">
+<div id="painel-info">
+    <b>Minutos<br>Restantes</b>:<br>
+    <span id="clock">10179</span><br><br>
+    <b>Usuário</b>:<br>
+    <div id="usuario">Samir Carvalho</div><br>
+    <b>Notas</b>:<br>
+    <span id="notas">
+Q1: 100<br>Q2: 81<br>Q4: 100<br>Q5: 100<br>Q6: 100<br>Q7: 0<br>Q8: 100<br>Q9: 100<br>Q10: 100<br>Q11: 100<br>Q12: 81<br>Q14: 100<br>Q15: 70.2<br>Q16: 90<br>    </span><br>
+</div>
+<div id="prova">
+    <h1>IAlg - Exercícios de Registros</h1>
+    <p><b>Prova Aberta Até:</b>
+        01/02/2017 23:00:00</p>
+    <p><b>Número Máximo de Tentativas:</b>
+        6</p>
+    <p><b>Atenuação da Nota por Tentativa (multiplicativa):</b>
+        0.9</p>
+    <p><b>Nota Máxima por Tentativa:</b>
+        </p><ol style="text-align: left; padding-left: 12ex;">
+                            <li>100</li>
+                            <li>90</li>
+                            <li>81</li>
+                            <li>72.9</li>
+                            <li>65.61</li>
+                            <li>59.049</li>
+                            </ol><p></p>
+    <p><b>Descrição:</b></p>
+    <div class="description-display-box">
+        Lista de exercícios sobre registros. Pode ser acessada de casa.    </div>
+    <h3>QUESTÕES</h3>
+                                <div class="problem-try-ct">
+                <a name="Q1"></a>
+                <h3>Questão 1:
+                            Registros - Preços dos Carros</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Elabore um programa que leia uma quantidade de carros e:</p>
+<ol>
+<li>Crie um vetor com os dados carros (cada carro tem um nome, ano e preço).</li>
+<li>Leia um preço de referência e mostre as informações de todos os carros com preço menor (na ordem em que foram lidos).</li>
+</ol>
+<p>Obs: considere que sempre existirá pelo menos um carro com preço menor que o de referência.</p>
+
+<p><b>Entradas:</b></p>
+<ol>
+<li>A quantidade de carros.</li>
+<li>Os dados de cada carro:</li>
+<ol>
+<li>nome (sem espaços, menor que 20 caracteres),</li>
+<li>ano e</li>
+<li>preço (número inteiro).</li>
+</ol>
+<li>O preço de referência (número inteiro).</li>
+</ol>
+
+<p><b>Saídas:</b></p>
+<ol>
+<li>Em cada linha todos os dados (respectivamente nome, ano e preço) dos carros cujos preços são menores que a referência.</li>
+</ol>
+
+<p><b>Exemplo de Entrada:</b></p>
+<pre>4
+Fusca	1976	8000
+Gol	1995	12000
+Palio	2000	13500
+Ka	2012	20000
+13000</pre>
+
+<p><b>Exemplo de Saída:</b></p>
+<pre>Fusca	1976	8000
+Gol	1995	12000</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ1"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    19/01/2017 20:28:00</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="477" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="500" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="1" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial500');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial500">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include
+ &lt;iostream&gt;
+#include &lt;iomanip&gt;
+
+using namespace std;
+
+typedef struct {
+    char nome[20];
+    unsigned int ano;
+    int preco;
+} carros;
+
+int main() {
+    unsigned int qtd;
+    cin &gt;&gt; qtd;
+    carros carro[qtd];
+    for (unsigned int i = 0; i &lt; qtd; ++i) {
+        cin &gt;&gt; carro[i].nome
+            &gt;&gt; carro[i].ano
+            &gt;&gt; carro[i].preco;
+    }
+    int refPreco;
+    cin &gt;&gt; refPreco;
+    for (unsigned int i = 0; i &lt; qtd; ++i) {
+        if (carro[i].preco &lt; refPreco) {
+            cout &lt;&lt; carro[i].nome &lt;&lt; setw(8) &lt;&lt; 
+carro[i].ano &lt;&lt; setw(8) &lt;&lt; carro[i].preco &lt;&lt; endl;
+        }
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q2"></a>
+                <h3>Questão 2:
+                            Registros - Peso Ideal</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p> Considere que um nutricionista armazena algumas 
+informações sobre seus pacientes (nome, sexo, altura (m) e peso (kg)). 
+Crie um programa que lê a quantidade de pacientes e suas respectivas 
+informações (deve ser usado um registro para representar os pacientes). 
+Depois, escreva as saídas descritas abaixo, sabendo que o cálculo de 
+peso ideal é:</p>
+<ul>
+<li>Homens: 72.7 * altura - 58</li>
+<li>Mulheres: 62.1 * altura - 44.7</li>
+</ul>
+
+<p><b>Entradas:</b></p>
+<ol>
+<li>A quantidade de pacientes.</li>
+<li>Os dados de cada paciente:</li>
+<ol>
+<li>nome (sem espaços),</li>
+<li>sexo (a letra M ou H),</li>
+<li>altura (número real) e</li>
+<li>peso (número real) e</li>
+</ol>
+</ol>
+
+<p><b>Saídas:</b></p>
+<ol>
+<li>Nome da pessoa mais pesada,</li>
+<li>nome das pessoas que estão acima do peso ideal e quanto deverão perder de peso,</li>
+<li>nome das pessoas que estão abaixo do peso ideal e quanto deverão aumentar de peso.</li>
+</ol>
+
+<p><b>Exemplo de entrada</b>:</p>
+<pre>3
+Sergio H 1.68 68
+Lais M 1.76 61
+Jose H 1.58 79</pre>
+
+<p><b>Exemplo de saída</b>:</p>
+<pre>Jose
+Sergio ­-3.864
+Jose ­-22.134
+Lais 3.596</pre>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ2"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    19/01/2017 22:53:53</p>
+                <p><b>Tentativas:</b>
+                    3 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    81</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="477" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="506" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="4" type="hidden">
+            <input name="atenuacao" value="0.729" type="hidden">
+            <input name="nroQuestao" value="2" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial506');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial506">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include
+ &lt;iostream&gt;
+#include &lt;iomanip&gt;
+
+using namespace std;
+
+typedef struct {
+    string nome;
+    char sexo;
+    float altura;
+    float peso;
+} pacientes;
+
+float pesideal(char sexo, float altura) {
+    if (sexo == 'H') {
+        return (72.7f*altura)-58.f;
+    }
+    else {
+        return (62.1f*altura)-44.7f;
+    }
+}
+
+int main() {
+    unsigned int qtdPacientes, posicao;
+    cin &gt;&gt; qtdPacientes;
+    pacientes paciente[qtdPacientes];
+    cin &gt;&gt; paciente[0].nome &gt;&gt; paciente[0].sexo &gt;&gt; 
+paciente[0].altura &gt;&gt; paciente[0].peso;
+    float maisPesado = paciente[0].peso;
+    for (unsigned int i = 1; i &lt; qtdPacientes; ++i) {
+        cin &gt;&gt; paciente[i].nome &gt;&gt; paciente[i].sexo &gt;&gt;
+ paciente[i].altura &gt;&gt; paciente[i].peso;
+        if (maisPesado &lt; paciente[i].peso) {
+            maisPesado = paciente[i].peso;
+            posicao = i;
+        }
+    }
+    cout &lt;&lt; paciente[posicao].nome &lt;&lt; endl;
+    for (unsigned int i = 0; i &lt; qtdPacientes; ++i) {
+        if (pesideal(paciente[i].sexo, paciente[i].altura) &lt; 
+paciente[i].peso) {
+            cout &lt;&lt; paciente[i].nome &lt;&lt; " " &lt;&lt; fixed 
+&lt;&lt; setprecision(3) &lt;&lt; pesideal(paciente[i].sexo, 
+paciente[i].altura)-paciente[i].peso &lt;&lt; endl;
+        }
+    }
+    for (unsigned int i = 0; i &lt; qtdPacientes; ++i) {
+        if (pesideal(paciente[i].sexo, paciente[i].altura) &gt; 
+paciente[i].peso) {
+            cout &lt;&lt; paciente[i].nome &lt;&lt; " " &lt;&lt; fixed 
+&lt;&lt; setprecision(3) &lt;&lt; pesideal(paciente[i].sexo, 
+paciente[i].altura)-paciente[i].peso &lt;&lt; endl;
+        }
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q4"></a>
+                <h3>Questão 4:
+                            Registros - Contas Bancárias</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que lê os dados de clientes e transações bancárias, para depois permitir consulta de extratos bancários.</p>
+<p>Cada cliente é representado por um <b>registro</b> com um número de 
+conta e um nome. Para simplificar, suponha que o nome é uma sequência de
+ caracteres sem espaços como "Joao" ou "Maria". Números de conta são 
+inteiros positivos. Use o tipo <code>int</code> para facilitar a leitura do indicador de fim.</p>
+<p>Cada transação bancária é representada por um <b>registro</b> com um número de conta, uma descrição e um valor. O valor é um número real. A descrição é sequência de
+caracteres sem espaços.</p><br><b>Obs.:</b>Registros em Python são implementados como dicionários.<br>
+
+<p><b>Entradas:</b></p>
+<ol>
+<li>Dados de vários clientes. O número da conta vem antes do nome. Um 
+número negativo no lugar do número de conta indica que não há mais dados
+ de clientes a serem lidos. Assuma que serão no máximo 20 clientes.</li>
+<li>Dados de várias transações. Os dados vêm na ordem: número da conta, 
+descrição, valor. Um número negativo no lugar do número de conta indica 
+que não há mais dados de transações a serem lidos. Assuma que serão no 
+máximo 100 transações.</li>
+<li>Vários números de conta para consulta de extrato. Um número negativo
+ no lugar do número de conta indica que não há mais consultas a serem 
+feitas.</li>
+</ol>
+
+<p><b>Saídas:</b></p>
+<ul>
+<li>Para cada número de conta que for consultado, escrever o nome do 
+cliente, assim como a descrição e o valor de cada transação relativa 
+àquela conta. As transações devem ser escritas na mesma ordem que foram 
+lidas.</li>
+</ul>
+
+<p>Exemplo de Entrada:</p>
+<pre>238 Joao
+476 Maria
+712 Jose
+-1
+476 Pagamento_de_boleto -98.95
+238 Saque_no_TAA -100.00
+712 Deposito_em_dinheiro 150.00
+238 Deposito_por_transferencia 230.00
+476 Transferencia_eletronica -72.95
+-1
+712
+476
+-1</pre>
+
+<p>Exemplo de Saída:</p>
+<pre>Jose
+Deposito_em_dinheiro 150
+Maria
+Pagamento_de_boleto -98.95
+Transferencia_eletronica -72.95
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ4"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    20/01/2017 20:06:15</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="477" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="59" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="4" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial59');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial59">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+typedef struct {
+    int nConta;
+    string nome;
+} clientes;
+typedef struct {
+    int nTrans;
+    string desc;
+    double valor;
+} transacoes;
+
+int main() {
+    clientes cliente[100];
+    bool naoParar = true;
+    for (int i = 0; naoParar; ++i) {
+        cin &gt;&gt; cliente[i].nConta;
+        if (cliente[i].nConta == -1) {
+            naoParar = false;
+        }
+        else {
+            cin &gt;&gt; cliente[i].nome;
+        }
+    }
+    transacoes trans[100];
+    naoParar = true;
+    for (int i = 0; naoParar; ++i) {
+        cin &gt;&gt; trans[i].nTrans;
+        if (trans[i].nTrans == -1) {
+            naoParar = false;
+        }
+        else {
+            cin &gt;&gt; trans[i].desc &gt;&gt; trans[i].valor;
+        }
+    }
+    int numConta[100], cont = 0;
+    naoParar = true;
+    while (naoParar) {
+        cin &gt;&gt; numConta[cont];
+        if (numConta[cont] == -1) {
+            naoParar = false;
+        }
+        ++cont;
+    }
+    for (int i = 0; i &lt; cont; ++i) {
+        bool pLoop = true;
+        for (int u = 0; pLoop; ++u) {
+            if (numConta[i] == cliente[u].nConta) {
+                cout &lt;&lt; cliente[u].nome &lt;&lt; endl;
+                for (int j = 0; trans[j].nTrans != -1; ++j) {
+                    if (cliente[u].nConta == trans[j].nTrans) {
+                        cout &lt;&lt; trans[j].desc &lt;&lt; " " &lt;&lt; trans[j].valor &lt;&lt; endl;
+                    }
+                }
+                pLoop = false;
+            }
+        }
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q5"></a>
+                <h3>Questão 5:
+                            Registros - Pesquisa de Produtos</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Uma empresa fez uma pesquisa para saber se as pessoas
+ gostaram ou não de um de seus novos produtos lançados no mercado. Faça 
+um programa que gera um relatório contendo informações (ver abaixo) a 
+respeito da pesquisa. O programa deve usar registros para armazenar 
+dados de entrevistados.</p><p>
+
+</p><p><b>Entradas:</b></p>
+<ol>
+<li>Número de entrevistados,</li>
+<li>Os dados de cada entrevistado:</li>
+<ol>
+<li>sexo (um caractere, que pode ser M ou F),</li>
+<li>idade (um número inteiro) e</li>
+<li>resposta (um caractere, que pode ser S ou N).</li>
+</ol>
+</ol>
+
+<p><b>Saídas:</b></p>
+<ol>
+<li>Número de pessoas que responderam SIM.</li>
+<li>Número de pessoas que responderam NÃO.</li>
+<li>Número de pessoas maiores de 18 anos que gostaram do produto.</li>
+<li>Número de pessoas menores de 18 anos que não gostaram do produto.</li>
+<li>Número de pessoas maiores de 18 anos, do sexo feminino que não gostaram do produto.</li>
+<li>Número de pessoas menores de 18 anos, do sexo masculino que gostaram do produto.</li>
+</ol>
+
+<p><b>Exemplo de entrada</b>:</p>
+<pre>6
+M 16 S
+M 23 S
+F 15 N
+M 29 N
+F 32 S
+M 22 S</pre>
+
+<p><b>Exemplo de saída</b>:</p>
+<pre>4
+2
+3
+1
+0
+1</pre>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ5"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    20/01/2017 20:50:13</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="477" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="510" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="5" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial510');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial510">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+typedef struct {
+    char sexo;
+    int idade;
+    char resp;
+} entrevista;
+
+int main() {
+    int qtdEntrev;
+    cin &gt;&gt; qtdEntrev;
+    entrevista entrevistado[qtdEntrev];
+    int contS = 0, contN = 0, maiorS = 0, menorN = 0, maiorFN = 0, menorMS = 0;
+    for (int i = 0; i &lt; qtdEntrev; ++i) {
+        cin &gt;&gt; entrevistado[i].sexo &gt;&gt; entrevistado[i].idade &gt;&gt; entrevistado[i].resp;
+        if (entrevistado[i].resp == 'S') {
+            ++contS;
+            if (entrevistado[i].idade &gt; 18) {
+                ++maiorS;
+            }
+            else if (entrevistado[i].idade &lt; 18 and entrevistado[i].sexo == 'M') {
+                ++menorMS;
+            }
+        }
+        else if (entrevistado[i].resp == 'N') {
+            ++contN;
+            if (entrevistado[i].idade &lt; 18) {
+                ++menorN;
+            }
+            else if (entrevistado[i].idade &gt; 18 and entrevistado[i].sexo == 'F') {
+                ++maiorFN;
+            }
+        }
+    }
+    cout &lt;&lt; contS &lt;&lt; endl
+         &lt;&lt; contN &lt;&lt; endl
+         &lt;&lt; maiorS &lt;&lt; endl
+         &lt;&lt; menorN &lt;&lt; endl
+         &lt;&lt; maiorFN &lt;&lt; endl
+         &lt;&lt; menorMS &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q6"></a>
+                <h3>Questão 6:
+                            Registros - Onde está o carro?</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que dada a posição e velocidade de um carro, determine a sua posição após um determinado tempo.</p>
+
+<p>O carro deve ser representado por um registro (com posição e velocidade), <b>cujos valores são atualizados pelo processamento do programa e depois, os valores atualizados são escritos</b>. A posição e a velocidade do carro também devem ser representadas por registros.</p>
+
+<p><b>Entradas:</b></p>
+<ol>
+<li>A posição atual do carro, dada por duas coordenadas que são números reais, medida em metros, </li>
+<li>a velocidade do carro, dada por duas coordenadas que são números reais, medida em metros por segundo,</li>
+<li>o tempo decorrido, em segundos.</li>
+</ol>
+
+<p><b>Saídas:</b></p>
+<ol><li>A posição do carro depois do tempo decorrido, dada por duas coordenadas que são números reais, medida em metros.</li></ol>
+
+<p><b>Exemplo de entrada:</b></p>
+<pre>1.3 3.6
+19.24 11.11
+0.5
+</pre>
+
+<p><b>Exemplo de saída:</b></p>
+<pre>10.92 9.155
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ6"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    19/01/2017 20:08:20</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="477" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="247" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="6" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial247');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial247">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include
+ &lt;iostream&gt;
+
+using namespace std;
+
+typedef struct {
+    float x;
+    float y;
+} pos;
+typedef struct {
+    pos posicao;
+    pos velocidade;
+} carro;
+
+int main() {
+    carro car;
+    cin &gt;&gt; car.posicao.x &gt;&gt; car.posicao.y
+        &gt;&gt; car.velocidade.x &gt;&gt; car.velocidade.y;
+    float tempo;
+    cin &gt;&gt; tempo;
+    cout &lt;&lt; (car.velocidade.x*tempo)+car.posicao.x &lt;&lt; " " 
+&lt;&lt; (car.velocidade.y*tempo)+car.posicao.y &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q7"></a>
+                <h3>Questão 7:
+                            Registros - Inserção e remoção com Registros</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que faz processamentos de cliente e 
+compras. O programa precisa manter na memória dados de vários clientes e
+ várias compras.</p>
+<p>Cada cliente tem um código (inteiro) e um nome (sem espaços). Cada 
+compra é representada por um cliente (código do cliente), uma conta 
+(inteiro) e um valor (inteiro).</p>
+<p>O programa deve ser capaz de:</p>
+<ul>
+<li>Inserir cliente, não permitindo que dois clientes possuam o mesmo 
+código. Se for permitida a inclusão, inclua e imprima "OK", caso 
+contrário imprima "ERRO";</li>
+<li>Inserir compra, verificando se o código do cliente informado já está
+ cadastrado. Caso esteja, deverá incluir a conta e imprimir "OK", caso 
+não esteja, não deverá permitir a inclusão e imprimir "ERRO";</li>
+<li>Remover cliente. Antes de executar a remoção, deverá verificar se o 
+cliente possui alguma compra. Se possuir, deverá mostrar a mensagem 
+"ERRO". Caso contrário, deverá proceder à exclusão e imprimir "OK".</li>
+</ul>
+
+<p>Deverá ser inserido um nuḿero que representa cada ação:</p>
+
+<ul>
+<li>1 para inserir Cliente;</li>
+<li>2 para inserir Compra;</li>
+<li>3 para remover Cliente.</li>
+</ul>
+
+<p>Após executar uma ação, deverá entrar com um novo número e executar 
+outra ação, até que se digite 0, quando o programa será encerrado.</p>
+
+<p><b>Observações:</b></p>
+
+<ul>
+<li>Poderão ser incluídos, no máximo, 100 clientes;</li>
+<li>Cada cliente pode possuir várias contas;</li>
+<li>Ao remover determinado cliente, ele precisa ter uma conta associada ao seu código.</li>
+</ul>
+
+<b><p>Entradas:</p></b>
+<ul>
+<li>Um número inteiro que representa cada ação e em seguida seus 
+atributos, numa repetição até que o número da ação inserido seja igual a
+ 0.</li>
+</ul>
+
+<p><b>Saídas:</b></p>
+<ul>
+<li><code>OK</code> ou <code>ERRO</code>, dependendo do resultado de cada ação.</li>
+</ul>
+<p>O programa pode escrever logo após ler os dados de uma ação, não 
+sendo necessário ler todas as ações antes de começar a escrever 
+resultados.</p>
+
+<h3>Exemplos de Entradas e Saídas:</h3>
+
+<p><b>Entradas:</b></p>
+<pre>1 201567356 Joao       // OK
+2 201567356 478  200   // OK
+2 201567356 240  0     // OK
+3 201567356            // ERRO
+1 201636904 Maria      // OK
+2 201636905            // ERRO
+2 201636904 578 0      // OK
+2 201636904 240 0      // OK
+3 201636904            // OK    
+1 201567356            // ERRO
+1 201636904 Carlos     // OK
+0
+</pre>
+
+<p><b>Saídas:</b></p>
+<pre>OK
+OK
+OK
+ERRO
+OK
+ERRO
+OK
+OK
+OK
+ERRO
+OK
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ7"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    21/01/2017 04:09:07</p>
+                <p><b>Tentativas:</b>
+                    2 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    0</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    O uso de registros não atende o enunciado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="477" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="23" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="3" type="hidden">
+            <input name="atenuacao" value="0.81" type="hidden">
+            <input name="nroQuestao" value="7" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial23');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial23">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+
+typedef struct {
+    int cod;
+    string nome;
+    int conta[100];
+    int valor[100];
+} loja;
+
+int main() {
+    loja cliente[100] = {0};
+    bool terminaPrograma = false;
+    int qtdCliente = 0;
+    do {
+        int acao;
+        cin &gt;&gt; acao;
+        if (acao == 1) {
+            int testCod = 0;
+            cin &gt;&gt; testCod;
+            if (qtdCliente &gt; 0) {
+                int cont = 0;
+                bool naoParar = true;
+                for (int i = 0; i &lt; qtdCliente and naoParar; ++i) {
+                    if (cliente[i].cod == testCod) {
+                        cout &lt;&lt; "ERRO\n";
+                        naoParar = false;
+                    }
+                    else {
+                        ++cont;
+                    }
+                }
+                if (cont == qtdCliente) {
+                    cliente[qtdCliente].cod = testCod;
+                    cin &gt;&gt; cliente[qtdCliente].nome;
+                    cout &lt;&lt; "OK\n";
+                    ++qtdCliente;
+                }
+            }
+            else {
+                cliente[qtdCliente].cod = testCod;
+                cin &gt;&gt; cliente[qtdCliente].nome;
+                cout &lt;&lt; "OK\n";
+                ++qtdCliente;
+            }
+        }
+        else if (acao == 2){
+            int testCod;
+            cin &gt;&gt; testCod;
+            bool naoParar = true;
+            for (int i = 0; i &lt; qtdCliente and naoParar; ++i) {
+                if (testCod == cliente[i].cod) {
+                    int u = 0;
+                    while (cliente[i].conta[u] != 0) {
+                    ++u;
+                    }
+                    cin &gt;&gt; cliente[i].conta[u] &gt;&gt; cliente[i].valor[u];
+                    cout &lt;&lt; "OK\n";
+                    naoParar = false;
+                }
+            }
+            if (naoParar) {
+                cout &lt;&lt; "ERRO\n";
+            }
+        }
+        else if (acao == 3) {
+            int testCod;
+            cin &gt;&gt; testCod;
+            bool naoParar = true;
+            for (int i = 0; i &lt; qtdCliente and naoParar; ++i) {
+                if (testCod == cliente[i].cod) {
+                    int u = 0;
+                    bool possuiValor = false;
+                    while (cliente[i].conta[u] != 0 and !possuiValor) {
+                        if (cliente[i].valor[u] != 0) {
+                            possuiValor = true;
+                            cout &lt;&lt; "ERRO\n";
+                        }
+                        ++u;
+                    }
+                    if (not(possuiValor)) {
+                        for (int x = 0; x &lt; u; ++x) {
+                            cliente[i].valor[x] = 0;
+                            cliente[i].conta[x] = 0;
+                        }
+                        for (int y = i; y &lt; qtdCliente; ++y) {
+                            cliente[y].cod = cliente[y+1].cod;
+                            cliente[y].nome = cliente[y+1].nome;
+                            int z = 0;
+                            while (cliente[y+1].conta[z] != 0) {
+                                cliente[y].conta[z] = cliente[y+1].conta[z];
+                                cliente[y].valor[z] = cliente[y+1].valor[z];
+                                ++z;
+                            }
+                            for (int x = 0; x &lt; z; ++x) {
+                                cliente[y+1].conta[x] = 0;
+                                cliente[y+1].valor[x] = 0;
+                            }
+                        }
+                        cout &lt;&lt; "OK\n";
+                    }
+                }
+            }
+        }
+        else if (acao == 0) {
+            terminaPrograma = true;
+        }
+    } while (not(terminaPrograma));
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q8"></a>
+                <h3>Questão 8:
+                            Registros - Estoque da loja</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que "controla o estoque de uma loja", conforme descrito a seguir.</p>
+
+<p>O programa mantém um conjunto de registros que representam produtos 
+vendidos. Capacidade para 60 produtos diferentes é suficiente neste 
+programa.</p>
+
+<p>Para cada tipo de produto, deve-se manter informações sobre
+</p><ol>
+<li>o tipo de produto (um número inteiro sem sinal),</li>
+<li>o preço do produto,</li>
+<li>a quantidade de unidades do produto que estão disponíveis em estoque,</li>
+<li>um nome que identifica o depósito onde estão os produtos desse tipo 
+(9 caracteres são suficientes para identificar um depósito e nomes de 
+depósitos não tem espaços).</li>
+</ol><p></p>
+
+<p>Ao executar o programa, 3 coisas devem acontecer:
+</p><ol>
+<li>A leitura do estoque da loja, na seguinte sequência: código, preço, 
+quantidade em estoque e nome do depósito. A quantidade de produtos é 
+desconhecida, mas a leitura deve terminar quando um código 0 for lido.</li>
+<li>A leitura das vendas da loja, representadas por vários códigos de 
+produtos. A quantidade de código a ser lida é desconhecida mas a leitura
+ termina quando um código 0 for lido.</li>
+<li>O processamento do estado do estoque. O programa deverá escrever o 
+código do produto com menor quantidade em estoque, informando (na 
+ordem): o código do produto, a quantidade em estoque daquele tipo de 
+produto e o nome do deposito em que aquele tipo de produto se encontra. 
+Suponha que não haverá empate para produtos com menor estoque.</li>
+</ol>
+<p>O controle do estoque deve ser feito venda a venda. Caso seja vendido
+ um produto que não estava no estoque, o programa deve escrever "erro 
+3221" (letras minúsculas) e a fase de encontrar o produto com estoque 
+menor deve ser evitada, causando o termino imediato da execução do 
+programa.</p>
+
+<p></p><pre>Exemplo de entrada:
+1 349.29 2 deposito2
+2 371.99 7 deposito2
+3 195.85 3 deposito1
+0
+2 2 1 3
+0
+
+Exemplo de saída:
+1 1 deposito2
+</pre><p></p>
+
+<p>Agora, um exemplo em que haviam 2 produtos de código 1, mas tentaram vender 3 deles.</p>
+
+<p></p><pre>Exemplo de entrada com situação de erro:
+1 349.29 2 deposito2
+2 371.99 7 deposito2
+3 195.85 3 deposito1
+0
+1 1 1
+
+Exemplo de saída na situação de erro:
+erro 3221
+</pre><p></p>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ8"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    21/01/2017 12:15:08</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="477" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="248" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="8" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial248');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial248">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include
+ &lt;iostream&gt;
+
+using namespace std;
+
+typedef struct {
+    unsigned int cod;
+    float preco;
+    int qtdEstoque;
+    char nomeDep[9];
+} estoque;
+
+int main() {
+    estoque produto[60];
+    bool naoPararLer = true;
+    unsigned int qtdElem = 0;
+    for (unsigned int i = 0; naoPararLer; ++i) {
+        cin &gt;&gt; produto[i].cod;
+        if (produto[i].cod == 0) {
+            naoPararLer = false;
+        }
+        else {
+            cin &gt;&gt; produto[i].preco &gt;&gt; produto[i].qtdEstoque
+ &gt;&gt; produto[i].nomeDep;
+            ++qtdElem;
+        }
+    }
+    naoPararLer = true;
+    unsigned int venda;
+    bool achouErro = false;
+    for (unsigned int i = 0; naoPararLer; ++i) {
+        cin &gt;&gt; venda;
+        if (venda == 0) {
+            naoPararLer = false;
+        }
+        else {
+            unsigned int u = 0;
+            while (produto[u].cod != venda) {
+                ++u;
+            }
+            --produto[u].qtdEstoque;
+            if (produto[u].qtdEstoque &lt; 0) {
+                cout &lt;&lt; "erro 3221\n";
+                achouErro = true;
+                naoPararLer = false;
+            }
+        }
+    }
+    if (not(achouErro)) {
+        unsigned int posMenor = 0;
+        int menorEstoque = produto[0].qtdEstoque;
+        for (unsigned int i = 1; i &lt; qtdElem; ++i) {
+            if (menorEstoque &gt; produto[i].qtdEstoque) {
+                menorEstoque = produto[i].qtdEstoque;
+                posMenor = i;
+            }
+        }
+        cout &lt;&lt; produto[posMenor].cod &lt;&lt; " " &lt;&lt; 
+produto[posMenor].qtdEstoque &lt;&lt; " " &lt;&lt; 
+produto[posMenor].nomeDep &lt;&lt; endl;
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q9"></a>
+                <h3>Questão 9:
+                            Registros - Atletas mais alto e mais velho</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Crie um registro representando um atleta. Esse 
+registro deve conter o nome do atleta, seu esporte, idade e altura. Em 
+seguida, escreva um programa que leia os dados de cinco atletas, 
+armazenando as informações em um vetor. Calcule e exiba os nomes e os 
+esportes do atleta mais alto e do mais velho.</p>
+
+<p><b>Entradas:</b></p>
+<ul>
+<li> Os dados de cada atleta em cada linha, sendo eles:</li>
+<ol>
+<li>nome (sem espaços),</li>
+<li>esporte (sem espaços),</li>
+<li>idade (número inteiro) e</li>
+<li>altura (número real).</li>
+</ol>
+</ul>
+
+<p><b>Saídas:</b></p>
+<ol>
+<li>Nome e esporte do atleta mais alto.</li>
+<li>Nome e esporte do atleta mais velho.</li>
+</ol>
+
+<p><b>Exemplo de Entrada:</b></p>
+<pre>Joao	Futebol		28		1.60
+Maria	Volei		31		1.82
+Pedro	Basquete	22		1.95
+Jairo	Tenis		30		1.76
+Tiago	Tenis		29		1.77
+</pre>
+
+<p><b>Exemplo de Saída:</b></p>
+<pre>Pedro	Basquete
+Maria	Volei
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ9"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    21/01/2017 12:30:58</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="477" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="499" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="9" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial499');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial499">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+typedef struct {
+    string nome;
+    string esporte;
+    int idade;
+    float altura;
+}atleta;
+
+int main() {
+    atleta pessoa[5];
+    cin &gt;&gt; pessoa[0].nome &gt;&gt; pessoa[0].esporte &gt;&gt; pessoa[0].idade &gt;&gt; pessoa[0].altura;
+    float maior = pessoa[0].altura;
+    int maisVelho = pessoa[0].idade;
+    unsigned int contA = 0, contV = 0;
+    for (unsigned int i = 1; i &lt; 5; ++i) {
+        cin &gt;&gt; pessoa[i].nome &gt;&gt; pessoa[i].esporte &gt;&gt; pessoa[i].idade &gt;&gt; pessoa[i].altura;
+        if (pessoa[i].idade &gt; maisVelho) {
+            maisVelho = pessoa[i].idade;
+            contV = i;
+        }
+        if (pessoa[i].altura &gt; maior) {
+            maior = pessoa[i].altura;
+            contA = i;
+        }
+    }
+    cout &lt;&lt; pessoa[contA].nome &lt;&lt; " " &lt;&lt; pessoa[contA].esporte &lt;&lt; endl;
+    cout &lt;&lt; pessoa[contV].nome &lt;&lt; " " &lt;&lt; pessoa[contV].esporte &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q10"></a>
+                <h3>Questão 10:
+                            Registros - Estoque do Papai Noel</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Papai Noel recebeu muitas cartas de crianças pedindo 
+presentes para o natal. Agora, ele precisa catalogar os presentes e 
+verificar se os brinquedos produzidos pelos duendes ao longo do ano 
+serão o suficiente. Você deverá ajudar o papai noel a resolver este 
+problema. </p>
+<p>O seu programa utilizará dois registros. O primeiro registro 
+representa uma Cartinha, com os campos nome da criança e presente 
+pedido. O segundo registro representa um Brinquedo, com os campos nome 
+do brinquedo, quantidade disponível, e quantidade pedida.
+</p>
+
+<p>O seu programa irá receber como entrada os nomes das crianças e seus 
+pedidos de presentes, e também os nomes e quantidades disponíveis de 
+cada brinquedo. Seu programa irá então exibir quais os brinquedos não 
+terão quantidade disponível suficiente para atender aos pedidos. Papai 
+Noel utilizará este programa para saber como organizar melhor o trabalho
+ dos duendes. Obs: os nomes das crianças e dos presentes não têm 
+espaços.
+</p>
+
+<p><b>Entradas:</b></p>
+<ol>
+<li>Número de cartinhas.</li>
+<li>Nome da criança e presente pedido de cada cartinha.</li>
+<li>Número de brinquedos.</li>
+<li>Nome e quantidade disponível de cada brinquedo.</li>
+</ol>
+
+<p><b>Saídas:</b></p>
+<ol>
+<li>Nomes dos brinquedos cujas quantidades não são suficientes para atender aos pedidos.</li>
+</ol>
+
+<p><b>Exemplo de Entrada:</b></p>
+<pre>4
+João Boneco
+Maria Boneco
+Pedro Carrinho
+Ana Bola
+
+3
+Boneco 1
+Bola 0
+Carrinho 1
+</pre>
+
+<p><b>Exemplo de Saída:</b></p>
+<pre>Boneco Bola
+</pre>
+
+<p><b>Exemplo de Entrada:</b></p>
+<pre>5
+João Videogame
+Maria Boneca
+Amanda Boneca
+Juliana Boneca
+Pedro Videogame
+
+3
+Bola 5
+Videogame 2
+Boneca 2
+</pre>
+
+<p><b>Exemplo de Saída:</b></p>
+<pre>Boneca
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ10"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    21/01/2017 13:10:47</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="477" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="359" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="10" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial359');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial359">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+typedef struct {
+    string nomeC;
+    string presente;
+} cartinha;
+typedef struct {
+    string nomeB;
+    int qtdDisponivel;
+    int qtdPedida;
+} brinquedos;
+
+int main() {
+    int numCarta;
+    cin &gt;&gt; numCarta;
+    cartinha crianca[numCarta];
+    for (int i = 0; i &lt; numCarta; ++i) {
+        cin &gt;&gt; crianca[i].nomeC &gt;&gt; crianca[i].presente;
+    }
+    int numBrinquedo;
+    cin &gt;&gt; numBrinquedo;
+    brinquedos brinquedo[numBrinquedo];
+    for (int i = 0; i &lt; numBrinquedo; ++i) {
+        cin &gt;&gt; brinquedo[i].nomeB &gt;&gt; brinquedo[i].qtdDisponivel;
+        int cont = 0;
+        for (int u = 0; u &lt; numCarta; ++u) {
+            if (brinquedo[i].nomeB == crianca[u].presente) {
+                ++cont;
+            }
+        }
+        brinquedo[i].qtdPedida = cont;
+    }
+    for (int i = 0; i &lt; numBrinquedo; ++i) {
+        if (brinquedo[i].qtdPedida &gt; brinquedo[i].qtdDisponivel) {
+            cout &lt;&lt; brinquedo[i].nomeB &lt;&lt; " ";
+        }
+    }
+    cout &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q11"></a>
+                <h3>Questão 11:
+                            Registros - Percorrendo uma rota no plano cartesiano</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que leia 5 pontos do plano 
+cartesiano, sendo que cada ponto terá sua coordenada X e sua coordenada 
+Y. O programa também deverá ler uma rota. Essa rota é composta por 5 
+inteiros de 0 a 4, não podendo repetir os números. O programa deverá 
+calcular a distância total dessa rota.</p>
+<p>Os pontos devem ser representados por registros em que as coordenadas são números reais.</p>
+
+<p>Por exemplo, dados os seguintes pontos:</p>
+<ul>
+ <li>Ponto 0 : (0,5) </li>
+ <li>Ponto 1 : (4,3) </li>
+ <li>Ponto 2 : (2,1) </li>
+ <li>Ponto 3 : (1,0) </li>
+ <li>Ponto 4 : (2,2) </li>
+ </ul>
+<p>Dada a Rota : 0 2 4 3 1</p>
+<p>O programa deverá calcular a distância entre o ponto 0 e 2, depois 2 e
+ 4, depois 4 e 3, depois 3 e 1. A saída deverá ser a distância total 
+entre os pontos. </p>
+
+<p><b>Exemplo de entrada</b>:</p>
+<pre>0 5
+4 3
+2 1
+1 0
+2 2
+0 2 4 3 1</pre>
+
+<p><b>Exemplo de saída</b>:</p>
+<pre>11.9508	</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ11"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    21/01/2017 13:29:56</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="477" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="525" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="11" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial525');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial525">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;cmath&gt;
+
+using namespace std;
+
+typedef struct {
+    float x;
+    float y;
+} coordenada;
+
+int main() {
+    coordenada ponto[5];
+    for (int i = 0; i &lt; 5; ++i) {
+        cin &gt;&gt; ponto[i].x &gt;&gt; ponto[i].y;
+    }
+    int rota1, rota2;
+    float distancia = 0;
+    cin &gt;&gt; rota1 &gt;&gt; rota2;
+    distancia += sqrt(pow((ponto[rota2].x-ponto[rota1].x), 2)+pow((ponto[rota2].y-ponto[rota1].y), 2));
+    for (int i = 2; i &lt; 5; ++i) {
+        rota1 = rota2;
+        cin &gt;&gt; rota2;
+        distancia += sqrt(pow((ponto[rota2].x-ponto[rota1].x), 2)+pow((ponto[rota2].y-ponto[rota1].y), 2));
+    }
+    cout &lt;&lt; distancia &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q12"></a>
+                <h3>Questão 12:
+                            Registros - Censo municipal</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>A prefeitura de uma cidade fez uma pesquisa entre 
+seus habitantes, coletando dados sobre salário, idade e número de 
+filhos. Faça um programa que leia esses dados de n pessoas, calcule e 
+mostre: média de salário da população, média do número de filhos, maior 
+salário e o percentual de pessoas com salário superior a R$ 1000.00.</p>
+
+ <p><b>Entrada:</b></p>
+	<ol>
+		<li>Número de pessoas entrevistadas.</li>
+        <li>Os dadso de cada pessoa (salário, idade e número de filhos).</li>
+	</ol>
+
+	<p><b>Saída:</b></p>
+	<ol>
+		<li>Média de salário da população;</li>
+        <li>Média do número de filhos;</li> 
+        <li>O maior salário;</li>
+        <li>O percentual de pessoas com salário superior a R$ 1000.00 .</li>
+	</ol>
+
+	<p><b>Exemplo de entrada</b>:</p>
+	<pre>5
+2000.00 47 3
+1250.00 22 1
+3750.00 29 2
+1800.00 31 4
+900.00 25 5
+	</pre>
+	
+	<p><b>Exemplo de saída</b>:</p>
+	<pre>1940
+3
+3750
+80%
+	</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ12"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    22/01/2017 00:17:38</p>
+                <p><b>Tentativas:</b>
+                    3 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    81</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="477" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="524" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="4" type="hidden">
+            <input name="atenuacao" value="0.729" type="hidden">
+            <input name="nroQuestao" value="12" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial524');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial524">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+typedef struct {
+    float salario;
+    int idade;
+    int numeroFilhos;
+} pesquisa;
+
+int main() {
+    int numEntrev;
+    cin &gt;&gt; numEntrev;
+    pesquisa pessoa[numEntrev];
+    float mediaSal, maiorSal;
+    int contPercentual = 0, mediaNumFilho;
+    cin &gt;&gt; pessoa[0].salario &gt;&gt; pessoa[0].idade &gt;&gt; pessoa[0].numeroFilhos;
+    mediaSal = pessoa[0].salario;
+    mediaNumFilho = pessoa[0].numeroFilhos;
+    maiorSal = pessoa[0].salario;
+    if (pessoa[0].salario &gt; 1000) {
+        ++contPercentual;
+    }
+    for (int i = 1; i &lt; numEntrev; ++i) {
+        cin &gt;&gt; pessoa[i].salario &gt;&gt; pessoa[i].idade &gt;&gt; pessoa[i].numeroFilhos;
+        mediaSal += pessoa[i].salario;
+        mediaNumFilho += pessoa[i].numeroFilhos;
+        if (pessoa[i].salario &gt; 1000) {
+            ++contPercentual;
+        }
+        if (pessoa[i].salario &gt; maiorSal) {
+            maiorSal = pessoa[i].salario;
+        }
+    }
+    float medSalario = mediaSal / float(numEntrev);
+    float medFilho = float(mediaNumFilho) / float(numEntrev);
+    float porcentagem = float(contPercentual)*100/float(numEntrev);
+    cout &lt;&lt; medSalario &lt;&lt; endl
+         &lt;&lt; medFilho &lt;&lt; endl
+         &lt;&lt; maiorSal &lt;&lt; endl
+         &lt;&lt; porcentagem &lt;&lt; "%" &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q14"></a>
+                <h3>Questão 14:
+                            Registros - Gnomos do Papai Noel</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <!-- Mudar enunciado: criar um registro com nome e total de horas trabalhadas a partir dos dados de entrada. Colocar corretor de registro. -->
+<p>Para produzir seus brinquedos, Papai Noel recebe o auxílio de seus 
+queridos e fiéis gnomos. Para não sobrecarregar seus queridos 
+auxiliares, a fábrica funciona apenas das 5h00 às 23h00, com cada gnomo 
+trabalhando no máximo quinze horas diárias, sendo que a quantidade de 
+horas trabalhadas por um gnomo varia entre os dias da semana. Para 
+controlar isso, ele utiliza um sistema de cadastro com as seguintes 
+informações (usar vetor de registros): </p> 
+
+<p><i>
+Nome: o primeiro nome ou apelido do Gnomo<br>
+Hora de Entrada: um valor inteiro<br>
+Hora de Saída: um valor inteiro<br>
+</i></p>
+
+<p>Por conta de uma falha no sistema de controle de presentes, 
+descobriu-se que estão faltando vários presentes e Papai Noel terá que 
+convocar alguns gnomos para auxiliar em um turno extra. Entretanto, ele 
+só irá convocar aqueles que na última semana trabalharam menos que 70 
+horas ao todo. </p>
+
+<p>Para salvar o Natal, faça um programa que receba o controle de ponto 
+dos gnomos da semana anterior e imprima a relação de gnomos aptos ao 
+trabalho, informando também a carga horária trabalhada por cada um 
+(usando a mesma ordem da entrada de dados). O controle de ponto é 
+informado da seguinte maneira: nome do gnomo, seguido pelo horário de 
+entrada e saída em cada um dos sete dias da semana. Antes disso, é 
+informado o número de gnomos para entrada.</p>
+<p>É obrigatório o uso de registros para representar dados relativos aos gnomos.</p>
+<p><b>Exemplo de Entrada:</b></p>
+<pre>5
+Trabalhador 
+6 21
+5 20
+7 22
+5 20
+8 23
+8 21
+9 20
+Capaz 
+6 20
+5 18
+7 20
+5 18
+8 21
+8 20
+9 17
+Marchalenta
+15 21
+15 20
+17 22
+15 16
+18 23
+18 21
+19 20
+Dorminhoco
+12 21
+11 20
+10 22
+10 20
+11 23
+12 21
+13 23
+Tranquilo
+8 14
+5 10
+12 20
+14 20
+18 23
+16 21
+16 20
+</pre>
+
+<p><b>Exemplo de Saída:</b></p>
+<pre>Marchalenta 26
+Tranquilo 39
+</pre>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ14"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    21/01/2017 16:00:24</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="477" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="360" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="14" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial360');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial360">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+typedef struct {
+    string nome;
+    int horaEntrada[7];
+    int horaSaida[7];
+} fabrica;
+
+int main() {
+    int n;
+    cin &gt;&gt; n;
+    fabrica gnomo[n];
+    for (int i = 0; i &lt; n; ++i) {
+        cin &gt;&gt; gnomo[i].nome;
+        for (int u = 0; u &lt; 7; ++u) {
+            cin &gt;&gt; gnomo[i].horaEntrada[u] &gt;&gt; gnomo[i].horaSaida[u];
+        }
+    }
+    for (int i = 0; i &lt; n; ++i) {
+        int horasTrabalhadas = 0;
+        for (int u = 0; u &lt; 7; ++u) {
+            horasTrabalhadas += gnomo[i].horaSaida[u]-gnomo[i].horaEntrada[u];
+        }
+        if (horasTrabalhadas &lt; 70) {
+            cout &lt;&lt; gnomo[i].nome &lt;&lt; " " &lt;&lt; horasTrabalhadas &lt;&lt; endl;
+        }
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q15"></a>
+                <h3>Questão 15:
+                            Registros - Cores dos Sabres de Luz</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>A Ordem dos Cavaleiros Jedi é formada por indivíduos 
+que lutam contra o lado negro da Força. Eles têm uma posição na 
+hierarquia de acordo com seu treinamento ou experiência, podendo ser 
+Padawans, Cavaleiros ou Mestres. Os Jedis utilizam Sabres de Luz 
+construídos utilizando cristais específicos que definem a cor da luz 
+emitida pelo sabre.</p>
+
+<p>Faça um programa que defina um <b>Registro para representar Sabres de Luz</b>, com os campos cristal e cor; e um <b>Registro para representar Jedis</b>, com os campos nome, posição na hierarquia e Sabre de Luz. <b>Nota</b>: é obrigatório usar o registro do sabre de luz como atributo do registro dos Jedis.</p>
+
+<p>O programa deverá ler os dados de vários Jedis (guardando-os nos 
+registros exatamente como descrito acima). O programa lerá também uma 
+cor como entrada e exibirá, para cada posição na hierarquia Jedi a 
+quantidade de Jedis que possuem sabres de luz da cor lida.</p>
+
+<p>Obs: os nomes dos Jedis, as posições na hierarquia, os nomes dos cristas e das cores não possuem espaços.</p>
+
+<p><b>Entradas:</b></p>
+<ol>
+<li>Quantidade de Jedis a serem lidos.</li>
+<li>Sequência de valores para os registros de Jedis, seguindo a ordem: 
+nome, posição na hierarquia e sabre de Luz (formado por cristal e cor).</li>
+<li>Uma cor a ser utilizada para encontrar a quantidade de Jedis de cada posição na hierarquia.</li>
+</ol>
+<p><b>Saídas:</b></p>
+<ol>
+<li>Sequência de valores contendo a posição na hierarquia e a quantidade
+ de Jedis cujos sabres de luz são da cor indicada na entrada. Obs: as 
+posições na hierarquia devem ser exibidas na <b>mesma ordem</b> em que apareceram na entrada. Dica: use um vetor auxiliar de hierarquia para verificar essa ordem.</li>
+</ol>
+
+<p><b>Exemplo de entrada</b>:</p>
+<pre>4
+Yoda Mestre Esmeralda Verde
+Luke Cavaleiro Azurita Azul
+Anakin Padawan Rubi Vermelho
+Obi-wan Cavaleiro Topazio Azul
+Azul</pre>
+<p><b>Exemplo de saída</b>:</p>
+<pre>Mestre 0
+Cavaleiro 2
+Padawan 0</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ15"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    22/01/2017 01:08:51</p>
+                <p><b>Tentativas:</b>
+                    3 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    70.2</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    A quantidade de dados escritos pelo programa é diferente da quantidade de dados esperados.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="477" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="376" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="4" type="hidden">
+            <input name="atenuacao" value="0.729" type="hidden">
+            <input name="nroQuestao" value="15" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial376');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial376">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include
+ &lt;iostream&gt;
+
+using namespace std;
+
+typedef struct {
+    string cristal;
+    string cor;
+} sabre;
+typedef struct {
+    string nome;
+    string hierarquia;
+    sabre sabreDeLuz;
+} jedis;
+
+int main() {
+    int qtdJedis;
+    cin &gt;&gt; qtdJedis;
+    jedis jedi[qtdJedis];
+    string pos[3] = {"\0"};
+    int tam = 0;
+    for (int i = 0; i &lt; qtdJedis; ++i) {
+        cin &gt;&gt; jedi[i].nome &gt;&gt; jedi[i].hierarquia &gt;&gt; 
+jedi[i].sabreDeLuz.cristal &gt;&gt; jedi[i].sabreDeLuz.cor;
+        bool continuarBusca = true;
+        for (int u = 0; u &lt; 3 and continuarBusca; ++u) {
+            if (pos[u] == jedi[i].hierarquia) {
+                continuarBusca = false;
+            }
+            else if (u == 2) {
+                pos[tam] = jedi[i].hierarquia;
+                ++tam;
+            }
+        }
+    }
+    string corProcurada;
+    cin &gt;&gt; corProcurada;
+    int vetor[3] = {0};
+    for (int u = 0; u &lt; 3; ++u) {
+        int corCont = 0;
+        for (int i = 0; i &lt; qtdJedis; ++i) {
+            if (pos[u] == jedi[i].hierarquia) {
+                if (corProcurada == jedi[i].sabreDeLuz.cor) {
+                    ++corCont;
+                }
+            }
+        }
+        vetor[u] = corCont;
+    }
+    for (int u = 0; u &lt; 3; ++u) {
+        cout &lt;&lt; pos[u] &lt;&lt; " " &lt;&lt; vetor[u] &lt;&lt; 
+endl;
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q16"></a>
+                <h3>Questão 16:
+                            Registros - Ponto dentro dos retângulos</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Considerando a utilização de um registro, com 
+coordenadas X e Y, para representar um ponto P no plano cartesiano, 
+implemente um programa que, dado um conjunto N de retângulos, indique a 
+quantidade dos mesmos nos quais o ponto P se encontra dentro de suas 
+áreas. Defina um retângulo como um registro de dois campos do tipo 
+Ponto, representando o vértice inferior esquerdo V1 e o vértice superior
+ direito V2. Obs: considere que os retângulos são paralelos aos eixos 
+cartesianos.</p>
+
+<p><b>Entradas:</b></p>
+<ol>
+<li>Dois inteiros representando as coordenadas (x,y) do ponto P no plano cartesiano.</li>
+<li>Um número inteiro representando a quantidade de retângulos a serem analisados.</li>
+<li>Sequência de valores inteiros representando as coordenadas dos 
+vértices V1 e V2 de cada retângulo a ser analisado. Note que serão lidos
+ 4 números inteiros para cada retângulo do problema, de modo que os dois
+ primeiros números se referem as coordenadas (x,y) de V1 e os dois 
+números seguintes as coordenadas (x,y) de V2.</li>
+</ol>
+<p><b>Saídas:</b></p>
+<ol>
+<li>Número inteiro que indica a quantidade de retângulos cujo ponto P se encontra dentro das áreas dos respectivos retângulos.</li>
+</ol>
+
+<p><b>Exemplo de entrada</b>:</p>
+<pre>2 3
+4
+1 1 3 3
+2 1 5 5
+0 0 2 2
+3 5 7 8</pre>
+<p><b>Exemplo de saída</b>:</p>
+<pre>2</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ16"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    21/01/2017 20:17:25</p>
+                <p><b>Tentativas:</b>
+                    2 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    90</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="477" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="354" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="3" type="hidden">
+            <input name="atenuacao" value="0.81" type="hidden">
+            <input name="nroQuestao" value="16" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial354');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial354">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+typedef struct {
+    int x;
+    int y;
+} ponto;
+typedef struct {
+    ponto v1;
+    ponto v2;
+} retangulos;
+
+int main() {
+    ponto p;
+    cin &gt;&gt; p.x &gt;&gt; p.y;
+    int qtdRetangulo;
+    cin &gt;&gt; qtdRetangulo;
+    retangulos retangulo[4];
+    int pPertence = 0;
+    for (int i = 0; i &lt; qtdRetangulo; ++i) {
+        cin &gt;&gt; retangulo[i].v1.x &gt;&gt; retangulo[i].v1.y;
+        cin &gt;&gt; retangulo[i].v2.x &gt;&gt; retangulo[i].v2.y;
+        int cont = 0;
+        if (p.x &gt;= retangulo[i].v1.x and p.x &lt;= retangulo[i].v2.x) {
+            ++cont;
+        }
+        if (p.y &lt;= retangulo[i].v2.y and p.y &gt;= retangulo[i].v1.y) {
+            ++cont;
+        }
+        if (cont == 2) {
+            ++pPertence;
+        }
+    }
+    cout &lt;&lt; pPertence &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                </div><!-- prova -->
+<script type="text/javascript">
+    var serverTime = 1485386443000;
+    var localTime = +Date.now();
+    var timeDiff = serverTime - localTime;
+    var closingTime = 1485997200000;
+    var nomeUsuario = "Samir Carvalho";
+    $('#usuario').text(nomeUsuario);
+    if (true) {
+        setInterval(function () {
+            var realtime = +Date.now() + timeDiff;
+            var minutosRestantes = (closingTime - realtime) / 60000;
+            if (minutosRestantes < 0)
+                window.location = 'testTrials.php?encerrar';
+            else if (minutosRestantes < 5)
+                minutosRestantes = minutosRestantes.toFixed(1)
+            else
+                minutosRestantes = minutosRestantes.toFixed(0);
+            $('#clock').text(minutosRestantes);
+        }, 5000);
+    }
+    else
+        $('#clock').text('ENCERRADO');
+    //window.onclose = function() {alert("Close window?");}
+</script>
+    <br></div></div><div id="bottomct" class="ui-corner-top"><div id="footer">
+        <table boder="0" style="width: 100%;">
+            <tbody><tr>
+                <td style="width:33%;">
+                    <a href="http://www.ufla.br/" style="float:left;">
+                        <img src="registros_arquivos/ufla.png" width="92" height="40">
+                    </a>
+                </td>
+                <td style="width:34%;text-align: center;">
+                    Desenvolvido por <a href="http://www.dcc.ufla.br/%7Ebruno/" style="color: #DDF">Bruno Schneider</a>
+                    a partir do programa original (Algod) de Renato R. R. de Oliveira (GPLv3).
+                </td>
+                <td style="width:33%;">
+                    <a href="http://www.dcc.ufla.br/">
+                        <img src="registros_arquivos/logo-dcc.png" style="float:right" width="128" height="40">
+                    </a>
+                </td>
+            </tr>
+        </tbody></table>
+    </div></div>
+
+
+<div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable ui-dialog-buttons" style="outline: 0px none; z-index: 1002; position: absolute; height: auto; width: auto; top: 261.5px; left: 634px; display: none;" tabindex="-1" role="dialog" aria-labelledby="ui-id-1"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-1" class="ui-dialog-title">Aviso</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div><div id="alert-dialog" style="width: auto; min-height: 32px; height: auto;" class="ui-dialog-content ui-widget-content" scrolltop="0" scrollleft="0"></div><div class="ui-resizable-handle ui-resizable-n" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-e" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-s" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se ui-icon-grip-diagonal-se" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 1000;"></div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button></div></div></div><div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable ui-dialog-buttons" style="outline: 0px none; z-index: 1002; position: absolute; height: auto; width: 800px; top: 261.5px; left: 274.5px; display: none;" tabindex="-1" role="dialog" aria-labelledby="ui-id-2"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-2" class="ui-dialog-title">&nbsp;</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div><div id="data-view-dialog" style="text-align: center; width: auto; min-height: 32px; height: auto;" class="ui-dialog-content ui-widget-content" scrolltop="0" scrollleft="0"></div><div class="ui-resizable-handle ui-resizable-n" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-e" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-s" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se ui-icon-grip-diagonal-se" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 1000;"></div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button></div></div></div></body></html>

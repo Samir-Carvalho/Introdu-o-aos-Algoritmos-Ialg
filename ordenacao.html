@@ -1,0 +1,3990 @@
+<!DOCTYPE html>
+<html><head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Dredd - Juiz Online</title>
+    <link rel="stylesheet" type="text/css" href="ordenacao_files/style.css">
+    <link rel="stylesheet" type="text/css" href="ordenacao_files/jquery-ui-1.css">
+    <script src="ordenacao_files/jquery-1.js"></script>
+    <script src="ordenacao_files/jquery-ui.js"></script>
+    <script src="ordenacao_files/jquery_002.js"></script>
+    <script src="ordenacao_files/jquery.js"></script>
+    <script>
+    $(document).ready(function() {
+        $(document).tooltip();
+        $("button, input[type='submit'], input[type='reset']").button();
+
+        $("input.date").mask("99/99/9999").attr("title","Exemplo: 11/09/2001").tooltip();
+        $("input.datetime").mask("99/99/9999 99:99:99").attr("title","Exemplo: 11/09/2001 10:17:37").tooltip();
+        $("input.integer").numeric().attr("title","Exemplo: 2").tooltip();
+        $("input.number").numeric({allow:"."}).attr("title","Exemplo: 0.5").tooltip();
+        $("textarea").keypress(function(event) {
+            if (event.ctrlKey && (event.which == 112)) {
+                event.preventDefault();
+                $("#data-view-dialog").html("<div class='data-view-box' style='width: 90%;'>"+$(this).val()+"</div>").dialog("open");
+            }
+        });
+
+        $("textarea.cpp-code-view").attr("readonly","readonly");
+        $("div.cpp-code-view").each(function() {
+            var text = $(this).html();
+            text.replace("&","&amp;");
+            text.replace("<","&lt;");
+            text.replace(">","&gt;");
+            text.replace("\r","");
+
+            // Keywords
+            text.replace("float ","<b>float</b> ");
+            text.replace("double ","<b>double</b> ");
+            text.replace("int ","<b>int</b> ");
+            text.replace("long ","<b>long</b> ");
+            text.replace("if ","<b>if</b> ");
+            text.replace("else ","<b>else</b> ");
+            text.replace("for ","<b>for</b> ");
+            text.replace("while ","<b>while</b> ");
+            text.replace("return","<b>return</b>");
+            text.replace("break","<b>break</b>");
+            text.replace("using","<b>using</b>");
+            text.replace("namespace","<b>namespace</b>");
+            text.replace("#include","<b>#include</b>");
+
+            text.replace(" ","&nbsp;");
+            text.replace("\t","&nbsp;&nbsp;&nbsp;&nbsp;");
+            text.replace("\n","<br />");
+            $(this).html(text);
+        });
+
+        $("#alert-dialog").dialog({
+            title: "Aviso",
+            width: "auto",
+            height: "auto",
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $(this).dialog("close");
+                }
+            }
+        }).dialog("close");
+
+        $("#data-view-dialog").dialog({
+            title: "",
+            width: 800,
+            height: "auto",
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $(this).dialog("close");
+                }
+            }
+        }).dialog("close");
+
+        $("form").submit(function() {
+            var $validationText = "";
+            $(this).find(".notempty").each(function() {
+                if (($(this).val() == undefined) || ($(this).val() == "")) {
+                    $validationText += "<li>"+$("label[for='"+$(this).attr('name')+"']").html()+"</li>";
+                }
+            });
+            if ($validationText != "") {
+                $validationText = "<p>Os seguintes campos não podem estar vazios:</p><ul>"+$validationText+"</ul>";
+                $("#alert-dialog").html($validationText).dialog({modal: true}).dialog("open");
+                return false;
+            } else {
+                var $form = $(this);
+                $form.find("input.passwordconfirm").each(function() {
+                    if ($(this).val() != $form.find("input.password").val()) {
+                        $validationText = "As senhas digitadas não conferem.";
+                    }
+                });
+                if ($validationText != "") {
+                    $("#alert-dialog").html($validationText).dialog({modal: true}).dialog("open");
+                    return false;
+                } else
+                    return true;
+            }
+        });
+    });
+    function openDivAsDialog(id) {
+        $("div#"+id).dialog({
+            title: "",
+            width: "auto",
+            height: "auto",
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $(this).dialog("close");
+                }
+            }
+        }).dialog("open");
+    };
+    </script>
+</head>
+<body>
+    
+    
+    <div id="topct" class="ui-corner-bottom"><div id="banner">
+        <h1>Dredd - Juiz Online</h1>
+        <div id="topmenu">
+            <button id="menu-bt-home" onclick="location.assign('./');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Principal</span></button>
+            <button id="menu-bt-profile" onclick="location.assign('./testsMine.php');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Minhas Provas</span></button>
+            <button id="menu-bt-profile" onclick="location.assign('./profile.php');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Perfil</span></button>
+            <button id="menu-bt-logout" onclick="location.assign('./logout.php');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Sair</span></button>
+        </div>
+    </div></div><div id="contentct"><div id="content">
+<div id="painel-info">
+    <b>Minutos<br>Restantes</b>:<br>
+    <span id="clock">1.4</span><br><br>
+    <b>Usuário</b>:<br>
+    <div id="usuario">Samir Carvalho</div><br>
+    <b>Notas</b>:<br>
+    <span id="notas">
+Q1: 100<br>Q2: 81<br>Q3: 100<br>Q4: 100<br>Q5: 100<br>Q6: 100<br>Q7: 100<br>Q8: 100<br>Q9: 100<br>Q10: 100<br>Q11: 100<br>Q12: 47.6<br>Q13: 100<br>Q14: 100<br>Q15: 100<br>Q16: 90<br>Q17: 100<br>Q18: 25.9<br>Q19: 100<br>Q20: 100<br>Q21: 90<br>Q22: 81<br>Q23: 90<br>Q24: 100<br>Q25: 90<br>Q26: 97.8<br>Q27: 100<br>    </span><br>
+</div>
+<div id="prova">
+    <h1>GCC224 - IALG Turmas 10/14 Lista de Ordenação</h1>
+    <p><b>Prova Aberta Até:</b>
+        27/03/2017 16:00:00</p>
+    <p><b>Número Máximo de Tentativas:</b>
+        6</p>
+    <p><b>Atenuação da Nota por Tentativa (multiplicativa):</b>
+        0.9</p>
+    <p><b>Nota Máxima por Tentativa:</b>
+        </p><ol style="text-align: left; padding-left: 12ex;">
+                            <li>100</li>
+                            <li>90</li>
+                            <li>81</li>
+                            <li>72.9</li>
+                            <li>65.61</li>
+                            <li>59.049</li>
+                            </ol><p></p>
+    <p><b>Descrição:</b></p>
+    <div class="description-display-box">
+        A prova é individual. Desligue seu celular. Não converse com os colegas. Não fique olhando para a tela dos colegas.    </div>
+    <h3>QUESTÕES</h3>
+                                <div class="problem-try-ct">
+                <a name="Q1"></a>
+                <h3>Questão 1:
+                            Ordenação - Bubble-sort</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Você deverá fazer um programa que recebe um vetor de 
+inteiros V de N posições e o ordena. Para ordenar este vetor, você 
+deverá usar o método <b>Bubble Sort</b>.</p>
+
+<p><b>Entradas:</b></p>
+<ul>
+<li>Tamanho N do vetor.</li>
+<li>Os N elementos do vetor V.</li>
+</ul>
+
+<p><b>Saídas:</b></p>
+<ul>
+<li>Vetor V ordenado.</li>
+</ul>
+
+<p><b>Exemplo de Entrada:</b></p>
+<pre>5
+7 8 5 3 6
+</pre>
+
+<p><b>Exemplo de saída:</b></p>
+<pre>3 5 6 7 8
+</pre>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ1"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    21/02/2017 17:31:22</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="323" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="1" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial323');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial323">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+void bubleSort(int vetor[], int tamanho) {
+    for (int i = tamanho; i &gt; 0; --i) {
+        for (int j = 0; j &lt; i-1; ++j) {
+            if (vetor[j] &gt; vetor[j+1]) {
+                int valor = vetor[j];
+                vetor[j] = vetor[j+1];
+                vetor[j+1] = valor;
+            }
+        }
+    }
+}
+
+int main() {
+    int tam;
+    cin &gt;&gt; tam;
+    int vetor[tam];
+    for (int i = 0; i &lt; tam; ++i) {
+        cin &gt;&gt; vetor[i];
+    }
+    bubleSort(vetor, tam);
+    for (int i = 0; i &lt; tam; ++i) {
+        cout &lt;&lt; vetor[i] &lt;&lt; " ";
+    }
+    cout &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q2"></a>
+                <h3>Questão 2:
+                            Vetores - Selection Sort e Busca Binária. (2)</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>
+Implemente o algoritmo de ordenação <b>selection sort</b> em um vetor de <b>N</b> posições, procurando o <b>menor</b> valor do vetor e o coloca na <b>última</b> posição. Em seguida ele procura o <b>segundo menor</b>
+ valor e o coloca na penúltima posição, assim sucessivamente até que o 
+vetor esteja ordenado de forma decrescente (Imprima cada passo dessa 
+ordenação).</p>
+
+<p>Feito isso, receba o número que o usuário deseja buscar no vetor e faça uma <b>busca binária</b> imprimindo o número de <b>iterações</b> (quantas vezes o algoritmo da busca binária foi executado, repetiu) e a <b>posição</b> no vetor do número buscado, <b>imprimindo -1 caso não seja encontrado</b>.
+</p>
+
+<p><b>Obs: Apenas imprima quando houver a troca de números!</b></p>
+
+<ul style="text-align:justify;margin-left:25px;">
+<b>Entradas:</b>
+<li><code>int n</code> - Tamanho do vetor que será ordenado.</li>
+<li><code>int vetor[n]</code> - Vetor que será ordenado.</li>
+<li><code>int busca</code> - Número que será buscado no vetor.</li>
+</ul><br>
+
+<ul style="text-align:justify;margin-left:25px;">
+<b>Saídas:</b>
+<li>Cada passo da ordenação. Ou seja, os valores do vetor à cada passo da ordenação.</li>
+<li>Posição no vetor do elemento buscado</li>
+<li>Número de iterações da busca binária. Ou seja, número de vezes que o laço foi executado.</li>
+</ul><br>
+
+<h3>Exemplos de entradas e saídas</h3>
+
+<p><b>Entradas:</b></p>
+<pre>5
+4 1 7 2 3
+3
+</pre>
+
+<p><b>Saídas:</b></p>
+<pre>4 3 7 2 1
+4 7 3 2 1
+7 4 3 2 1
+2
+1
+</pre>
+
+<p><b></b></p><center><b>Entrada na entrada padrão e saída na saída padrão.</b></center><p></p>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ2"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    27/02/2017 00:23:11</p>
+                <p><b>Tentativas:</b>
+                    3 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    81</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="235" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="4" type="hidden">
+            <input name="atenuacao" value="0.729" type="hidden">
+            <input name="nroQuestao" value="2" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial235');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial235">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main() {
+    int tam;
+    cin &gt;&gt; tam;
+    int vetor[tam];
+    for (int i = 0; i &lt; tam; ++i) {
+        cin &gt;&gt; vetor[i];
+    }
+    int busca;
+    cin &gt;&gt; busca;
+    for (int i = tam-1; i &gt;= 0; --i) {
+        bool houveTroca = false;
+        int indiceMenor = i;
+        for (int j = indiceMenor-1; j &gt;= 0; --j) {
+            if (vetor[j] &lt; vetor[indiceMenor]) {
+                indiceMenor = j;
+            }
+        }
+        if (i != indiceMenor) {
+            int valor = vetor[indiceMenor];
+            vetor[indiceMenor] = vetor[i];
+            vetor[i] = valor;
+            houveTroca = true;
+        }
+        if (houveTroca) {
+            for (int x = 0; x &lt; tam; ++x) {
+                cout &lt;&lt; vetor[x] &lt;&lt; " ";
+            }
+            cout &lt;&lt; endl;
+        }
+    }
+    int inicio = 0, fim = tam-1;
+    int meio;
+    int cont = 0;
+    while (inicio &lt;= fim and busca != vetor[meio]) {
+        ++cont;
+        meio = (inicio + fim)/2;
+        if (vetor[meio] &lt; busca) {
+            fim = meio - 1;
+        }
+        else {
+            inicio = meio + 1;
+        }
+    }
+    if (vetor[meio] == busca) {
+        cout &lt;&lt; meio &lt;&lt; endl;
+    }
+    else {
+        cout &lt;&lt; -1 &lt;&lt; endl;
+    }
+    cout &lt;&lt; cont &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q3"></a>
+                <h3>Questão 3:
+                            Ordenação - vetores - Ordena até posição</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <b>Nem sempre deseja-se ordenar um vetor inteiro. Faça 
+um programa que receba um vetor de tamanho n e a posição até a qual 
+deseja-se ordenar. O programa devera 
+
+imprimir o vetor resultante.</b>
+<p><b>Entradas:</b></p>
+<ul style="text-align:left;padding-left:20px;">
+<li><code>int n</code> - tamanho do vetor</li>
+<li><code>int vetor[n]</code> - vetor de tamanho n.</li>
+<li><code>int pos</code> - posição até onde o vetor deve ser ordenado.</li>
+</ul>
+<p><b>Saídas:</b></p>
+<ul style="text-align:left;padding-left:20px;">
+<li><code>int vet[n]</code></li>
+</ul><br>
+
+<h3>Exemplos de Entrada e Saída:</h3>
+
+<p><b>Entradas:</b><br>
+5<br>
+5 4 3 2 1<br>
+2<br></p>
+
+<p><b>Saídas:</b><br>
+3 4 5 2 1<br>
+</p>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ3"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    27/02/2017 11:22:15</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="238" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="3" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial238');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial238">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main() {
+    int n;
+    cin &gt;&gt; n;
+    int vetor[n];
+    for (int i = 0; i &lt; n; ++i) {
+        cin &gt;&gt; vetor[i];
+    }
+    int pos;
+    cin &gt;&gt; pos;
+    for (int i = 0; i &lt; pos; ++i) {
+        int indMenor = i;
+        for (int j = i+1; j &lt;= pos; ++j) {
+            if (vetor[j] &lt; vetor[indMenor]) {
+                indMenor = j;
+            }
+        }
+        int valor = vetor[i];
+        vetor[i] = vetor[indMenor];
+        vetor[indMenor] = valor;
+    }
+    for (int i = 0; i &lt; n; ++i) {
+        cout &lt;&lt; vetor[i] &lt;&lt; " ";
+    }
+    cout &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q4"></a>
+                <h3>Questão 4:
+                            Ordenação - Insertion Sort Passo a Passo</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>
+Implemente o algoritmo de ordenação <i>insertion sort</i> que percorre o
+ vetor do inicio ao fim e coloca cada valor em sua correta posição a 
+esquerda desse valor. Assim o vetor sera percorrido da posição 1 
+(segunda posição) ate a última posição. Cada passo do algoritmo devera 
+ser imprimido, ou seja, a cada iteração do loop principal o estado atual
+ do vetor devera ser impresso.</p>
+
+<p>Entradas:</p>
+<ol>
+<li>Tamanho do vetor que será ordenado.</li>
+<li>Os diversos valores para ordenação.</li>
+</ol>
+
+<p>Saídas:</p>
+<ol>
+<li>Cada passo da ordenação. Ou seja, os valores do vetor a cada inserção feita.</li>
+</ol>
+
+<p><b>Exemplo de entradas:</b></p>
+<pre>6
+4 7 2 3 8 6</pre>
+<p><b>Exemplo de saídas:</b></p>
+<pre>4 7 2 3 8 6
+2 4 7 3 8 6
+2 3 4 7 8 6
+2 3 4 7 8 6
+2 3 4 6 7 8</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ4"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    27/02/2017 11:33:45</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="30" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="4" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial30');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial30">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main() {
+    int tam;
+    cin &gt;&gt; tam;
+    int vetor[tam];
+    for (int i = 0; i &lt; tam; ++i) {
+        cin &gt;&gt; vetor[i];
+    }
+    for (int i = 1; i &lt; tam; ++i) {
+        int aux = vetor[i];
+        int j = i-1;
+        while (j &gt;=0 and vetor[j] &gt; aux) {
+            vetor[j+1] = vetor[j];
+            --j;
+        }
+        vetor[j+1] = aux;
+        for (int i = 0; i &lt; tam; ++i) {
+            cout &lt;&lt; vetor[i] &lt;&lt; " ";
+        }
+        cout &lt;&lt; endl;
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q5"></a>
+                <h3>Questão 5:
+                            Arquivos - Notas dos Alunos (registros e ordenação)</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>
+Faça um programa que crie um vetor com 3 posições. Cada posição do vetor deve conter um registro. Esse registro, chamado de <code>DadosAluno</code>, deve conter:
+</p>
+<ul style="text-align:left;padding-left:30px;">
+
+<li>Primeiro nome do aluno</li>
+<li>Número de matrícula do aluno (<code>int</code>)</li>
+<li>Vetor as três notas do aluno (<code>float</code>)</li>
+
+</ul>
+
+<br> Após a leitura dos dados, o vetor deve ser ordenado pela média das notas e salvo no arquivo <b>alunos.txt</b>.
+<p>
+
+</p><p><b>Entradas:</b></p>
+<ul style="text-align:left;padding-left:30px;">
+<li><code>DadosAluno alunos [3]</code> - Vetor de três alunos</li>
+</ul>
+
+<p><b>Saídas:</b></p>
+<ul style="text-align:left;padding-left:30px;">
+<li>Nomes e números de matrícula ordenados pelas médias dos alunos</li>
+</ul>
+
+<br><h3>Exemplos de Entradas e Saídas:</h3>
+
+<p><b>Entradas:</b></p>
+<pre>Lucas
+201310123
+98.0 99.9 100.0
+Ana
+201410123
+70.0 60.0 0.5
+Andre
+201510123
+63.8 100.0 7.5
+</pre>
+
+<p><b>Saídas do Arquivo:</b></p>
+<pre>Ana
+201410123
+Andre
+201510123
+Lucas
+201310123
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ5"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    27/02/2017 12:10:49</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="49" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="5" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial49');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial49">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;cstring&gt;
+#include &lt;fstream&gt;
+
+using namespace std;
+
+typedef struct {
+    char nome[30];
+    int matricula;
+    float notas[3];
+} dadosAlunos;
+
+int main() {
+    dadosAlunos alunos[3];
+    float aux[3] = {};
+    for (int i = 0; i &lt; 3; ++i) {
+        cin &gt;&gt; alunos[i].nome &gt;&gt; alunos[i].matricula;
+        for (int u = 0; u &lt; 3; ++u) {
+            cin &gt;&gt; alunos[i].notas[u];
+            aux[i] += alunos[i].notas[u];
+        }
+        aux[i] /= 2;
+    }
+    ofstream arquivo("alunos.txt");
+    for (int i = 1; i &lt; 3; ++i) {
+        float mediaNota = aux[i];
+        char copiaNome[30];
+        strcpy(copiaNome, alunos[i].nome);
+        int copiaMatricula = alunos[i].matricula;
+        int j = i-1;
+        while (j &gt;=0 and aux[j] &gt; mediaNota) {
+            aux[j+1] = aux[j];
+            strcpy(alunos[j+1].nome, alunos[j].nome);
+            alunos[j+1].matricula = alunos[j].matricula;
+            --j;
+        }
+        aux[j+1] = mediaNota;
+        strcpy(alunos[j+1].nome, copiaNome);
+        alunos[j+1].matricula = copiaMatricula;
+        
+    }
+    for (int u = 0; u &lt; 3; ++u) {
+        arquivo &lt;&lt; alunos[u].nome &lt;&lt; endl &lt;&lt; alunos[u].matricula &lt;&lt; endl;
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q6"></a>
+                <h3>Questão 6:
+                            Modularização - Registro Ordenado</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que lê dados de vários funcionários e
+ depois escreve um relatório sobre eles. O dados de cada funcionário 
+devem ser armazenados em registros.</p>
+
+<p>Entradas:</p>
+<ol>
+<li>O número de funcionários.</li>
+<li>Os dados de cada funcionário:</li>
+<ol>
+<li>O código do funcionário (número inteiro).</li>
+<li>O nome do funcionário (sem espaços).</li>
+<li>O valor que o funcionário recebe por hora (número real).</li>
+</ol>
+</ol>
+<p>Deve existir uma função para ordenar os funcionários pelo código 
+(ordem crescente). A ordenação só pode ser feita por algum dos métodos 
+vistos em aula.</p>
+<p>Deve existir uma função que calcula o salário mensal de <b>um</b> funcionário. Essa função deve ser usada para calcular o salário de <b>todos</b> os funcionários. Sabe-se que todo funcionário nesta empresa trabalha 8 horas por dia, 20 dias por mês.</p>
+
+<p>Saídas:</p>
+<ul>
+<li>Os seguintes dados dos funcionários, em ordem crescente de código do funcionário:</li>
+<ol>
+<li>código do funcionário</li>
+<li>nome do funcioário</li>
+<li>salário mensal do funcionário</li>
+</ol>
+</ul>
+
+<p>O planejamento de passagem de parâmetros é parte importante da nota. 
+Todas as operações de leitura ou de escrita devem ser realizadas na 
+função principal. O uso de registros deve proporcionar organização para 
+os dados da memória.</p>
+
+<p><b>Exemplo de entradas:</b></p>
+<pre>4
+24 Lucas   8.50
+11 Mateus  16.00
+18 Raphael 21.50
+10 Paulo   35.00</pre>
+
+<p><b>Exemplo de saídas:</b></p>
+<pre>10 Paulo   5600
+11 Mateus  2560
+18 Raphael 3440
+24 Lucas   1360</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ6"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    27/02/2017 12:28:33</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="246" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="6" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial246');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial246">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include
+ &lt;iostream&gt;
+#include &lt;string&gt;
+
+using namespace std;
+
+typedef struct {
+    int cod;
+    string nome;
+    float hora;
+} dadosFuncionarios;
+
+void insertionSort(int tam, dadosFuncionarios dado[]) {
+    for (int i = 1; i &lt; tam; ++i) {
+        int copiaCod = dado[i].cod;
+        string copiaNome = dado[i].nome;
+        float copiaHora = dado[i].hora;
+        int j = i-1;
+        while (j &gt;= 0 and dado[j].cod &gt; copiaCod) {
+            dado[j+1].cod = dado[j].cod;
+            dado[j+1].nome = dado[j].nome;
+            dado[j+1].hora = dado[j].hora;
+            --j;
+        }
+        dado[j+1].cod = copiaCod;
+        dado[j+1].nome = copiaNome;
+        dado[j+1].hora = copiaHora;
+    }
+}
+
+float calculaSalario(float ganho, float horas, int dias) {
+    return ganho*horas*float(dias);
+}
+
+int main() {
+    int qtdFuncionarios;
+    cin &gt;&gt; qtdFuncionarios;
+    dadosFuncionarios funcionario[qtdFuncionarios];
+    for (int i = 0; i &lt; qtdFuncionarios; ++i) {
+        cin &gt;&gt; funcionario[i].cod &gt;&gt; funcionario[i].nome 
+&gt;&gt; funcionario[i].hora;
+    }
+    insertionSort(qtdFuncionarios, funcionario);
+    for (int i = 0; i &lt; qtdFuncionarios;     ++i) {
+        cout &lt;&lt; funcionario[i].cod &lt;&lt; " " &lt;&lt; 
+funcionario[i].nome &lt;&lt; " " &lt;&lt; 
+calculaSalario(funcionario[i].hora, 8, 20) &lt;&lt; endl;
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q7"></a>
+                <h3>Questão 7:
+                            Matriz - Ordenar Linhas Pares Crescente, Ímpares Descrescente</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>
+Faça um programa que receba uma matriz quadrada (NxN) e a preencha. 
+Feito isso, ordene as linhas pares em ordem crescente e as linhas 
+ímpares em ordem decrescente. Imprima a nova matriz.</p>
+
+<p><b>Entradas:</b></p>
+<ul style="text-align:left;padding-left:20px;">
+<li><code>int n</code> - Tamanho da matriz quadrada.</li>
+<li><code>int mat[n][n]</code> - Valores que preencherão a matriz.</li>
+</ul>
+
+<p><b>Saídas:</b></p>
+<ul style="text-align:left;padding-left:20px;">
+<li>Matriz ordenada de forma crescente nas linhas pares e decrescente nas linhas ímpares (<code>int</code>).</li>
+</ul>
+
+<h3>Exemplos de Entradas e Saídas:</h3>
+
+<p><b>Entradas:</b></p>
+<pre> 4
+ 12   42    3    1
+  6   14   53   32
+ 44   31   26   52
+  7    8    9    2
+</pre>
+
+<p><b>Saídas:</b></p>
+<pre>  1    3   12   42
+ 53   32   14    6
+ 26   31   44   52
+  9    8    7    2
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ7"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    27/02/2017 15:03:52</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="135" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="7" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial135');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial135">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main() {
+    int n;
+    cin &gt;&gt; n;
+    int mat[n][n];
+    for (int i = 0; i &lt; n; ++i) {
+        for (int j = 0; j &lt; n; ++j) {
+            cin &gt;&gt; mat[i][j];
+        }
+        if (i % 2 == 0) {
+            for (int x = 0; x &lt; n; ++x) {
+                int iMenor = x;
+                for (int y = x+1; y &lt; n; ++y) {
+                    if (mat[i][y] &lt; mat[i][iMenor]) {
+                        iMenor = y;
+                    }
+                }
+                int valor = mat[i][x];
+                mat[i][x] = mat[i][iMenor];
+                mat[i][iMenor] = valor;
+            }
+        }
+        else {
+            for (int x = 0; x &lt; n; ++x) {
+                int iMenor = x;
+                for (int y = x+1; y &lt; n; ++y) {
+                    if (mat[i][y] &gt; mat[i][iMenor]) {
+                        iMenor = y;
+                    }
+                }
+                int valor = mat[i][x];
+                mat[i][x] = mat[i][iMenor];
+                mat[i][iMenor] = valor;
+            }
+        }
+    }
+    for (int i = 0; i &lt; n; ++i) {
+        for (int j = 0; j &lt; n; ++j) {
+            cout &lt;&lt; mat[i][j] &lt;&lt; " ";
+        }
+        cout &lt;&lt; endl;
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q8"></a>
+                <h3>Questão 8:
+                            Registros - Amigos (ordenação)</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que processa um cadastro de um grupo
+ de 5 amigos com a idade e a quantidade de dinheiro que eles possuem. 
+Ambas as informações são números inteiros e <b>devem compor um registro</b> que representa um amigo.</p>
+<p>O programa deve ler os dados de 5 amigos e ordenar esses dados em função da idade de cada um, do mais velho ao mais novo.</p>
+<p>Depois, o programa deve ler uma quantia e escrever a idade de cada 
+amigo que possua exatamente a quantia buscada. Caso nenhum amigo tenha 
+aquela quantia, o programa deverá escrever <b>-1</b>.</p>
+<p>Em seguida, o programa deve escrever a média das idades de todos amigos e a quantidade total em dinheiro.<br>
+
+</p><p><b>Entradas:</b></p>
+<ol style="text-align:left;padding-left:20px;">
+<li>Dados de 5 amigos (para cada um, a idade precede a quantia de dinheiro).</li>
+<li>Valor a ser buscado.</li></ol><p></p>
+<p><b>Saídas:</b></p>
+<ol style="text-align:left;padding-left:20px;">
+<li>A idade de cada amigo que possui a quantia procurada (ou -1 se nenhum amigo possui tal quantia).</li>
+<li>Média de todas as idades.</li>
+<li>Soma de todas as quantias de dinheiro.</li>
+</ol><p></p>
+<p></p><pre>Exemplo de entrada:
+18 15
+22 20
+17 10
+19 15
+20 25
+15
+
+Exemplo de saída:
+19
+18
+19.2
+85</pre><p></p>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ8"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    27/02/2017 15:25:01</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="148" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="8" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial148');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial148">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+typedef struct {
+    int idade;
+    int dinheiro;
+} dadosAmigos;
+
+void insertionSort(dadosAmigos amigo[], int tam) {
+    for (int i = 1; i &lt; tam; ++i) {
+        int copiaIdade = amigo[i].idade;
+        int copiaDinheiro = amigo[i].dinheiro;
+        int j = i-1;
+        while (j &gt;= 0 and amigo[j].idade &lt; copiaIdade) {
+            amigo[j+1].idade = amigo[j].idade;
+            amigo[j+1].dinheiro = amigo[j].dinheiro;
+            --j;
+        }
+        amigo[j+1].idade = copiaIdade;
+        amigo[j+1].dinheiro = copiaDinheiro;
+    }
+}
+
+int main() {
+    int somatorio = 0, media = 0;
+    dadosAmigos amigo[5];
+    for (int i = 0; i &lt; 5; ++i) {
+        cin &gt;&gt; amigo[i].idade &gt;&gt; amigo[i].dinheiro;
+    }
+    insertionSort(amigo, 5);
+    int quantia;
+    cin &gt;&gt; quantia;
+    bool logica = true;
+    for (int i = 0; i &lt; 5; ++i) {
+        media += amigo[i].idade;
+        somatorio += amigo[i].dinheiro;
+        if (amigo[i].dinheiro == quantia) {
+            cout &lt;&lt; amigo[i].idade &lt;&lt; endl;
+            logica = false;
+        }
+        
+    }
+    if (logica) {
+        cout &lt;&lt; -1 &lt;&lt; endl;
+    }
+    cout &lt;&lt; float(media)/5.0f &lt;&lt; endl &lt;&lt; somatorio &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q9"></a>
+                <h3>Questão 9:
+                            Ordenação - Implementando o SelectionSort.</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Crie um programa que implemente uma versão alterada do método de ordenação SelectionSort que ordene o vetor inversamente.</p>
+<p>Entradas:</p>
+<ol>
+<li>Tamanho do vetor(int).</li>
+<li>Números presentes no vetor(int).</li>
+</ol>
+<p>Saídas:</p>
+<ol>
+<li>Vetor ordenado de maneira decrescente.</li>
+</ol>
+<p>Exemplo de Entrada:</p>
+<pre>5
+10 15 3 4 6</pre>
+<p>Exemplo de Saída:</p>
+<pre>15 10 6 4 3</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ9"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    27/02/2017 15:33:34</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="579" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="9" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial579');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial579">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+void selectionSortInvertido(int vetor[], int tam) {
+    for (int i = tam-1; i &gt; 0; --i) {
+        int iMenor = i;
+        for (int j = i-1; j &gt;= 0; --j) {
+            if (vetor[j] &lt; vetor[iMenor]) {
+                iMenor = j;
+            }
+        }
+        int valor = vetor[i];
+        vetor[i] = vetor[iMenor];
+        vetor[iMenor] = valor;
+    }
+}
+
+int main() {
+    int tam;
+    cin &gt;&gt; tam;
+    int vetor[tam];
+    for (int i = 0; i &lt; tam; ++i) {
+        cin &gt;&gt; vetor[i];
+    }
+    selectionSortInvertido(vetor, tam);
+    for (int i = 0; i &lt; tam; ++i) {
+        cout &lt;&lt; vetor[i] &lt;&lt; " ";
+    }
+    cout &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q10"></a>
+                <h3>Questão 10:
+                            Modularização - Ordenar pontos pela distância</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <h2>Visão geral do problema</h2>
+<p>Faça um programa que ordena pontos no plano cartesiano em função da distância a um ponto de referência.</p>
+
+<p>Seu programa deve definir um registro que representa o tipo ponto, 
+deve ter um módulo para calcular a distância entre dois pontos, um 
+módulo para ordenar pontos e o módulo principal, que faz toda a entrada e
+ saída de dados. Outros módulos são opcionais. A ordenação deve ser 
+feita por algum dos métodos de ordenação vistos em aula.</p>
+
+<p>Sabe-se que dados dois pontos A = (x1,y1) e B = (x2,y2), a distância 
+entre eles é a raiz quadrada da soma das diferenças das coordenadas ao 
+quadrado.</p>
+<p>Fórmula: <img src="ordenacao_files/distancia.jpg" width="480px"></p>
+<p>Para calcular a raiz quadrada em C++, use a função <code>sqrt</code> da biblioteca <code>cmath</code>.</p>
+
+<h2>Dados de entrada</h2>
+<p>O programa deve ler, em ordem:
+</p><ol style="text-align: left; padding-left: 3em">
+<li>o ponto de referência,</li>
+<li>um número inteiro que indica a quantidade de pontos a serem ordenados,</li>
+<li>os vários pontos a serem ordenados, cada um dado por duas coordenadas que são números reais.</li>
+</ol><p></p>
+
+<h2>Dados de saída</h2>
+<p>O programa deve escrever os pontos ordenados do mais próximo ao ponto
+ de referência até o mais distante. Para cada ponto, o programa deve 
+escrever:
+</p><ol style="text-align: left; padding-left: 3em">
+<li>A distância até o ponto de referência,</li>
+<li>a coordenada x do ponto,</li>
+<li>a coordenada y do ponto.</li>
+</ol><p></p>
+
+<h2>Exemplos de entrada e saída</h2>
+<p></p><pre>Entrada:
+12.3 4.1
+3
+-1.9 4.1
+-0.1 -3.8
+22.1 5.9</pre><p></p>
+
+<p></p><pre>Saída:
+9.96393 22.1 5.9
+14.2 -1.9 4.1
+14.7027 -0.1 -3.8
+</pre><p></p>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ10"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    27/02/2017 15:51:46</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="264" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="10" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial264');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial264">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;cmath&gt;
+
+using namespace std;
+
+typedef struct {
+    float x;
+    float y;
+} ponto;
+
+float disDoisPontos(float x1, float y1, float x2, float y2) {
+    return sqrt(pow((x2 - x1), 2) + pow((y2 - y1), 2));
+}
+
+void InsertionSort(float vetor[], int tam, ponto coordenada[]) {
+    for (int i = 1; i &lt; tam; ++i) {
+        float aux = vetor[i];
+        float xAux = coordenada[i].x;
+        float yAux = coordenada[i].y;
+        int j = i - 1;
+        while (j &gt;= 0 and vetor[j] &gt; aux) {
+            vetor[j+1] = vetor[j];
+            coordenada[j+1].x = coordenada[j].x;
+            coordenada[j+1].y = coordenada[j].y;
+            --j;
+        }
+        vetor[j+1] = aux;
+        coordenada[j+1].x = xAux;
+        coordenada[j+1].y = yAux;
+    }
+}
+
+int main() {
+    float x, y;
+    cin &gt;&gt; x &gt;&gt; y;
+    int qtd;
+    cin &gt;&gt; qtd;
+    ponto coordenada[qtd];
+    for (int i = 0; i &lt; qtd; ++i) {
+        cin &gt;&gt; coordenada[i].x &gt;&gt; coordenada[i].y;
+    }
+    float vetor[qtd];
+    for (int i = 0; i &lt; qtd; ++i) {
+        vetor[i] = disDoisPontos(x, y, coordenada[i].x, coordenada[i].y);
+    }
+    InsertionSort(vetor, qtd, coordenada);
+    for (int i = 0; i &lt; qtd; ++i) {
+        cout &lt;&lt; vetor[i] &lt;&lt; " " &lt;&lt; coordenada[i].x &lt;&lt; " " &lt;&lt; coordenada[i].y &lt;&lt; endl;
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q11"></a>
+                <h3>Questão 11:
+                            Ordenação - Estratégia Pokémon Go</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Um fã do jogo Pokémon Go resolveu criar um programa 
+para definir quais serão os próximos pokémons que ele tentará pegar. Ele
+ conseguiu um jeito de gerar um <b>arquivo texto</b> (<i>dados.txt</i>) contendo na primeira linha a quantidade de pokémons e depois, em cada linha, as seguintes informações de um pokémon: <b>nome</b>, <b>tipo</b> e <b>distância</b> para sua posição atual. A ideia é que o usuário informe na <b>entrada padrão</b> o <b>tipo</b> de pokémon que quer pegar e a <b>quantidade N</b> de pokémons desse tipo e o programa, a partir dos dados do arquivo, salve em um <b>arquivo texto</b> (<i>pokemon.txt</i>) os nomes dos <b>N</b> pokémons <b>daquele tipo mais próximos</b> de sua posição atual (em <b>ordem crescente</b> de distância).</p>
+<p>Observações: considere que não existem distâncias repetidas e também que sempre existirá pokémons suficientes para a quantidade <b>N</b> passada pelo usuário.</p>
+<p><b>Entradas (<i>arquivo dados.txt</i>):</b></p>
+<ol>
+<li>Quantidade de pokémons do arquivo.
+</li><li>Depois, em cada linha: nome, tipo e distância (inteiro) de um pokémon para a posição atual do jogador.</li>
+</ol>
+<p><b>Entradas (<i>entrada padrão</i>):</b></p>
+<ol>
+<li>Tipo de pokémon que o jogador quer pegar.</li>
+<li>Quantidade <b>N</b> de pokémons que o jogador quer pegar.</li>
+</ol>
+<p><b>Saídas (<i>arquivo pokemon.txt</i>):</b></p>
+<ol>
+<li>Nomes dos <b>N</b> pokémons mais próximos, do tipo passado, em ordem crescente de distância.</li>
+</ol>
+<p><b>Exemplo de Entrada (<i>arquivo dados.txt</i>):</b></p>
+<pre>10
+Bulbasaur Planta 8
+Charmander Fogo 9
+Squirtle Agua 13
+Pikachu Eletrico 10
+Chikorita Planta 3
+Treecko Planta 4
+Cyndaquil Fogo 7
+Torchic Fogo 5
+Totodile Agua 6
+Mudkip Agua 11
+</pre>
+<p><b>Exemplo de Entrada (<i>entrada padrão</i>):</b></p>
+<pre>Fogo
+2
+</pre>
+<p><b>Exemplo de Saída  (<i>arquivo pokemon.txt</i>):</b></p>
+<pre>Torchic
+Cyndaquil
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ11"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    27/02/2017 21:48:20</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="651" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="11" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial651');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial651">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;string&gt;
+
+using namespace std;
+
+typedef struct {
+    string nome;
+    string tipo;
+    int dist;
+} dadosPokemon;
+
+void insertionSort(dadosPokemon pokemon[], int tam) {
+    for (int i = 1; i &lt; tam; ++i) {
+        int copiaDist = pokemon[i].dist;
+        string copiaNome = pokemon[i].nome;
+        string copiaTipo = pokemon[i].tipo;
+        int j = i-1;
+        while (j &gt;= 0 and pokemon[j].dist &gt; copiaDist) {
+            pokemon[j+1].dist = pokemon[j].dist;
+            pokemon[j+1].nome = pokemon[j].nome;
+            pokemon[j+1].tipo = pokemon[j].tipo;
+            --j;
+        }
+        pokemon[j+1].nome = copiaNome;
+        pokemon[j+1].tipo = copiaTipo;
+        pokemon[j+1].dist = copiaDist;
+    }
+}
+
+int main() {
+    ifstream dados("dados.txt");
+    int qtd;
+    dados &gt;&gt; qtd;
+    dadosPokemon pokemon[qtd];
+    for (int i = 0; i &lt; qtd; ++i) {
+        dados &gt;&gt; pokemon[i].nome &gt;&gt; pokemon[i].tipo &gt;&gt; pokemon[i].dist;
+    }
+    insertionSort(pokemon, qtd);
+    string pego;
+    cin &gt;&gt; pego;
+    int n;
+    cin &gt;&gt; n;
+    int x = 0;
+    ofstream arquivo("pokemon.txt");
+    for (int i = 0; i &lt; qtd and (x &lt; n); ++i) {
+        if (pego == pokemon[i].tipo) {
+            arquivo &lt;&lt; pokemon[i].nome &lt;&lt; endl;
+            ++x;
+        }
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q12"></a>
+                <h3>Questão 12:
+                            Ordenação - Magos e Dragões</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <!-- Quibado de http://br.spoj.com/problems/MAGOMG14/ pelo Bruno. -->
+<p>Em seus 2500 anos de vida, Merlin aprendeu uma grande quantidade de 
+feitiços poderosos. Dessa forma, ele se tornou apto a enfrentar um 
+terrível dragão que está destruindo o reino. Entretanto, Merlin conhece 
+tantos feitiços que a tarefa de escolher quais serão usados em uma 
+eventual batalha se tornou bastante árdua. Por isso, ele pediu que você o
+ ajudasse a escolher quais magias utilizar em um eventual confronto 
+contra o dragão.</p>
+<p>Em um confronto, um mago deve invocar exatamente K feitiços, nem 
+mais, nem menos. Merlin conhece N feitiços. Cada feitiço tem um poder 
+representado por um valor inteiro Fi. Todos os feitiços possuem poderes 
+diferentes, i.e., não há dois feitiços com exatamente o mesmo poder. O 
+valor do ataque do mago será o produto dos poderes dos K feitiços 
+escolhidos. Como o dragão é muito forte, Merlin pretende utilizar a 
+combinação de feitiços que irá lhe dar o maior ataque possível. Dado K, 
+sua tarefa é informar quais feitiços Merlin deve utilizar em seu 
+confronto. Tome muito cuidado! Magia é algo muito perigoso. Existem 
+feitiços malignos com poder negativo (Fi &lt; 0).</p>
+<p>Note que podem existir mais de um conjunto de feitiços que gerem um 
+ataque máximo. Nesse caso, Merlin deseja aquele cuja soma dos Fi é 
+máxima. Não é necessário usar os mesmo nomes do enunciado.</p>
+<p>Entradas:</p>
+<ol>
+<li>O número de feitiços que Merlin conhece (N).</li>
+<li>O número de feitiços que Merlin irá usar em seu confronto (K, 1 ≤ K ≤ N).</li>
+<li>N inteiros únicos Fi, indicando a força do i-ésimo feitiço. Se i != j, então Fi != Fj, para todo i e j.</li>
+</ol>
+<p>Saídas:</p>
+<ol>
+<li>K inteiros indicando os poderes Fi das magias que serão usados, em ordem crescente.</li>
+<li>O valor total do ataque de Merlin (produtório das forças dos feitiços usados).</li>
+</ol>
+<p>Exemplos:</p>
+<ol>
+<li>Entrada:<pre>3 2
+-1 3 5</pre>Saída:<pre>3 5 
+15</pre></li>
+<li>Entrada:<pre>4 2
+-3 -4 3 2</pre>Saída:<pre>-4 -3 
+12</pre></li>
+</ol>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ12"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    01/03/2017 19:20:58</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    47.6</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    O programa não resolve todas as instâncias do problema.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="516" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="12" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial516');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial516">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int abs(int numero) {
+    if (numero &lt; 0)
+        return numero*-1;
+    return numero;
+}
+
+void insertionSort(int vetor[], int tam) {
+    for (int i = 1; i &lt; tam; ++i) {
+        int aux = vetor[i];
+        int j = i-1;
+        while (j &gt;= 0 and vetor[j] &gt; aux) {
+            vetor[j+1] = vetor[j];
+            --j;
+        }
+        vetor[j+1] = aux;
+    }
+}
+
+int main() {
+    int conhecidos;
+    cin &gt;&gt; conhecidos;
+    int qtdUsados;
+    cin &gt;&gt; qtdUsados;
+    int feiticos[conhecidos];
+    for (int i = 0; i &lt; conhecidos; ++i) {
+        cin &gt;&gt; feiticos[i];
+    }
+    insertionSort(feiticos, conhecidos);
+    int resultado[qtdUsados];
+    int inicio = 0, fim = conhecidos-1, cont = 0, produtorio = 1;;
+    while (cont &lt; qtdUsados) {
+        if (abs(feiticos[inicio]) == abs(feiticos[fim])) {
+            if (cont == 0) {
+                if (qtdUsados == 1) {
+                    resultado[cont] = feiticos[fim];
+                    produtorio *= resultado[cont];
+                    ++cont;
+                    --fim;
+                }
+                else {
+                    if (abs(feiticos[inicio+1]) &gt; abs(feiticos[fim-1])) {
+                        resultado[cont] = feiticos[inicio];
+                        produtorio *= resultado[cont];
+                        ++cont;
+                        ++inicio;
+                    }
+                    else {
+                        resultado[cont] = feiticos[fim];
+                        produtorio *= resultado[cont];
+                        ++cont;
+                        --fim;
+                    }
+                }
+            }
+            else {
+                if (resultado[0] &lt; 0) {
+                    if (feiticos[inicio] &lt; 0) {
+                        resultado[cont] = feiticos[inicio];
+                        produtorio *= resultado[cont];
+                        ++inicio;
+                        ++cont;
+                    }
+                    else {
+                        resultado[cont] = feiticos[fim];
+                        produtorio *= resultado[cont];
+                        ++cont;
+                        --fim;
+                    }
+                }
+                else {
+                    if (feiticos[inicio] &gt; 0) {
+                        resultado[cont] = feiticos[inicio];
+                        produtorio *= resultado[cont];
+                        ++inicio;
+                        ++cont;
+                    }
+                    else {
+                        resultado[cont] = feiticos[fim];
+                        produtorio *= resultado[cont];
+                        ++cont;
+                        --fim;
+                    }
+                }
+            }
+        }
+        else {
+            if (abs(feiticos[inicio]) &gt; abs(feiticos[fim])) {
+                resultado[cont] = feiticos[inicio];
+                produtorio *= resultado[cont];
+                ++inicio;
+                ++cont;
+            }
+            else {
+                resultado[cont] = feiticos[fim];
+                produtorio *= resultado[cont];
+                --fim;
+                ++cont;
+            }
+        }
+    }
+    insertionSort(resultado, qtdUsados);
+    for (int i = 0; i &lt; qtdUsados; ++i) {
+        cout &lt;&lt; resultado[i] &lt;&lt; " ";
+    }
+    cout &lt;&lt; endl &lt;&lt; produtorio &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q13"></a>
+                <h3>Questão 13:
+                            Arquivo - Alfabeto (ordenação)</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>
+Faça um programa que receba de um arquivo <b>"entrada.txt"</b> algumas letras do alfabeto (maiúsculo) em ordem aleatória e ordene-o. Feito isso, salve o resultado em outro arquivo <b>"saida.txt"</b>.
+</p>
+
+<p><b>Entradas:</b></p>
+<ul style="text-align:left;padding-left:20px;">
+<li>Alfabeto desordenado com no máximo 26 letras e sem repetição.</li>
+</ul>
+
+<p><b>Saídas:</b></p>
+<ul style="text-align:left;padding-left:20px;">
+<li>Alfabeto ordenado.</li>
+</ul>
+
+<br><h3>Exemplos de Entradas e Saídas:</h3>
+
+<p><b>Entradas do Arquivo:</b></p>
+<pre>E F W B G H I K L M P Q R S D T U Z V Y
+</pre>
+
+<p><b>Saídas do Arquivo:</b></p>
+<pre>B D E F G H I K L M P Q R S T U V W Y Z
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ13"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    28/02/2017 00:47:58</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="164" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="13" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial164');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial164">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;cstring&gt;
+
+using namespace std;
+
+void insertionSort(char vetor[], int tam) {
+    for (int i = 1; i &lt; tam; ++i) {
+        char aux = vetor[i];
+        int j = i-1;
+        while (j &gt;= 0 and vetor[j] &gt; aux) {
+            vetor[j+1] = vetor[j];
+            --j;
+        }
+        vetor[j+1] = aux;
+    }
+}
+
+int main() {
+    ifstream entrada("entrada.txt");
+    char alfabeto[26];
+    int tam = 0;
+    while (entrada &gt;&gt; alfabeto[tam]) {
+        ++tam;
+    }
+    insertionSort(alfabeto, tam);
+    ofstream saida("saida.txt");
+    for (unsigned int i = 0; i &lt; strlen(alfabeto); ++i) {
+        saida &lt;&lt; alfabeto[i] &lt;&lt; " ";
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q14"></a>
+                <h3>Questão 14:
+                            Ordenação - K menores</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Você deverá fazer um programa que recebe um vetor de 
+inteiros V de N posições e um inteiro K. Seu programa deverá então 
+mostrar os K menores elementos do vetor, em ordem não-decrescente.</p>
+
+<p><b>Entradas:</b></p>
+<ul>
+<li>Tamanho N do vetor.</li>
+<li>Os N elementos do vetor V.</li>
+<li>Inteiro K.</li>
+</ul>
+
+<p><b>Saídas:</b></p>
+<ul>
+<li>Os K menores elementos do vetor, em ordem não decrescente.</li>
+</ul>
+
+<p><b>Exemplo de Entrada:</b></p>
+<pre>5
+7 8 5 3 6
+2
+</pre>
+
+<p><b>Exemplo de saída:</b></p>
+<pre>3 5
+</pre>
+
+<p><b>Exemplo de Entrada:</b></p>
+<pre>6
+4 8 7 9 6 3
+3
+</pre>
+
+<p><b>Exemplo de saída:</b></p>
+<pre>3 4 6
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ14"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    28/02/2017 00:53:54</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="325" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="14" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial325');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial325">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+void insertionSort(int vetor[], int tam) {
+    for (int i = 1; i &lt; tam; ++i) {
+        int aux = vetor[i];
+        int j = i-1;
+        while(j &gt;= 0 and vetor[j] &gt; aux) {
+            vetor[j+1] = vetor[j];
+            --j;
+        }
+        vetor[j+1] = aux;
+    }
+}
+
+int main() {
+    int tam;
+    cin &gt;&gt; tam;
+    int vetor[tam];
+    for (int i = 0; i &lt; tam; ++i) {
+        cin &gt;&gt; vetor[i];
+    }
+    int k;
+    cin &gt;&gt; k;
+    insertionSort(vetor, tam);
+    for (int i = 0; i &lt; k; ++i) {
+        cout &lt;&lt; vetor[i] &lt;&lt; " ";
+    }
+    cout &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q15"></a>
+                <h3>Questão 15:
+                            Matriz - Ordenação em N</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça uma ordenação de uma matriz quadrada, do número 
+menor para o maior em forma de N, ou seja, a primeira coluna (da última 
+linha a primeira) , diagonal primária e última coluna (da última linha a
+ primeira), ignorando os outros elementos.</p>
+
+<p><b>Obs: A ordenação deve ser constante, sendo o primeiro elemento o menor e o último o maior.</b></p>
+
+<p><b>Entradas:</b></p>
+<ul style="text-align:left;padding-left:20px;">
+<li><code>int n</code> - Tamanho da matriz quadrada</li>
+<li><code>int mat[n][n]</code> - Matriz que deve ser ordenada</li>
+</ul>
+
+<p><b>Saídas:</b></p>
+<ul style="text-align:left;padding-left:20px;">
+<li>Matriz ordenada</li>
+</ul>
+
+
+<h3>Exemplos de Entradas e Saídas:</h3>
+
+<p><b>Entradas:</b><br></p>
+<pre> 4
+ 12   11   10    9
+  5    6    7    8
+  1    2    3    4
+ 16   15   14   13
+</pre>
+
+<p><b>Saídas:</b><br>
+</p><pre>  5   11   10   16
+  4    6    7   13
+  3    2    8   12
+  1   15   14    9
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ15"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    28/02/2017 01:51:01</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="240" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="15" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial240');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial240">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;iomanip&gt;
+
+using namespace std;
+
+void selectionSort(int vetor[], int tam) {
+    for (int i = 0; i &lt; tam-1; ++i) {
+        int iMenor = i;
+        for (int j = i; j &lt; tam; ++j) {
+            if (vetor[j] &lt; vetor[iMenor]) {
+                iMenor = j;
+            }
+        }
+        int aux = vetor[i];
+        vetor[i] = vetor[iMenor];
+        vetor[iMenor] = aux;
+    }
+}
+
+int main() {
+    int n;
+    cin &gt;&gt; n;
+    int matriz[n][n];
+    for (int i = 0; i &lt; n; ++i) {
+        for (int j = 0; j &lt; n; ++j) {
+            cin &gt;&gt; matriz[i][j];
+        }
+    }
+    int tam = 2 * n + n - 2;
+    int vetor[tam];
+    int x = 0;
+    for (int i = 0; i &lt; n; ++i) {
+        for (int j = 0; j &lt; n; ++j) {
+            if ((j == 0) or (j == n-1) or (j == i)) {
+                vetor[x++] = matriz[i][j];
+            }
+        }
+    }
+    selectionSort(vetor, tam);
+    int i = 0, j = n-1;
+    --x;
+    while (i &lt; n-1) {
+        matriz[i++][j] = vetor[x--];
+    }
+    while (j &gt; 0) {
+        matriz[i--][j--] = vetor[x--];
+    }
+    while (i &lt; n) {
+        matriz[i++][j] = vetor[x--];
+    }
+    for (i = 0; i &lt; n; ++i) {
+        for (j = 0; j &lt; n; ++j) {
+            cout &lt;&lt; setw(4) &lt;&lt; matriz[i][j];
+        }
+        cout &lt;&lt; endl;
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q16"></a>
+                <h3>Questão 16:
+                            Registros - Clientes (ordenação)</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que cadastre quantos clientes o 
+usuário desejar, recebendo o código (número inteiro) e o saldo (número 
+real) do cliente. Quando o usuário digitar <b>-1</b> no campo do código 
+encerrará o cadastramento. Não será necessário armazenar mais do que 100
+ clientes. Cada cliente deve ser representado por um registro.</p>
+
+<p>Feito o cadastro dos clientes, ordene os clientes <b>pelo saldo</b>, de forma crescente. É obrigatório usar um dos algoritmos de ordenação ensinados no curso.</p>
+
+<p>Depois, leia o valor de um imóvel e escreva os códigos dos clientes 
+que tem condições de fazer a compra. Se nenhum cliente for cadastrado ou
+ não tem condições de fazer a compra, escreva <b>-1.</b></p>
+
+<p><b>Entradas:</b></p>
+<ol>
+<li>Dados dos clientes, terminados pelo valor -1. Em cada cliente, o código precede o saldo.</li>
+<li>Valor do produto que o banco verificará a compra.</li>
+</ol>
+
+<p><b>Saídas:</b></p>
+<ol>
+<li>Código e saldo dos clientes que podem fazer a compra.</li>
+</ol>
+
+<p><b>Exemplo de entradas:</b></p>
+<pre>729 2500
+323 1450.50
+654  800
+983  670
+123 1444.70
+-1
+
+1000</pre>
+
+<p><b>Exemplo de saídas:</b></p>
+<pre>123 1444.70
+323 1450.50
+729 2500</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ16"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    28/02/2017 02:15:17</p>
+                <p><b>Tentativas:</b>
+                    2 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    90</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="241" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="3" type="hidden">
+            <input name="atenuacao" value="0.81" type="hidden">
+            <input name="nroQuestao" value="16" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial241');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial241">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+typedef struct {
+    int cod;
+    float saldo;
+} dadosClientes;
+
+int main() {
+    dadosClientes cliente[100];
+    int tam = 0;
+    bool pararLer = false;
+    do {
+        cin &gt;&gt; cliente[tam].cod;
+        if (cliente[tam].cod == -1) {
+            pararLer = true;
+        }
+        else {
+            cin &gt;&gt; cliente[tam].saldo;
+            ++tam;
+        }
+    } while (!pararLer);
+    for (int i = 0; i &lt; tam-1; ++i) {
+        int iMenor = i;
+        for (int j = i; j &lt; tam; ++j) {
+            if (cliente[j].saldo &lt; cliente[iMenor].saldo) {
+                iMenor = j;
+            }
+        }
+        int copiaCod = cliente[i].cod;
+        float copiaSaldo = cliente[i].saldo;
+        cliente[i].cod = cliente[iMenor].cod;
+        cliente[i].saldo = cliente[iMenor].saldo;
+        cliente[iMenor].cod = copiaCod;
+        cliente[iMenor].saldo = copiaSaldo;
+    }
+    float imovel;
+    cin &gt;&gt; imovel;
+    bool naoExiste = true;
+    for (int i = 0; i &lt; tam; ++i) {
+        if (cliente[i].saldo &gt;= imovel) {
+            cout &lt;&lt; cliente[i].cod &lt;&lt; " " &lt;&lt; cliente[i].saldo &lt;&lt; endl;
+            naoExiste = false;
+        }
+    }
+    if (naoExiste) {
+        cout &lt;&lt; -1 &lt;&lt; endl;
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q17"></a>
+                <h3>Questão 17:
+                            Ordenação - Mediana</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Em estatística, a <b>mediana</b> é a medida de 
+tendência central, ou seja, metade dos valores são menores que a mediana
+ e metade são maiores que ela. Caso a quantidade de informações seja 
+par, a mediana é a média simples dos dois valores medianos.</p>
+
+<p>Faça um programa que calcula a mediana de um conjunto de valores.</p>
+
+<p>A entrada de dados é composta de vários números positivos. Um número negativo na entrada indica o final dos valores.</p>
+
+<p></p><pre>Exemplo de entrada:
+4.4 5.1 1.2 9.3 -1
+
+Exemplo de saída:
+4.75
+</pre><p></p>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ17"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    28/02/2017 02:42:25</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="221" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="17" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial221');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial221">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+using namespace std;
+
+void selectionSort(vector&lt;float&gt;&amp; vetor) {
+    for (unsigned int i = 0; i &lt; vetor.size()-1; ++i) {
+        unsigned int imenor = i;
+        for (unsigned int j = i; j &lt; vetor.size(); ++j) {
+            if (vetor.at(j) &lt; vetor.at(imenor)) {
+                imenor = j;
+            }
+        }
+        float aux = vetor.at(i);
+        vetor.at(i) = vetor.at(imenor);
+        vetor.at(imenor) = aux;
+    }
+}
+
+int main() {
+    vector&lt;float&gt; vetor;
+    float num;
+    bool parar = false;
+    do {
+        cin &gt;&gt; num;
+        if (num &lt; 0) {
+            parar = true;
+        }
+        else {
+            vetor.push_back(num);
+        }
+    } while (!parar);
+    selectionSort(vetor);
+    unsigned int meio = unsigned(vetor.size()) / 2;
+    if (vetor.size() % 2 == 0) {
+        cout &lt;&lt; (vetor.at(meio) + vetor.at(meio-1)) / 2.0f &lt;&lt; endl;
+    }
+    else {
+        cout &lt;&lt; vetor.at(meio) &lt;&lt; endl;
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q18"></a>
+                <h3>Questão 18:
+                            Ordenação - Classificando Músicas (arquivo, subprogramas, registro)</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Um programa gerou um arquivo texto com dados sobre 
+suas músicas. Agora você quer ordenar as músicas, tentando colocar as 
+que você gosta mais no início da lista e as que você gosta menos no 
+final. Cada música tem uma nota dada por você mesmo, que é um número 
+entre 1 e 5. Como muitas músicas tem a mesma nota, você vai usar 
+critérios de desempate. Quando duas músicas têm a mesma nota, a que você
+ gosta mais deve ser aquela que foi interrompida menos vezes, em relação
+ à quantas vezes foi tocada. Se o empate persistir, a melhor música é 
+aquela que você ouviu mais vezes.</p>
+<p>Faça um programa que lê dados das musicas do arquivo "<code>dados-musicas.txt</code>" e escreve os mesmos dados, no mesmo formato, no arquivo "<code>musicas-ordenadas.txt</code>", em ordem, da que você gostar mais para a que você gosta menos.</p>
+<p>Para a ordenação, você deve implementar um dos métodos de ordenação vistos em aula, porém o uso do BubbleSort é proibido.</p>
+<p>Seu programa deve ter no mínimo 3 subprogramas além do subprograma 
+principal. Seu professor irá verificar se os subprogramas estão bem 
+feitos e avaliar de acordo com as aulas dele. Os subprogramas não podem 
+estar lá só para existirem, eles devem contribuir para dividir o 
+problema em subproblemas mais simples, com parâmetros e seus métodos de 
+passagem bem escolhidos, sem misturar interface com processamento.</p>
+<p>As músicas devem ser representadas por registros, com campos bem 
+escolhidos (informações que caracterizam uma música) conforme critério 
+do seu professor.</p>
+<p>O professor Bruno Schneider irá avaliar também o uso de nomes significativos e endentação.</p>
+<p>Entradas:</p>
+<p>Cada linha do arquivo tem os dados de uma música. Não existe nenhum 
+número no arquivo indicando quantas músicas são, mas o total nunca será 
+superior a 400. Cada linha tem os dados a seguir e existe um único 
+espaço em branco entre os dados de uma música.</p>
+<ol>
+<li>A nota dada para a música (um número inteiro no intervalo [1,5]).</li>
+<li>O número de vezes que você ouviu a música.</li>
+<li>O número de vezes que você já interrompeu a música.</li>
+<li>O nome da música (não mais do que 200 caracteres, espaços são comuns em nomes de música).</li>
+</ol>
+<p>Saídas:</p>
+<p>Os mesmos dados de entrada, no mesmo formato, com as músicas ordenadas da que você gosta mais para a que você gosta menos.</p>
+<p>Exemplo de Entrada:</p>
+<pre>5 40 4 Sweet Dreams
+4 31 2 Going Under
+2 20 4 I Ran (So Far Away)
+3 41 10 She Drives Me Crazy
+4 20 0 Nowhere Fast</pre>
+<p>Exemplo de Saída:</p>
+<pre>5 40 4 Sweet Dreams
+4 31 2 Going Under
+4 20 0 Nowhere Fast
+3 41 10 She Drives Me Crazy
+2 20 4 I Ran (So Far Away)</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ18"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    28/02/2017 20:15:35</p>
+                <p><b>Tentativas:</b>
+                    3 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    25.9</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    O programa não resolve todas as instâncias do problema.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="655" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="4" type="hidden">
+            <input name="atenuacao" value="0.729" type="hidden">
+            <input name="nroQuestao" value="18" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial655');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial655">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include
+ &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;cstring&gt;
+
+using namespace std;
+
+typedef struct {
+    int nota;
+    int numTocadas;
+    int numInterrompidas;
+    char nome[200];
+} dadosMusicas;
+
+void copiaInformacoes(int imaior, int i, dadosMusicas vetor[]) {
+    int copiaNota = vetor[i].nota;
+    int copiaTocadas = vetor[i].numTocadas;
+    int copiaInterrompidas = vetor[i].numInterrompidas;
+    char copiaNome[200];
+    strcpy(copiaNome, vetor[i].nome);
+    vetor[i].nota = vetor[imaior].nota;
+    vetor[i].numTocadas = vetor[imaior].numTocadas;
+    vetor[i].numInterrompidas = vetor[imaior].numInterrompidas;
+    strcpy(vetor[i].nome, vetor[imaior].nome);
+    vetor[imaior].nota = copiaNota;
+    vetor[imaior].numTocadas = copiaTocadas;
+    vetor[imaior].numInterrompidas = copiaInterrompidas;
+    strcpy(vetor[imaior].nome, copiaNome);
+}
+
+void selectionSortInvertido(dadosMusicas vetor[], int tam) {
+    for (int i = tam-1; i &gt; 0; --i) {
+        int imaior = i;
+        for (int j = i; j &gt;= 0; --j) {
+            if (vetor[j].nota &lt; vetor[imaior].nota) {
+                imaior = j;
+            }
+        }
+        copiaInformacoes(imaior, i, vetor);
+    }
+}
+
+void criaRelacao(int inicio, int fim, dadosMusicas vetor[], int 
+resultado[]) {
+    int indice = 0;
+    for (int i = inicio; i &lt; fim; ++i) {
+        resultado[indice] = vetor[i].numTocadas - 
+vetor[i].numInterrompidas;
+        ++indice;
+    }
+}
+
+void selecionSortModificadoCrescente(int inicio, int fim, dadosMusicas 
+vetor[]) {
+    int resultado[fim - inicio];
+    criaRelacao(inicio, fim, vetor, resultado);
+    int x = 0;
+    for (int i = inicio; i &lt; fim-1; ++i) {
+        int imenor = i;
+        int indice = x;
+        int y = x;
+        for (int j = i; j &lt; fim; ++j) {
+            if (resultado[y] &gt; resultado[indice]) {
+                imenor = j;
+                indice = y;
+            }
+            ++y;
+        }
+        copiaInformacoes(imenor, i, vetor);
+        int aux = resultado[x];
+        resultado[x] = resultado[indice];
+        resultado[indice] = aux;
+        ++x;
+    }
+}
+
+void selecionSortModificadoDecrescente(int inicio, int fim, dadosMusicas
+ vetor[]) {
+    for (int i = fim-1; i &gt; inicio; --i) {
+        int imaior = i;
+        for (int j = i; j &gt;= inicio; --j) {
+            if (vetor[j].numTocadas &lt; vetor[imaior].numTocadas) {
+                imaior = j;
+            }
+        }
+        copiaInformacoes(imaior, i, vetor);
+    }
+}
+
+void desempata(dadosMusicas musica[], int tam) {
+    for (int i = 0; i &lt; tam-1; ++i) {
+        if (musica[i].nota == musica[i+1].nota) {
+            int u = i;
+            while (musica[u].nota == musica[i].nota) {
+                ++i;
+            }
+            selecionSortModificadoCrescente(u, i, musica);
+            for (int x = u; x &lt; i-1; ++x) {
+                if ((musica[x].numTocadas - musica[x].numInterrompidas) 
+== (musica[x+1].numTocadas - musica[x+1].numInterrompidas)) {
+                    int y = x;
+                    while ((musica[x].numTocadas - 
+musica[x].numInterrompidas) == (musica[y].numTocadas - 
+musica[y].numInterrompidas)) {
+                        ++x;
+                    }
+                    selecionSortModificadoDecrescente(y, x, musica);
+                    --x;
+                }
+            }
+            --i;
+        }
+    }
+}
+
+int main() {
+    ifstream arquivoMusicas("dados-musicas.txt");
+    int tam = 0;
+    dadosMusicas musica[400];
+    int valorNota;
+    while (arquivoMusicas &gt;&gt; valorNota) {
+        musica[tam].nota = valorNota;
+        arquivoMusicas &gt;&gt; musica[tam].numTocadas &gt;&gt; 
+musica[tam].numInterrompidas;
+        arquivoMusicas.getline(musica[tam].nome, 200);
+        ++tam;
+    }
+    selectionSortInvertido(musica, tam);
+    desempata(musica, tam);
+    ofstream arquivo("musicas-ordenadas.txt");
+    for (int i = 0; i &lt; tam; ++i) {
+        arquivo &lt;&lt; musica[i].nota &lt;&lt; " " &lt;&lt; 
+musica[i].numTocadas &lt;&lt; " " &lt;&lt; musica[i].numInterrompidas 
+&lt;&lt; " " &lt;&lt; musica[i].nome &lt;&lt; endl;
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q19"></a>
+                <h3>Questão 19:
+                            Entrega de Pizzas (Registro)(Ordenação)</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Uma pizzaria precisa entregar mais pizzas que estava 
+planejando. Entretanto, para agilizar as entregas, seu motoboy atenderá 
+somente os N clientes mais próximos da pizzaria. Como saída, o programa 
+deverá retornar a soma do valor das pizzas nos N clientes mais próximos 
+da pizzaria.</p>
+
+<p>Lembre: N é somente uma porção de clientes de um total de clientes 
+que serão fornecidos na entrada. Todos os vetores devem ser alocados 
+dinamicamente.</p>
+
+<p>Para cada cliente, a pizzaria possui os seguintes dados: </p>
+Nome do cliente. <br>
+Coodenada x do cliente, <br>
+Coordenada y do cliente. <br>
+Valor da pizza.
+<p></p>
+<p>
+Para cada cliente, deverá ser criado um registro com os dados acima, e a
+ ordenação deverá ser feita usando o algoritmo Quicksort. Não haverá 
+clientes com distância repetida. </p>
+
+<p>Dica: A distância entre dois pontos pode ser calculado pela forma: sqrt [(x1-x2)^2 + (y1-y2)^2] </p>
+
+<p>Entradas:</p>
+<ol>
+<li>Número de clientes que serão atendidos</li>
+<li>Coordenada x da pizzaria</li>
+<li>Coordenada y da pizzaria</li>
+<li>Número total de clientes</li>
+<li>Nome cliente 1</li>
+<li>Coordenada x do cliente 1</li>
+<li>Coordenada y do cliente 1</li>
+<li>Valor da pizza do cliente 1</li>
+<li>Nome cliente 2</li>
+<li>Coordenada x do cliente 2</li>
+<li>Coordenada y do cliente 2</li>
+<li>Valor da pizza do cliente 2</li>
+<li>...</li>
+</ol>
+
+<p>Saídas:</p>
+<ol>
+<li>Soma do valor das pizzas dos N clientes mais próximos da pizzaria</li>
+</ol>
+
+<p>Exemplo de Entrada:</p>
+<pre>2
+5 
+5 
+3
+Joao 
+10 
+5 
+22.50 
+Lucas 
+15 
+30 
+32.00 
+Maria 
+20 
+10 
+21.00 </pre>
+<p>Exemplo de Saída:</p>
+<pre>43.50</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ19"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    03/03/2017 20:26:41</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="663" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="19" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial663');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial663">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;cmath&gt;
+
+using namespace std;
+
+typedef struct {
+    string nome;
+    float x;
+    float y;
+    float valorPizza;
+} dadosClientes;
+
+void quickSortModificado(int inicio, int fim, float vetor[], dadosClientes cliente[]) {
+    if ((fim - inicio) &lt; 2) {
+        return;
+    }
+    float pivo = vetor[(fim+inicio)/2];
+    int i = inicio, j = fim-1;
+    while (i &lt; j) {
+        while (vetor[i] &lt; pivo) {
+            ++i;
+        }
+        while (vetor[j] &gt; pivo) {
+            --j;
+        }
+        if (i &lt; j) {
+            float aux = vetor[i];
+            string copiaNome = cliente[i].nome;
+            float copiaX = cliente[i].x;
+            float copiaY = cliente[i].y;
+            float copiaValor = cliente[i].valorPizza;
+            vetor[i] = vetor[j];
+            cliente[i].nome = cliente[j].nome;
+            cliente[i].x = cliente[j].x;
+            cliente[i].y = cliente[j].y;
+            cliente[i].valorPizza = cliente[j].valorPizza;
+            vetor[j] = aux;
+            cliente[j].nome = copiaNome;
+            cliente[j].x = copiaX;
+            cliente[j].y = copiaY;
+            cliente[j].valorPizza = copiaValor;
+            ++i;
+            --j;
+        }
+    }
+    quickSortModificado(inicio, i, vetor, cliente);
+    quickSortModificado(i, fim, vetor, cliente);
+}
+
+int main() {
+    int numAtendidos;
+    cin &gt;&gt; numAtendidos;
+    float pizzX, pizzY;
+    cin &gt;&gt; pizzX &gt;&gt; pizzY;
+    int numClientes;
+    cin &gt;&gt; numClientes;
+    dadosClientes cliente[numClientes];
+    float distancia[numClientes];
+    for (int i = 0; i &lt; numClientes; ++i) {
+        cin &gt;&gt; cliente[i].nome &gt;&gt; cliente[i].x &gt;&gt; cliente[i].y &gt;&gt; cliente[i].valorPizza;
+        distancia[i] = sqrt((pow((pizzX - cliente[i].x), 2) + pow((pizzY - cliente[i].y), 2)));
+    }
+    quickSortModificado(0, numClientes, distancia, cliente);
+    float somatorio = 0;
+    for (int i = 0; i &lt; numAtendidos; ++i) {
+        somatorio += cliente[i].valorPizza;
+    }
+    cout &lt;&lt; somatorio &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q20"></a>
+                <h3>Questão 20:
+                            Ordenação - Bubble Sort detalhado</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Como forma de facilitar o ensino dos métodos de 
+ordenação, um professor resolveu fazer um programa que mostrasse o 
+funcionamento do <b>Bubble Sort</b> passo a passo. A ideia é que a cada 
+comparação realizada pelo método, o vetor seja impresso destacando-se os
+ elementos que estão sendo comparados e, quando ocorre uma troca, o 
+vetor é exibido novamente mostrando os elementos que serão trocados. 
+Para isso será necessário criar um programa que tenha:</p>
+<ul>
+<li>Um subprograma que exibe um vetor de inteiros com os elementos 
+separados por tabulações. Além disso, ele deve receber por parâmetro as 
+posições de dois elementos e um booleano indicando se eles serão 
+trocados ou não. Se eles serão trocados deve ser impresso " t" logo após
+ os dois elementos, caso contrário, deve ser impresso " *". Para a 
+última impressão (sem marcas), você pode usar um índice inválido, 
+evitando imprimir tanto os asteriscos quanto os " t".</li>
+<li>Um subprograma com a implementação do Bubble Sort (para vetor de 
+inteiros), que utilize adequadamente o subprograma anterior. Obs: as 
+chamadas devem ser feitas antes dos elementos serem trocados, mas já 
+indicando se serão trocados ou não.</li>
+<li>No subprograma principal deve ser pedido ao usuário a quantidade de elementos e os elementos do vetor.</li>
+<li>Não deve haver nenhuma operação de escrita fora do subprograma de exibição do vetor.</li>
+</ul>
+<p>Dica: faça a implementação de forma incremental. Ou seja, primeiro 
+implemente o método Bubble Sort comum e faça um subprograma para apenas 
+exibir o vetor normalmente. Depois altere o subprograma conforme o 
+enunciado e o utilize no método de ordenação.</p>
+<p><b>Entradas:</b></p>
+<ol>
+<li>Quantidade de números do vetor.</li>
+<li>Os números do vetor a ser ordenado.</li>
+</ol>
+<p><b>Saídas:</b></p>
+<ol>
+<li>Os passos de ordenação do Bubble Sort conforme o enunciado.</li>
+<li>Uma última exibição do vetor sem destacar elementos (mas ainda assim usando o mesmo subprograma).</li>
+</ol>
+<p><b>Exemplo de Entrada:</b></p>
+<pre>6
+4 8 2 9 5 0 </pre>
+<p><b>Exemplo de Saída:</b></p>
+<pre>4 *	8 *	2	9	5	0	
+4	8 t	2 t	9	5	0	
+4	2	8 *	9 *	5	0	
+4	2	8	9 t	5 t	0	
+4	2	8	5	9 t	0 t	
+4 t	2 t	8	5	0	9	
+2	4 *	8 *	5	0	9	
+2	4	8 t	5 t	0	9	
+2	4	5	8 t	0 t	9	
+2 *	4 *	5	0	8	9	
+2	4 *	5 *	0	8	9	
+2	4	5 t	0 t	8	9	
+2 *	4 *	0	5	8	9	
+2	4 t	0 t	5	8	9	
+2 t	0 t	4	5	8	9	
+0	2	4	5	8	9	</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ20"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    04/03/2017 02:08:55</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="592" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="20" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial592');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial592">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+void exibe(int vetor[], int tam, bool teste, int pos) {
+    if (teste) {
+        for (int i = 0; i &lt; tam; ++i) {
+            cout &lt;&lt; "\t" &lt;&lt; vetor[i];
+            if (pos == i or pos+1 == i) {
+                cout &lt;&lt; " t";
+            }
+        }
+        cout &lt;&lt; endl;
+    }
+    else if (pos == -1) {
+        for (int i = 0; i &lt; tam; ++i) {
+            cout &lt;&lt; "\t" &lt;&lt; vetor[i];
+        }
+        cout &lt;&lt; endl;
+    }
+    else {
+        for (int i = 0; i &lt; tam; ++i) {
+            cout &lt;&lt; "\t" &lt;&lt; vetor[i];
+            if (pos == i or pos+1 == i) {
+                cout &lt;&lt; " *";
+            }
+        }
+        cout &lt;&lt; endl;
+    }
+}
+
+void bubbleSort(int vetor[], int tam) {
+    for (int i = tam-1; i &gt; 0; --i) {
+        for (int j = 0; j &lt; i; ++j) {
+            bool trocou = false;
+            if (vetor[j] &gt; vetor[j+1]) {
+                trocou = true;
+                exibe(vetor, tam, trocou, j);
+                int aux = vetor[j];
+                vetor[j] = vetor[j+1];
+                vetor[j+1] = aux;
+            }else {
+                exibe(vetor, tam, trocou, j);
+            }
+        }
+    }
+    exibe(vetor, tam, false, -1);
+}
+
+int main() {
+    int tam;
+    cin &gt;&gt; tam;
+    int vetor[tam];
+    for (int i = 0; i &lt; tam; ++i) {
+        cin &gt;&gt; vetor[i];
+    }
+    bubbleSort(vetor, tam);
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q21"></a>
+                <h3>Questão 21:
+                            Operação Merge Sobre Três Vetores</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Você deverá fazer um programa que lê do arquivo 
+"entrada.txt" três vetores de inteiros v1, v2 e v3. O arquivo conterá o 
+tamanho do primeiro vetor N1 e os valores do vetor v1, o tamanho do 
+segundo vetor N2 e os valores do vetor v2 e finalmente o tamanho do 
+terceiro vetor N3 e os valores do mesmo (v3). Esses vetores já estão 
+ordenados. Você deve criar um novo vetor que será a junção dos três e 
+estará também ordenado. Para isso, a operação MERGE, utilizada no 
+MERGESORT deverá ser utilizada, modificando-se a versão padrão para a 
+entrada de três vetores. O resultado deve ser salvo no arquivo 
+"saida.txt", que conterá o conteúdo dos três vetores, mas ordenados pela
+ operação MERGE.</p>
+
+<p> OBS: Os vetores devem ser criados com alocação dinâmica e com o tamanho correto do vetor. </p>
+
+<p><b>Exemplo de Entrada (arquivo "entrada.txt"):</b></p>
+<pre>5
+7 15 18 31 33
+3
+5 10 22
+4
+1 2 3 4
+</pre>
+
+<p><b>Exemplo de saída (arquivo "saida.txt"):</b></p>
+<pre>1 2 3 4 5 7 10 15 18 22 31 33
+</pre>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ21"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    05/03/2017 14:46:11</p>
+                <p><b>Tentativas:</b>
+                    2 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    90</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="410" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="3" type="hidden">
+            <input name="atenuacao" value="0.81" type="hidden">
+            <input name="nroQuestao" value="21" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial410');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial410">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+
+using namespace std;
+
+void merge(int total[], int tamTotal, int v1[], int v2[], int v3[], int t1, int t2, int t3) {
+    int esqV1 = 0, esqV2 = 0, esqV3 = 0;
+    for (int i = 0; i &lt; tamTotal; ++i) {
+        if ((esqV1 &lt; t1) and (esqV2 &gt;= t2 or v1[esqV1] &lt; v2[esqV2]) and (esqV3 &gt;= t3 or v1[esqV1] &lt; v3[esqV3])) {
+            total[i] = v1[esqV1++];
+        }
+        else if ((esqV2 &lt; t2) and (esqV3 &gt;= t3 or v2[esqV2] &lt; v3[esqV3])) {
+            total[i] = v2[esqV2++];
+        }
+        else {
+            total[i] = v3[esqV3++];
+        }
+    }
+}
+
+int main() {
+    ifstream arquivoEntrada("entrada.txt");
+    int tam1, tam2, tam3;
+    arquivoEntrada &gt;&gt; tam1;
+    int vetor1[tam1];
+    for (int i = 0; i &lt; tam1; ++i) {
+        arquivoEntrada &gt;&gt; vetor1[i]; 
+    }
+    arquivoEntrada &gt;&gt; tam2;
+    int vetor2[tam2];
+    for (int i = 0; i &lt; tam2; ++i) {
+        arquivoEntrada &gt;&gt; vetor2[i];
+    }
+    arquivoEntrada &gt;&gt; tam3;
+    int vetor3[tam3];
+    for (int i = 0; i &lt; tam3; ++i) {
+        arquivoEntrada &gt;&gt; vetor3[i];
+    }
+    int tamTotal = tam1+tam2+tam3;
+    int resposta[tamTotal];
+    merge(resposta, tamTotal, vetor1, vetor2, vetor3, tam1, tam2, tam3);
+    ofstream arquivo("saida.txt");
+    for (int i = 0; i &lt; tamTotal; ++i) {
+        arquivo &lt;&lt; resposta[i] &lt;&lt; " ";
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q22"></a>
+                <h3>Questão 22:
+                            Ordenação - Ordenar Produtos (registros, modulos)</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que lê dados de vários produtos, ordena-os e escreve aqueles que estiverem dentro de uma faixa de preços.</p>
+<p>Inicialmente o programa deverá ler a quantidade de produtos que deve 
+ser lida. Cada produto deve ser representado por um registro que tem 
+identificador (número inteiro), descrição (sequência de caracteres - 79 
+caracteres são suficientes) e preço (número real). Os campos dos 
+produtos devem ser lidos na ordem mencionada anteriormente, sendo que 
+podem haver espaços na descrição do produto. Considere que cada um dos 
+campos será digitado numa linha e que <b>pode</b> haver uma linha em branco entre os produtos.</p>
+<p>Após a leitura, os produtos deverão ser ordenados por preço. Depois o
+ programa deverá ler um preço mínimo e um máximo. Por fim, o programa 
+deverá escrever em ordem crescente de preço todos os produtos cujo preço
+ está no intervalo determinado. O intervalo é fechado em ambos os 
+limites.</p>
+<p>O programa deverá fazer uso de modularização. <b>É obrigatório o uso do MergeSort ou QuickSort para fazer a ordenação.</b></p>
+<!--É permitido usar qualquer um dos algoritmos de ordenação vistos em aula. Não é permitido ordenar sem usar algum dos algoritmos vistos em aula.-->
+<p>Dica: para descartar um final de linha antes da leitura de uma linha,
+ evitando assim a leitura de uma string vazia para uma linha, na 
+linguagem C++, recomenda-se o uso do comando <code>ignore</code>, como em <code>cin.ignore(2, '\n')</code> que ignora até dois caracteres na tentativa de encontrar um final de linha.</p>
+<p>Entradas:</p>
+<ol>
+<li>O número de produtos</li>
+<li>Os dados de cada produto</li>
+    <ol>
+    <li>O identificador do produto (número inteiro)</li>
+    <li>A descrição do produto (pode conter espaços - não terá mais que 79 caracteres)</li>
+    <li>O preço do produto (número real)</li>
+    </ol>
+<li>O limite inferior da faixa de preços (número real)</li>
+<li>O limite superior da faixa de preços (número real)</li>
+</ol>
+<p>Saídas:</p>
+<ol>
+<li>Os dados de cada produto cujo preço está no intervalo determinado, 
+do produto de menor preço para o produto de maior preço. Todos os campos
+ do produto deverão ser escritos na ordem mencionada acima, numa mesma 
+linha separados por espaços. O programa deverá escrever aspas em volta 
+da descrição do produto.</li>
+</ol>
+<p>Exemplo de Entrada:</p>
+<pre>3
+
+4352
+Lancheira Sestini
+99.90
+
+3641
+Mochila 14 Xeryus
+149.90
+
+3556
+Compasso 559 Basic Flex
+33.90
+
+40
+200</pre>
+<p>Exemplo de Saída:</p>
+<pre>4352 "Lancheira Sestini" 99.9
+3641 "Mochila 14 Xeryus" 149.9</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ22"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    04/03/2017 11:19:08</p>
+                <p><b>Tentativas:</b>
+                    3 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    81</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="611" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="4" type="hidden">
+            <input name="atenuacao" value="0.729" type="hidden">
+            <input name="nroQuestao" value="22" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial611');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial611">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include
+ &lt;iostream&gt;
+#include &lt;string&gt;
+
+using namespace std;
+
+typedef struct {
+    int identificador;
+    string nome;
+    float preco;
+} dadosProdutos;
+
+void QuickSortModificadoAuxiliar(dadosProdutos vetor[], int inicio, int 
+fim) {
+    if ((fim-inicio) &lt; 2)
+        return;
+    float pivo = vetor[(fim+inicio)/2].preco;
+    int i = inicio, j = fim-1;
+    while (i &lt; j) {
+        while (vetor[i].preco &lt; pivo) {
+            ++i;
+        }
+        while (vetor[j].preco &gt; pivo) {
+            --j;
+        }
+        if (i &lt; j) {
+            int copiaIden = vetor[i].identificador;
+            string copiaNome = vetor[i].nome;
+            float copiaPreco = vetor[i].preco;
+            vetor[i].identificador = vetor[j].identificador;
+            vetor[i].nome = vetor[j].nome;
+            vetor[i].preco = vetor[j].preco;
+            vetor[j].identificador = copiaIden;
+            vetor[j].nome = copiaNome;
+            vetor[j].preco = copiaPreco;
+            ++i;
+            --j;
+        }
+    }
+    QuickSortModificadoAuxiliar(vetor, inicio, i);
+    QuickSortModificadoAuxiliar(vetor, i, fim);
+}
+
+void QuickSort(dadosProdutos produtos[], int tam) {
+    QuickSortModificadoAuxiliar(produtos, 0, tam);
+}
+
+int main() {
+    int qtdProdutos;
+    cin &gt;&gt; qtdProdutos;
+    dadosProdutos produtos[qtdProdutos];
+    for (int i = 0; i &lt; qtdProdutos; ++i) {
+        cin &gt;&gt; produtos[i].identificador;
+        cin.ignore(2, '\n');
+        getline(cin, produtos[i].nome);
+        cin &gt;&gt; produtos[i].preco;
+    }
+    float menorValor, maiorValor;
+    cin &gt;&gt; menorValor &gt;&gt; maiorValor;
+    QuickSort(produtos, qtdProdutos);
+    bool parar = false;
+    for (int i = 0; !parar; ++i) {
+        if (produtos[i].preco &gt;= menorValor) {
+            for (int j = i; produtos[j].preco &lt;= maiorValor and (j 
+&lt; qtdProdutos); ++j) {
+                cout &lt;&lt; produtos[j].identificador &lt;&lt; " \"" 
+&lt;&lt; produtos[j].nome &lt;&lt; "\" " &lt;&lt; produtos[j].preco 
+&lt;&lt; endl;
+            }
+            parar = true;
+        }
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q23"></a>
+                <h3>Questão 23:
+                            Ordenação - Completar o Merge Sort</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Você deverá fazer um programa que recebe um vetor de 
+inteiros V de N posições e o ordena. Para ordenar este vetor, você 
+deverá usar o método <b>Merge Sort</b>.</p>
+
+<p><b>Dica:</b> Abaixo temos uma implementação <b>incompleta</b> do Merge Sort. Você deverá completá-la se quiser utilizá-la.</p>	
+
+<code>
+	<pre>void Troca(int &amp;A, int &amp;B)
+{
+	int aux = A;
+	A = B;
+	B = aux;
+}
+
+void Merge(int V[], int p, int q, int r, int U[])
+{
+	int a = p;
+	int b = q+1;
+
+	for(int i = p; i &lt;= r; i++)
+		if( b &gt; r || (a &lt;= q &amp;&amp; V[a] &lt; V[b]) )
+			U[i] = V[a++];
+		else
+			U[i] = V[b++];
+
+	for(int i = p; i &lt;= r; i++)
+		V[i] = U[i];
+}
+
+void MergeSort(int V[], int primeira, int ultima, int U[])
+{
+	if(primeira &gt;= ultima) return;
+
+	int p = primeira;
+	int r = ultima;
+	int q = (p+r)/2;
+	
+}
+	</pre>
+</code>
+
+<p><b>Entradas:</b></p>
+<ul>
+<li>Tamanho N do vetor.</li>
+<li>Os N elementos do vetor V.</li>
+</ul>
+
+<p><b>Saídas:</b></p>
+<ul>
+<li>Vetor V ordenado.</li>
+</ul>
+
+<p><b>Exemplo de Entrada:</b></p>
+<pre>5
+7 8 5 3 6
+</pre>
+
+<p><b>Exemplo de saída:</b></p>
+<pre>3 5 6 7 8
+</pre>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ23"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    05/03/2017 11:12:33</p>
+                <p><b>Tentativas:</b>
+                    2 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    90</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="319" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="3" type="hidden">
+            <input name="atenuacao" value="0.81" type="hidden">
+            <input name="nroQuestao" value="23" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial319');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial319">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+void Troca(int &amp;A, int &amp;B)
+{
+    int aux = A;
+    A = B;
+    B = aux;
+}
+
+void Merge(int V[], int p, int q, int r, int U[])
+{
+    int a = p;
+    int b = q+1;
+
+    for(int i = p; i &lt;= r; i++)
+        if( b &gt; r || (a &lt;= q &amp;&amp; V[a] &lt; V[b]) )
+            U[i] = V[a++];
+        else
+            U[i] = V[b++];
+
+    for(int i = p; i &lt;= r; i++)
+        V[i] = U[i];
+}
+
+void MergeSort(int V[], int primeira, int ultima, int U[])
+{
+    if(primeira &gt;= ultima) return;
+
+    int p = primeira;
+    int r = ultima;
+    int q = (p+r)/2;
+    MergeSort(V, p, q, U);
+    MergeSort(V, q+1, r, U);
+    Merge(V, p, q, r, U);
+}
+
+int main() {
+    int tam;
+    cin &gt;&gt; tam;
+    int vetor[tam];
+    for (int i = 0; i &lt; tam; ++i) {
+        cin &gt;&gt; vetor[i];
+    }
+    int auxiliar[tam];
+    MergeSort(vetor, 0, tam-1, auxiliar);
+    for (int i = 0; i &lt; tam; ++i) {
+        cout &lt;&lt; vetor[i] &lt;&lt; " ";
+    }
+    cout &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q24"></a>
+                <h3>Questão 24:
+                            Ordenação - Achar o erro no Quick Sort 1</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Um aluno implementou o Quicksort, mas ao testar seu programa, notou que a implementação estava errada.</p>
+<p>Para facilitar a determinação do erro, o aluno implementou duas 
+funções de escrever vetor: uma que escreve os elementos destacando o 
+pivô e outra que escreve o vetor destacando as duas partições.</p>
+<p><a style="text-decoration: underline; color:blue" href="https://dredd.dcc.ufla.br/exemplos/quick.cpp">Copie o programa</a>,
+ compile e execute. O aluno comentou a parte da leitura do vetor e 
+colocou um caso que em que é possível o erro. Acompanhe a execução do 
+programa pelas informações que ele escreve e corrija o programa. Quando o
+ programa estiver correto, troque a determinação do vetor de forma que 
+os 10 valores sejam lidos da entrada padrão e submeta o programa como 
+sua resposta. Note que as informações que o programa escreve não devem 
+ser modificadas, ou seja, o programa entregue deverá escrever os passos 
+da ordenação exatamente como já está feito.</p>
+<p>Atenção na hora de copiar o programa. Se o navegador não perguntar 
+onde você deseja salvar o arquivo, ele deverá ter salvo no diretório 
+Downloads.</p>
+<p>Entradas:</p>
+<p>10 números inteiros.</p>
+<p>Saídas:</p>
+<p>O estado do vetor ao longo dos vários passos da ordenação, conforme já está implementado.</p>
+<p>Exemplo de Entrada:</p>
+<pre>3 6 7 5 3 5 6 2 9 1</pre>
+<p>Exemplo de Saída:</p>
+<pre>Ordenar: [3, 6, 7, 5, 3 ;5; 6, 2, 9, 1]
+Particionado: [3, 1, 2, 5, 3][5, 6, 7, 9, 6]
+Ordenar: [3, 1 ;2; 5, 3]
+Particionado: [2, 1][3, 5, 3]
+Ordenar: [2 ;1; ]
+Particionado: [1][2]
+Ordenado: [1][2]
+Ordenar: [3 ;5; 3]
+Particionado: [3, 3][5]
+Ordenar: [3 ;3; ]
+Particionado: [3][3]
+Ordenado: [3][3]
+Ordenado: [3, 3][5]
+Ordenado: [1, 2][3, 3, 5]
+Ordenar: [5, 6 ;7; 9, 6]
+Particionado: [5, 6, 6][9, 7]
+Ordenar: [5 ;6; 6]
+Particionado: [5, 6][6]
+Ordenar: [5 ;6; ]
+Particionado: [5][6]
+Ordenado: [5][6]
+Ordenado: [5, 6][6]
+Ordenar: [9 ;7; ]
+Particionado: [7][9]
+Ordenado: [7][9]
+Ordenado: [5, 6, 6][7, 9]
+Ordenado: [1, 2, 3, 3, 5][5, 6, 6, 7, 9]</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ24"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    05/03/2017 00:24:40</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="384" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="24" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial384');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial384">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;cstdlib&gt;
+#include &lt;ctime&gt;
+
+using namespace std;
+
+void Escrever(int vetor[], int ini, int fim) {
+    cout &lt;&lt; '[';
+    int meio = (ini + fim) / 2;
+    int ultimo = meio - 1;
+    for (int i = ini; i &lt; ultimo; ++i) {
+        cout &lt;&lt; vetor[i] &lt;&lt; ", ";
+    }
+    if (ini &lt;= ultimo)
+        cout &lt;&lt; vetor[ultimo];
+    // Destacar o pivo
+    cout &lt;&lt; " ;" &lt;&lt; vetor[meio] &lt;&lt; "; ";
+    ultimo = fim - 1;
+    for (int i = meio+1; i &lt; ultimo; ++i) {
+        cout &lt;&lt; vetor[i] &lt;&lt; ", ";
+    }
+    if (meio+1 &lt;= ultimo)
+        cout &lt;&lt; vetor[ultimo];
+    cout &lt;&lt; "]\n";
+}
+
+void Escrever(int vetor[], int ini, int meio, int fim) {
+    cout &lt;&lt; '[';
+    int ultimo = meio - 1;
+    for (int i = ini; i &lt; ultimo; ++i) {
+        cout &lt;&lt; vetor[i] &lt;&lt; ", ";
+    }
+    if (ini &lt;= ultimo)
+        cout &lt;&lt; vetor[ultimo];
+    // Destacar a separacao das particoes
+    cout &lt;&lt; "][";
+    ultimo = fim - 1;
+    for (int i = meio; i &lt; ultimo; ++i) {
+        cout &lt;&lt; vetor[i] &lt;&lt; ", ";
+    }
+    if (meio &lt;= ultimo)
+        cout &lt;&lt; vetor[ultimo];
+    cout &lt;&lt; "]\n";
+}
+
+void QuickSort(int vetor[], int ini, int fim) {
+    if ((fim - ini) &gt; 1) {
+        cout &lt;&lt; "Ordenar: ";
+        Escrever(vetor, ini, fim);
+        int pivo = vetor[(ini + fim) / 2];
+        int esq = ini;
+        while (vetor[esq] &lt; pivo)
+            ++esq;
+        int dir = fim - 1;
+        while (pivo &lt; vetor[dir])
+            --dir;
+        while (esq &lt; dir) {
+            int aux = vetor[esq];
+            vetor[esq] = vetor[dir];
+            vetor[dir] = aux;
+            do ++esq; while (vetor[esq] &lt; pivo);
+            do --dir; while (pivo &lt; vetor[dir]);
+        }
+        cout &lt;&lt; "Particionado: ";
+        Escrever(vetor, ini, esq, fim);
+        QuickSort(vetor, ini, esq);
+        QuickSort(vetor, esq, fim);
+        cout &lt;&lt; "Ordenado: ";
+        Escrever(vetor, ini, esq, fim);
+    }
+}
+
+void QuickSort(int vetor[], int tamanho) {
+    QuickSort(vetor, 0, tamanho);
+}
+
+int main() {
+//    srand(static_cast&lt;unsigned int&gt;(time(0)));
+    const int CAP = 10;
+    int vetor[CAP];
+//    int vetor[CAP] = {4, 1, 8, 0, 0, 6, 3, 9, 2, 5};
+//    for (int i = 0; i &lt; CAP; ++i) {
+//        vetor[i] = rand() % CAP;
+//    }
+    for (int i = 0; i &lt; CAP; ++i) {
+        cin &gt;&gt; vetor[i];
+    }
+    QuickSort(vetor, CAP);
+    
+    return 0;
+}
+
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q25"></a>
+                <h3>Questão 25:
+                            Ordenação - Cutoff QuickSort.</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Escreva uma versão do algoritmo QuickSort com cutoff 
+para vetores pequenos: quando o vetor a ser ordenado tiver menos que M 
+elementos(definido pelo usuário), a ordenação passa a ser feita por um 
+algoritmo de seleção e para tamanhos maiores ou iguais a M, o programa 
+deverá ordenar pelo método QuickSort.</p>
+<p>Entradas:</p>
+<ol>
+<li>Valor do M (int).</li>
+<li>Número de elementos do vetor (int).</li>
+<li>Elementos do vetor (int).</li>
+</ol>
+<p>Saídas:</p>
+<ol>
+<li>Vetor ordenado de maneira crescente.</li>
+</ol>
+<p>Exemplo de Entrada:</p>
+<pre>10
+5
+32 4 1 55 3</pre>
+<p>Exemplo de Saída:</p>
+<pre>1 3 4 32 55</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ25"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    27/03/2017 15:57:43</p>
+                <p><b>Tentativas:</b>
+                    2 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    90</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="580" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="3" type="hidden">
+            <input name="atenuacao" value="0.81" type="hidden">
+            <input name="nroQuestao" value="25" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial580');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q26"></a>
+                <h3>Questão 26:
+                            Ordenação - QuickSort Maiores e Menores</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>O <b>QuickSort</b> é um método de ordenação muito 
+rápido e eficiente, que adota a estratégia de divisão e conquista. A 
+estratégia consiste em rearranjar os elementos de modo que os elementos 
+"menores" precedam os elementos "maiores". Em seguida, o QuickSort 
+ordena os dois subvetores de elementos menores e maiores recursivamente 
+até que o vetor completo se encontre ordenado.</p>
+<p>Abaixo está uma implementação correta do método QuickSort. Sua missão
+ é alterá-lo para que ele exiba, a cada rearranjo, o maior e o menor 
+elemento trocados (não necessariamente entre si). O algoritmo será usado
+ apenas para números inteiros positivos entre 1 e 1000, e, caso não 
+ocorra nenhuma troca em um rearranjo deve ser impresso -1 no lugar de 
+cada número.</p>
+<p>Observações:</p>
+<ol>
+<li>É altamente recomendável que você utilize a implementação abaixo, 
+pois outra estratégia poderia gerar os números em ordem diferente (ou 
+até valores diferentes).</li>
+<li>Um elemento ser trocado por ele mesmo (mesma posição) não deve ser considerado como uma troca.</li>
+<li>O vetor final ordenado não deve ser exibido.</li>
+</ol>
+<pre>void quickSort(int v[], int esq, int dir) {
+	int i, j, aux, pivo;
+	i = esq;
+	j = dir;
+	pivo = v[(esq+dir)/2];
+	while (i &lt;= j) {
+		while (v[i] &lt; pivo) {
+			i++;
+		}
+		while (v[j] &gt; pivo) {
+			j--;
+		}
+		if (i &lt;= j) {
+			aux = v[i];
+			v[i] = v[j];
+			v[j] = aux;
+			i++;
+			j--;
+		}
+	}
+	
+	if (esq &lt; j) {
+		quickSort(v, esq, j);
+	}
+	if (i &lt; dir) {
+		quickSort(v, i, dir);
+	}
+}
+</pre>
+<p><b>Entradas:</b></p>
+<ol>
+<li>A quantidade de números a ser ordenada.</li>
+<li>Os números inteiros positivos entre 1 e 1000 a serem ordenados.</li>
+</ol>
+<p><b>Saídas:</b></p>
+<ol>
+<li>O maior e o menor elemento trocados a cada rearranjo realizado pelo método.</li>
+</ol>
+<p><b>Exemplo de Entrada:</b></p>
+<pre>10
+10 1 9 2 8 3 7 4 6 5
+</pre>
+<p><b>Exemplo de Saída:</b></p>
+<pre>10 4
+5 2
+2 1
+6 3
+-1 -1
+-1 -1
+-1 -1
+</pre>
+<p><b>Exemplo de Entrada:</b></p>
+<pre>10
+1 10 2 9 3 8 4 7 5 6
+</pre>
+<p><b>Exemplo de Saída:</b></p>
+<pre>10 3
+3 2
+-1 -1
+9 4
+10 5
+8 7
+7 5
+6 5
+-1 -1
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ26"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    04/03/2017 16:11:18</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    97.8</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    O programa não resolve todas as instâncias do problema.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="604" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="26" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial604');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial604">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+void escreveMaiorMenor(int maior, int menor) {
+    if (menor == maior) {
+        menor = -1;
+        maior = -1;
+    }
+    cout &lt;&lt; maior &lt;&lt; " " &lt;&lt; menor &lt;&lt; endl;
+}
+
+void quickSort(int v[], int esq, int dir) {
+    int i, j, aux, pivo;
+    i = esq;
+    j = dir;
+    pivo = v[(esq+dir)/2];
+    int menor = 1000, maior = -1;
+    while (i &lt;= j) {
+        while (v[i] &lt; pivo) {
+            i++;
+        }
+        while (v[j] &gt; pivo) {
+            j--;
+        }
+        if (i &lt;= j) {
+            if (v[i] &lt; menor) {
+                menor = v[i];
+            }
+            if (v[j] &lt; menor) {
+                menor = v[j];
+            }
+            if (v[i] &gt; maior) {
+                maior = v[i];
+            }
+            if (v[j] &gt; maior) {
+                maior = v[j];
+            }
+            aux = v[i];
+            v[i] = v[j];
+            v[j] = aux;
+            i++;
+            j--;
+        }
+    }
+    escreveMaiorMenor(maior, menor);
+    if (esq &lt; j) {
+        quickSort(v, esq, j);
+    }
+    if (i &lt; dir) {
+        quickSort(v, i, dir);
+    }
+}
+
+int main() {
+    int tam;
+    cin &gt;&gt; tam;
+    int v[tam];
+    for (int i = 0; i &lt; tam; ++i) {
+        cin &gt;&gt; v[i];
+    }
+    quickSort(v, 0, tam-1);
+    
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q27"></a>
+                <h3>Questão 27:
+                            Ordenação - Completar o Quick Sort 1</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Você deverá fazer um programa que recebe um vetor de 
+inteiros V de N posições e o ordena. Para ordenar este vetor, você 
+deverá usar o método <b>Quick Sort</b>.</p>
+
+<p><b>Dica:</b> Abaixo temos uma implementação <b>incompleta</b> do Quick Sort. Você deverá completá-la (e não refazer o método).</p>	
+
+<code>
+	<pre>int Rearranja(int V[], int e, int d, int pivo, int U[])
+{
+	int j = e, k = d;
+
+	Troca(V[pivo], V[d]);
+	pivo = d;
+
+	for(int i = e; i &lt;= d; i++)
+		if(V[i] &lt;= V[pivo])
+			U[j++] = V[i];
+		else
+			U[k--] = V[i];
+
+	for(int i = e; i &lt;= d; i++)
+		V[i] = U[i];
+
+	return j-1;
+}
+
+void QuickSort(int V[], int e, int d, int U[])
+{
+	if(e &gt;= d) return;
+
+	int pivo = e;
+	pivo = Rearranja(V, e, d, pivo, U);
+	//Complete aqui
+}
+	</pre>
+</code>
+
+<p><b>Entradas:</b></p>
+<ul>
+<li>Tamanho N do vetor.</li>
+<li>Os N elementos do vetor V.</li>
+</ul>
+
+<p><b>Saídas:</b></p>
+<ul>
+<li>Vetor V ordenado.</li>
+</ul>
+
+<p><b>Exemplo de Entrada:</b></p>
+<pre>5
+7 8 5 3 6
+</pre>
+
+<p><b>Exemplo de saída:</b></p>
+<pre>3 5 6 7 8
+</pre>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ27"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    04/03/2017 18:49:34</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="505" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="321" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="27" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial321');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial321">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+void Troca(int&amp; num1, int&amp; num2) {
+    int aux = num1;
+    num1 = num2;
+    num2 = aux;
+}
+
+int Rearranja(int V[], int e, int d, int pivo, int U[])
+{
+    int j = e, k = d;
+
+    Troca(V[pivo], V[d]);
+    pivo = d;
+
+    for(int i = e; i &lt;= d; i++) {
+        if(V[i] &lt;= V[pivo]) {
+            U[j++] = V[i];
+        }
+        else {
+            U[k--] = V[i];
+        }
+    }
+    for(int i = e; i &lt;= d; i++) {
+        V[i] = U[i];
+    }
+    return j-1;
+}
+
+void QuickSort(int V[], int e, int d, int U[])
+{
+    if(e &gt;= d) return;
+
+    int pivo = e;
+    pivo = Rearranja(V, e, d, pivo, U);
+    QuickSort(V, e, pivo-1, U);
+    QuickSort(V, pivo+1, d, U);
+}
+
+int main() {
+    int tam;
+    cin &gt;&gt; tam;
+    int vetor[tam], aux[tam];
+    for (int i = 0; i &lt; tam; ++i) {
+        cin &gt;&gt; vetor[i];
+        aux[i] = vetor[i];
+    }
+    QuickSort(vetor, 0, tam-1, aux);
+    for (int i = 0; i &lt; tam; ++i) {
+        cout &lt;&lt; vetor[i] &lt;&lt; " ";
+    }
+    cout &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                </div><!-- prova -->
+<script type="text/javascript">
+    var serverTime = 1490641064000;
+    var localTime = +Date.now();
+    var timeDiff = serverTime - localTime;
+    var closingTime = 1490641200000;
+    var nomeUsuario = "Samir Carvalho";
+    $('#usuario').text(nomeUsuario);
+    if (true) {
+        setInterval(function () {
+            var realtime = +Date.now() + timeDiff;
+            var minutosRestantes = (closingTime - realtime) / 60000;
+            if (minutosRestantes < 0)
+                window.location = 'testTrials.php?encerrar';
+            else if (minutosRestantes < 5)
+                minutosRestantes = minutosRestantes.toFixed(1)
+            else
+                minutosRestantes = minutosRestantes.toFixed(0);
+            $('#clock').text(minutosRestantes);
+        }, 5000);
+    }
+    else
+        $('#clock').text('ENCERRADO');
+    //window.onclose = function() {alert("Close window?");}
+</script>
+    <br></div></div><div id="bottomct" class="ui-corner-top"><div id="footer">
+        <table boder="0" style="width: 100%;">
+            <tbody><tr>
+                <td style="width:33%;">
+                    <a href="http://www.ufla.br/" style="float:left;">
+                        <img src="ordenacao_files/ufla.png" width="92" height="40">
+                    </a>
+                </td>
+                <td style="width:34%;text-align: center;">
+                    Desenvolvido por <a href="http://www.dcc.ufla.br/%7Ebruno/" style="color: #DDF">Bruno Schneider</a>
+                    a partir do programa original (Algod) de Renato R. R. de Oliveira (GPLv3).
+                </td>
+                <td style="width:33%;">
+                    <a href="http://www.dcc.ufla.br/">
+                        <img src="ordenacao_files/logo-dcc.png" style="float:right" width="128" height="40">
+                    </a>
+                </td>
+            </tr>
+        </tbody></table>
+    </div></div>
+
+
+<div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable ui-dialog-buttons" style="outline: 0px none; z-index: 1002; position: absolute; height: auto; width: auto; top: 31615.5px; left: 632px; display: none;" tabindex="-1" role="dialog" aria-labelledby="ui-id-1"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-1" class="ui-dialog-title">Aviso</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div><div id="alert-dialog" style="width: auto; min-height: 32px; height: auto;" class="ui-dialog-content ui-widget-content" scrolltop="0" scrollleft="0"></div><div class="ui-resizable-handle ui-resizable-n" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-e" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-s" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se ui-icon-grip-diagonal-se" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 1000;"></div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button></div></div></div><div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable ui-dialog-buttons" style="outline: 0px none; z-index: 1002; position: absolute; height: auto; width: 800px; top: 31615.5px; left: 272.5px; display: none;" tabindex="-1" role="dialog" aria-labelledby="ui-id-2"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-2" class="ui-dialog-title">&nbsp;</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div><div id="data-view-dialog" style="text-align: center; width: auto; min-height: 32px; height: auto;" class="ui-dialog-content ui-widget-content" scrolltop="0" scrollleft="0"></div><div class="ui-resizable-handle ui-resizable-n" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-e" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-s" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se ui-icon-grip-diagonal-se" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 1000;"></div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button></div></div></div><div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable ui-dialog-buttons" style="outline: 0px none; z-index: 1004; position: absolute; height: auto; width: auto; top: 31266.5px; left: 253px; display: none;" tabindex="-1" role="dialog" aria-labelledby="ui-id-3"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-3" class="ui-dialog-title">&nbsp;</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div><div style="width: auto; min-height: 32px; height: auto;" id="lastTrial580" class="ui-dialog-content ui-widget-content" scrolltop="0" scrollleft="0">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+void insertionSort(int vetor[], int tam) {
+    for (int i = 1; i &lt; tam; ++i) {
+        int aux = vetor[i];
+        int j = i-1;
+        while (j &gt;= 0 and vetor[j] &gt; aux) {
+            vetor[j+1] = vetor[j];
+            --j;
+        }
+        vetor[j+1] = aux;
+    }
+}
+
+void Quicksort(int vetor[], int inicio, int fim, int corte) {
+    if ((fim - inicio) &lt; corte) {
+        insertionSort(vetor, fim);
+    }
+    int pivo = vetor[(fim+inicio)/2];
+    int i = inicio, j = fim-1;
+    while (i &lt; j) {
+        while (vetor[i] &lt; pivo) {
+            ++i;
+        }
+        while (vetor[j] &gt; pivo) {
+            --j;
+        }
+        if (i &lt; j) {
+            int aux = vetor[i];
+            vetor[i] = vetor[j];
+            vetor[j] = aux;
+        }
+    }
+}
+
+int main() {
+    int corte;
+    cin &gt;&gt; corte;
+    int tam;
+    cin &gt;&gt; tam;
+    int vetor[tam];
+    for (int i = 0; i &lt; tam; ++i) {
+        cin &gt;&gt; vetor[i];
+    }
+    Quicksort(vetor, 0, tam, corte);
+    for (int i = 0; i &lt; tam; ++i) {
+        cout &lt;&lt; vetor[i] &lt;&lt; ' ';
+    }
+    cout &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><div class="ui-resizable-handle ui-resizable-n" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-e" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-s" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se ui-icon-grip-diagonal-se" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 1000;"></div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button></div></div></div></body></html>

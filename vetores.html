@@ -1,0 +1,2774 @@
+<!DOCTYPE html>
+<html><head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Dredd - Juiz Online</title>
+    <link rel="stylesheet" type="text/css" href="vetores_arquivos/style.css">
+    <link rel="stylesheet" type="text/css" href="vetores_arquivos/jquery-ui-1.css">
+    <script src="vetores_arquivos/jquery-1.js"></script>
+    <script src="vetores_arquivos/jquery-ui.js"></script>
+    <script src="vetores_arquivos/jquery_002.js"></script>
+    <script src="vetores_arquivos/jquery.js"></script>
+    <script>
+    $(document).ready(function() {
+        $(document).tooltip();
+        $("button, input[type='submit'], input[type='reset']").button();
+
+        $("input.date").mask("99/99/9999").attr("title","Exemplo: 11/09/2001").tooltip();
+        $("input.datetime").mask("99/99/9999 99:99:99").attr("title","Exemplo: 11/09/2001 10:17:37").tooltip();
+        $("input.integer").numeric().attr("title","Exemplo: 2").tooltip();
+        $("input.number").numeric({allow:"."}).attr("title","Exemplo: 0.5").tooltip();
+        $("textarea").keypress(function(event) {
+            if (event.ctrlKey && (event.which == 112)) {
+                event.preventDefault();
+                $("#data-view-dialog").html("<div class='data-view-box' style='width: 90%;'>"+$(this).val()+"</div>").dialog("open");
+            }
+        });
+
+        $("textarea.cpp-code-view").attr("readonly","readonly");
+        $("div.cpp-code-view").each(function() {
+            var text = $(this).html();
+            text.replace("&","&amp;");
+            text.replace("<","&lt;");
+            text.replace(">","&gt;");
+            text.replace("\r","");
+
+            // Keywords
+            text.replace("float ","<b>float</b> ");
+            text.replace("double ","<b>double</b> ");
+            text.replace("int ","<b>int</b> ");
+            text.replace("long ","<b>long</b> ");
+            text.replace("if ","<b>if</b> ");
+            text.replace("else ","<b>else</b> ");
+            text.replace("for ","<b>for</b> ");
+            text.replace("while ","<b>while</b> ");
+            text.replace("return","<b>return</b>");
+            text.replace("break","<b>break</b>");
+            text.replace("using","<b>using</b>");
+            text.replace("namespace","<b>namespace</b>");
+            text.replace("#include","<b>#include</b>");
+
+            text.replace(" ","&nbsp;");
+            text.replace("\t","&nbsp;&nbsp;&nbsp;&nbsp;");
+            text.replace("\n","<br />");
+            $(this).html(text);
+        });
+
+        $("#alert-dialog").dialog({
+            title: "Aviso",
+            width: "auto",
+            height: "auto",
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $(this).dialog("close");
+                }
+            }
+        }).dialog("close");
+
+        $("#data-view-dialog").dialog({
+            title: "",
+            width: 800,
+            height: "auto",
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $(this).dialog("close");
+                }
+            }
+        }).dialog("close");
+
+        $("form").submit(function() {
+            var $validationText = "";
+            $(this).find(".notempty").each(function() {
+                if (($(this).val() == undefined) || ($(this).val() == "")) {
+                    $validationText += "<li>"+$("label[for='"+$(this).attr('name')+"']").html()+"</li>";
+                }
+            });
+            if ($validationText != "") {
+                $validationText = "<p>Os seguintes campos não podem estar vazios:</p><ul>"+$validationText+"</ul>";
+                $("#alert-dialog").html($validationText).dialog({modal: true}).dialog("open");
+                return false;
+            } else {
+                var $form = $(this);
+                $form.find("input.passwordconfirm").each(function() {
+                    if ($(this).val() != $form.find("input.password").val()) {
+                        $validationText = "As senhas digitadas não conferem.";
+                    }
+                });
+                if ($validationText != "") {
+                    $("#alert-dialog").html($validationText).dialog({modal: true}).dialog("open");
+                    return false;
+                } else
+                    return true;
+            }
+        });
+    });
+    function openDivAsDialog(id) {
+        $("div#"+id).dialog({
+            title: "",
+            width: "auto",
+            height: "auto",
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $(this).dialog("close");
+                }
+            }
+        }).dialog("open");
+    };
+    </script>
+</head>
+<body>
+    
+    
+    <div id="topct" class="ui-corner-bottom"><div id="banner">
+        <h1>Dredd - Juiz Online</h1>
+        <div id="topmenu">
+            <button id="menu-bt-home" onclick="location.assign('./');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Principal</span></button>
+            <button id="menu-bt-profile" onclick="location.assign('./testsMine.php');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Minhas Provas</span></button>
+            <button id="menu-bt-profile" onclick="location.assign('./profile.php');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Perfil</span></button>
+            <button id="menu-bt-logout" onclick="location.assign('./logout.php');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Sair</span></button>
+        </div>
+    </div></div><div id="contentct"><div id="content">
+<div id="painel-info">
+    <b>Minutos<br>Restantes</b>:<br>
+    <span id="clock">10181</span><br><br>
+    <b>Usuário</b>:<br>
+    <div id="usuario">Samir Carvalho</div><br>
+    <b>Notas</b>:<br>
+    <span id="notas">
+Q1: 100<br>Q2: 100<br>Q3: 100<br>Q4: 100<br>Q5: 100<br>Q6: 100<br>Q7: 100<br>Q8: 100<br>Q9: 72.9<br>Q10: 100<br>Q11: 81<br>Q12: 100<br>Q13: 90<br>Q14: 100<br>Q15: 100<br>Q16: 100<br>Q17: 100<br>Q18: 49.2<br>Q19: 75.5<br>Q20: 81<br>Q21: 75.8<br>Q22: 58.9<br>Q23: 100<br>    </span><br>
+</div>
+<div id="prova">
+    <h1>IAlg - Exercícios de Vetores</h1>
+    <p><b>Prova Aberta Até:</b>
+        01/02/2017 23:00:00</p>
+    <p><b>Número Máximo de Tentativas:</b>
+        6</p>
+    <p><b>Atenuação da Nota por Tentativa (multiplicativa):</b>
+        0.9</p>
+    <p><b>Nota Máxima por Tentativa:</b>
+        </p><ol style="text-align: left; padding-left: 12ex;">
+                            <li>100</li>
+                            <li>90</li>
+                            <li>81</li>
+                            <li>72.9</li>
+                            <li>65.61</li>
+                            <li>59.049</li>
+                            </ol><p></p>
+    <p><b>Descrição:</b></p>
+    <div class="description-display-box">
+        Listas de vetores para IAlg. Pode ser acessada de casa.    </div>
+    <h3>QUESTÕES</h3>
+                                <div class="problem-try-ct">
+                <a name="Q1"></a>
+                <h3>Questão 1:
+                            Vetores - Soma das subtrações</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que leia dois vetores (A e B) com 
+cinco posições para números inteiros. O programa deve, então, subtrair o
+ primeiro elemento de A do último de B, o segundo de A do penúltimo de 
+B, e assim sucessivamente. O programa deve, por fim, calcular a soma dos
+ resultados de todas as subtrações e exibi-la no dipositivo de saída 
+padrão. Assuma que todos os dados de entrada do vetor A serão fornecidos
+ em uma mesma linha e todos os dados do vetor B serão fornecidos em uma 
+segunda linha.</p>
+<p><b>Obs.:</b> Vetores em Python são implementados como listas cujos elementos são todos homogêneos.</p>
+<p><b>Entrada:</b></p>
+<ol>
+<li>Cinco números inteiros do vetor A.</li>
+<li>Cinco números inteiros do vetor B.</li>
+</ol>
+
+<p><b>Saída:</b></p>
+<ol>
+<li>Soma dos resultados das subtrações dos elementos de A (a partir do começo) dos elementos de B (a partir do final).</li>
+</ol>
+
+<p><b>Exemplo de entrada</b>:</p>
+<pre>5 6 7 8 9
+5 4 3 2 1
+</pre>
+<p><b>Exemplo de saída</b>:</p>
+<pre>20
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ1"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    09/11/2016 14:06:28</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="447" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="485" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="1" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial485');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial485">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int vetA[5] = {};
+    int i = 0;
+    while (i &lt; 5) {
+        cin &gt;&gt; vetA[i];
+        ++i;
+    }
+    int vetB[5] = {};
+    int u = 0;
+    while (u &lt; 5) {
+        cin &gt;&gt; vetB[u];
+        ++u;
+    }
+    int soma = 0;
+    u = 4;
+    i = 0;
+    do {
+        soma += (vetA[i] - vetB[u]);
+        ++i;
+        --u;
+    } while (u &gt;= 0 );
+    cout &lt;&lt; soma &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q2"></a>
+                <h3>Questão 2:
+                            Vetores - Números e Divisores</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que receba 15 números inteiros. Os 
+primeiros dez números devem ser armazenados em um vetor e os cinco 
+últimos em outro. Assuma que todos os 10 primeiros números serão 
+fornecidos em uma única linha e todos os últimos 5 números serão 
+fornecidos em uma segunda linha. O programa deverá mostrar para cada 
+número do primeiro vetor quantos números do segundo vetor são seus 
+divisores.</p>
+
+<p><b>Obs.:</b> Vetores em Python são implementados como listas cujos elementos são todos homogêneos.</p>
+
+<p><b>Entrada:</b></p>
+<ol>
+<li>Dez números inteiros armazenados em um vetor <em>v1</em>.</li>
+<li>Cinco números inteiros armazenados em um vetor <em>v2</em>.</li>
+</ol>
+
+<p><b>Saída:</b></p>
+<ol>
+<li>Dez linhas, cada uma começando com um dos números do vetor <em>v1</em> seguido da quantidade de divisores que o número possui em <em>v2</em>.</li>
+</ol>
+
+<p><b>Exemplo de entrada</b>:</p>
+<pre>20 24 25 31 34 38 40 52 1 3
+2 15 3 4 7
+</pre>
+<p><b>Exemplo de saída</b>:</p>
+<pre>20 2
+24 3
+25 0
+31 0
+34 1
+38 1
+40 2
+52 2
+1 0
+3 1
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ2"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    09/11/2016 16:36:14</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="447" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="478" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="2" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial478');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q3"></a>
+                <h3>Questão 3:
+                            Vetores - Índices para multiplicação</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que receba sete valores inteiros e 
+armazene-os em um vetor. Todos os sete valores serão fornecidos em uma 
+única linha. Em seguida, o programa receberá, em uma segunda linha, uma 
+sequência indefinida de números inteiros (entre 0 e 6) e, por fim nesta 
+mesma segunda linha, um número negativo indicando que a sequência 
+terminou (os números da sequência indicam as posições do vetor). O 
+programa deverá calcular a multiplicação dos números do vetor indicados 
+pelas posições passadas na sequência de números.</p>
+<p>Por exemplo: se um vetor v tiver os números 10, 20, 30, 40, 50, 60 e 
+70 e a sequência de números for 0 6 3 -1, o resultado do cálculo será: 
+v[0] * v[6] * v[3] = 10 * 70 * 40 = 28000.</p>
+
+<p><b>Obs.:</b> Vetores em Python são implementados como listas cujos elementos são todos homogêneos.</p>
+
+<p><b>Entrada:</b></p>
+<ol>
+<li>Sete números inteiros a serem colocados em um vetor.</li>
+<li>Sequência indeterminada de números inteiros de 0 a 6 (terminada por um número negativo).</li>
+</ol>
+
+<p><b>Saída:</b></p>
+<ol>
+<li>Multiplicação dos números do vetor indicados pelas posições da sequência.</li>
+</ol>
+
+<p><b>Exemplo de entrada</b>:</p>
+<pre>2 4 3 2 5 7 8
+0 1 1 1 5 -2
+</pre>
+<p><b>Exemplo de saída</b>:</p>
+<pre>896
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ3"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    09/11/2016 18:35:51</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="447" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="484" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="3" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial484');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial484">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int numeros[7];
+    for (int i = 0; i &lt; 7; ++i) {
+        cin &gt;&gt; numeros[i];
+    }
+    int mult = 1;
+    int n;
+    bool positivos = true;
+    while (positivos) {
+        cin &gt;&gt; n;
+        if (n &lt; 0) {
+            positivos = false;
+        }
+        else {
+            mult *= numeros[n];
+        }
+    }
+    cout &lt;&lt; mult &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q4"></a>
+                <h3>Questão 4:
+                            Vetores - Separar negativos e positivos</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que preencha um vetor com oito 
+números inteiros, calcule e mostre dois vetores resultantes. O primeiro 
+vetor resultante deve conter os números positivos; o segundo deve conter
+ os números negativos. Cada vetor resultante vai ter, no máximo, oito 
+posições, que poderão não ser completamente utilizadas. Assuma que todos
+ os dados de entrada serão fornecidos em uma única linha. Assuma também 
+que sempre haverá no mínimo um número positivo e um número negativo nos 
+dados de entrada.</p>
+
+<p><b>Obs.:</b> Vetores em Python são implementados como listas cujos elementos são todos homogêneos.</p>
+
+<p><b>Entradas:</b></p>
+<ul style="text-align:left;padding-left:20px;">
+<pre>- Oito numeros inteiros.
+</pre>
+</ul>
+<p><b>Saídas:</b></p>
+<ul style="text-align:left;padding-left:20px;">
+<pre>- Vetor resultante com os números positivos.
+- Vetor resultante com os números negativos.
+</pre>
+</ul>
+
+<p><b>Entradas:</b><br>
+</p><pre>1 2 3 4 5 -5 -4 -1
+</pre>
+<p><b>Saídas:</b><br>
+</p><pre>1 2 3 4 5
+-5 -4 -1 
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ4"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    09/11/2016 19:37:06</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="447" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="469" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="4" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial469');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial469">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int vetor[8];
+    for (int i = 0; i &lt; 8; ++i) {
+        cin &gt;&gt; vetor[i];
+    }
+    int vetPositivo[8] = {};
+    int vetNegativo[8] = {};
+    int n = 0, m = 0;
+    for (int i = 0; i &lt; 8; ++i) {
+        if (vetor[i] &gt;= 0) {
+            vetPositivo[n] = vetor[i];
+            ++n;
+        }
+        else {
+            vetNegativo[m] = vetor[i];
+            ++m;
+        }
+    }
+    for (int i = 0; i &lt; 8 and vetPositivo[i] != 0; ++i) {
+        cout &lt;&lt; vetPositivo[i] &lt;&lt; " ";
+    }
+    cout &lt;&lt; endl;
+    for (int i = 0; i &lt; 8 and vetNegativo[i] != 0; ++i) {
+        cout &lt;&lt; vetNegativo[i] &lt;&lt; " ";
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q5"></a>
+                <h3>Questão 5:
+                            Vetores - Controle de Estoque</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa para controlar o estoque de 
+mercadorias de uma empresa. Inicialmente, o programa deverá preencher 
+dois vetores com dez posições cada, onde o primeiro corresponde aos 
+códigos dos produtos e o segundo aos totais desses produtos em estoque. 
+Logo após, o programa deverá ler um conjunto indeterminado de dados 
+contendo o código de um cliente e o código do produto que ele deseja 
+comprar, juntamente com a quantidade. Código do cliente igual a zero 
+indica o fim do programa. O programa deverá verificar:</p>
+<ul>
+<li>Se o código do produto solicitado existe. Se existir, tentar atender
+ ao pedido; caso contrário, contabilizar em um total de pedidos não 
+atendidos por produtos inexistentes;</li>
+<li>Cada pedido feito por um cliente só pode ser atendido integralmente.
+ Se for possível deve ser dada baixa no estoque. Caso contrário, deve-se
+ contabilizar em um total de pedidos não atendidos.</li>
+</ul>
+<p>No final o programa deve escrever os códigos dos produtos com seus 
+respectivos estoques já atualizados, a quantidade de pedidos não 
+atendidos por produtos inexistentes, e a quantidade de pedidos não 
+atendidos integralmente.</p>
+<p><b>Obs.:</b> Vetores em Python são implementados como listas cujos elementos são todos homogêneos.</p>
+<p><b>Entrada:</b></p>
+<ol>
+<li>Dez códigos (inteiros) de produtos. Assuma que todos os dez códigos serão fornecidos em uma mesma linha.</li>
+<li>Dez quantidades (inteiras) dos produtos. Assuma que todas as quantidades serão fornecidas em uma segunda linha.</li>
+<li>Sequência de pedidos contendo o código do cliente, o código do 
+produto e a quantidade. Obs: até que seja lido o código de cliente zero.
+ Assuma que sequência será fornecida de modo que para uma dada tentativa
+ de compra as três informações  da tentativa (código do cliente, código 
+do produto e quantidade), serão descritas em uma mesma linha.</li>
+</ol>
+
+<p><b>Saída:</b></p>
+<ol>
+<li>Estoque atualizado dos produtos (em cada linha o código do produto e a quantidade disponível).</li>
+<li>Total de pedidos de produtos inexistentes.</li>
+<li>Total de pedidos não atendidos porque não puderam ser atendidos integralmente.</li>
+</ol>
+
+<p><b>Exemplo de entrada</b>:</p>
+<pre>10 20 30 40 50 60 70 80 90 100
+5 10 10 20 20 10 10 5 5 10
+1 20 10
+2 40 10
+3 60 12
+4 21 10
+5 20 10
+0 0 0
+</pre>
+<p><b>Exemplo de saída</b>:</p>
+<pre>10 5
+20 0
+30 10
+40 10
+50 20
+60 10
+70 10
+80 5
+90 5
+100 10
+1
+2
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ5"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    15/11/2016 11:13:13</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="447" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="481" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="5" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial481');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial481">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int codProd[10];
+    for (unsigned int i = 0; i &lt; 10; ++i) {
+        cin &gt;&gt; codProd[i];
+    }
+    int estoque[10];
+    for (unsigned int i = 0; i &lt; 10; ++i) {
+        cin &gt;&gt; estoque[i];
+    }
+    int codProduto;
+    int qtd;
+    int inexistente = 0;
+    int naoAtendidos = 0;
+    int codCliente;
+    cin &gt;&gt; codCliente;
+    while (codCliente != 0) {
+        unsigned int posicao = 10;
+        bool naoAchou = true;
+        cin &gt;&gt; codProduto &gt;&gt; qtd;
+        for (unsigned int i = 0; i &lt; 10 and naoAchou; ++i) {
+            if (codProd[i] == codProduto) {
+                posicao = i;
+                naoAchou = false;
+            }
+        }
+        if (posicao == 10) {
+            ++inexistente;
+        }
+        else {
+            if (estoque[posicao] - qtd &lt; 0) {
+                ++naoAtendidos;
+            }
+            else {
+                estoque[posicao] -= qtd;
+            }
+        }
+        cin &gt;&gt; codCliente;
+    }
+    for (unsigned int i = 0; i &lt; 10; ++i) {
+        cout &lt;&lt; codProd[i] &lt;&lt; " " &lt;&lt; estoque[i] &lt;&lt; endl;
+    }
+    cout &lt;&lt; inexistente &lt;&lt; endl
+         &lt;&lt; naoAtendidos &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q6"></a>
+                <h3>Questão 6:
+                            Vetores - Temperaturas mensais médias</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que receba a temperatura média de 
+cada mês do ano e armazene-as em um vetor. O programa deverá então 
+descobrir e exibir o mês mais quente e o mais frio do ano. Assuma que 
+todos os dados de entrada serão fornecidos em uma mesma linha. Assuma 
+também que não haverá empates em relação a quais são os meses mais frios
+ e mais quentes do ano.</p>
+<p><b>Obs.:</b> Vetores em Python são implementados como listas cujos elementos são todos homogêneos.</p>
+<p><b>Entrada:</b></p>
+<ol><li>Doze números decimais representando as temperaturas médias de 
+cada mês do ano. O primeiro se refere a janeiro, o segundo a fevereiro, e
+ assim por diante.</li></ol>
+
+<p><b>Saída:</b></p>
+<ol>
+<li>O nome do mês mais quente do ano. A grafia do nome do mês deve utilizar apenas <b>letras minúsculas</b> e <b>sem acentuação</b>.</li>
+<li>O nome do mês mais frio do ano. A grafia do nome do mês deve utilizar apenas <b>letras minúsculas</b> e <b>sem acentuação</b>.</li>
+</ol>
+
+<p><b>Exemplo de entrada</b>:</p>
+<pre>31.5 30.3 30.4 27.3 22.1 19.4 15.3 14.0 19.9 22.5 29.3 30.7
+</pre>
+<p><b>Exemplo de saída</b>:</p>
+<pre>janeiro
+agosto
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ6"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    10/11/2016 17:32:07</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="447" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="477" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="6" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial477');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial477">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include
+ &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    float temperaturas[12];
+    cin &gt;&gt; temperaturas[0];
+    float maisQuente = temperaturas[0];
+    float maisFrio = temperaturas[0];
+    int mesQuente = 0, mesFrio = 0;
+    for (int i = 1; i &lt; 12; ++i) {
+        cin &gt;&gt; temperaturas[i];
+        if (temperaturas[i] &gt; maisQuente) {
+            maisQuente = temperaturas[i];
+            mesQuente = i;
+        }
+        else {
+            if (temperaturas[i] &lt; maisFrio) {
+                maisFrio = temperaturas[i];
+                mesFrio = i;
+            }
+        }
+    }
+    char ano[12][10] = {"janeiro", "fevereiro", "marco", "abril", 
+"maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", 
+"dezembro" };
+    cout &lt;&lt; ano[mesQuente] &lt;&lt; endl
+         &lt;&lt; ano[mesFrio] &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q7"></a>
+                <h3>Questão 7:
+                            Vetores - Inserção em um vetor</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que insere elementos em um vetor de 
+inteiros deslocando os elementos existentes. O vetor terá capacidade 
+fixa para 10 elementos e iniciará com todos os valores iguais a zero. O 
+programa deverá a princípio ler <b>k</b> valores a serem colocados no vetor (sendo <b>k</b> &lt;= 10). Ele deverá ler, em seguida, o valor de um novo elemento e a posição <b>p</b> na qual ele deve ser inserido.  O programa deverá então inserir o novo elemento na posição posição <b>p</b>
+ deslocando os elementos existentes (descartando o último elemento que 
+ficar sobrando). Por fim, o programa deve escrever os elementos do 
+vetor. </p>
+
+<p>Obs: para soluções em Python utilize as listas padrões da linguagem 
+ao invés de vetores. Além disso, as alterações devem ser feitas usando 
+apenas os índices dos elementos (não devem ser utilizadas funções de 
+inserção em listas).</p>
+
+<p><b>Entradas:</b></p>
+<ol>
+<li>Valor de <b>k</b> (quantidade de elementos lidos inicialmente).</li>
+<li>Linha contendo os <b>k</b> elementos iniciais do vetor.</li>
+<li>Novo elemento a ser inserido no vetor.</li>
+<li>Valor de <b>p</b> (posição na qual o novo elemento será inserido no vetor).</li>
+</ol>
+<p><b>Saídas:</b></p>
+<ol>
+<li>Os 10 elementos do vetor após a inserção.</li>
+</ol>
+<p><b>Entradas:</b><br>
+</p><pre>5
+1 2 3 4 5
+9
+2
+</pre>
+<p><b>Saídas:</b><br>
+</p><pre>1 2 9 3 4 5 0 0 0 0 
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ7"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    10/11/2016 20:42:36</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="447" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="467" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="7" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial467');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial467">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int vetor[10] = { };
+    int elementosIniciais;
+    cin &gt;&gt; elementosIniciais;
+    for (int i = 0; i &lt; elementosIniciais; ++i) {
+        cin &gt;&gt; vetor[i];
+    }
+    int valor;
+    cin &gt;&gt; valor;
+    int posicao;
+    cin &gt;&gt; posicao;
+    for (int n = 8; n &gt;= posicao; --n) {
+        vetor[(n+1)] = vetor[n];
+    }
+    vetor[posicao] = valor;
+    for (int i = 0; i &lt; 10; ++i) {
+        cout &lt;&lt; vetor[i] &lt;&lt; " ";
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q8"></a>
+                <h3>Questão 8:
+                            Vetores - Remover um elemento do vetor</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <!-- Este problema carece de um corretor para verificar se existe atribuição dentro de uma iteração. Até lá, não é recomendável usar isso numa prova. Bruno. -->
+<p>Faça um programa que leia um número inteiro positivo que indica a 
+quantidade de elementos de um dado vetor de números inteiros. Em seguida
+ seu programa deverá ler valores para todas as posições do vetor. Após a
+ leitura dos valores dos elementos do vetor, seu programa deverá ler do 
+dispositivo de entrada padrão um outro número inteiro que deverá ser 
+removido do vetor, caso o mesmo se encontre presente. O primeiro valor 
+encontrado no vetor que for igual ao elemento lido é o que deve ser 
+removido. Após a remoção do elemento, o programa deve escrever no 
+dispositivo de saída padrão todos os elementos do vetor. Caso o elemento
+ a ser removido não pertença ao vetor, o programa deverá exibir a 
+mensagem <b>ELEMENTO NAO ENCONTRADO</b> (letras maiúsculas e sem acentuação).</p>
+
+<p>Ao remover o elemento do vetor, não é perdido que haja um <i>espaço vazio</i> no meio do vetor. Ou seja, ao final do processo de remoção, a <i>posição livre</i> do vetor deverá ser obrigatoriamente a última posição do vetor.</p>
+
+<p>Não é permitido o uso de um segundo vetor auxiliar nesta questão.</p>
+
+<p><b>Entradas:</b></p>
+<ol>
+<li>A quantidade de elementos do vetor.</li>
+<li>Os valores do vetor (números inteiros).</li>
+<li>O valor a ser removido do vetor.</li>
+</ol>
+<p><b>Saídas:</b></p>
+<ol>
+<li>Sequência de N-1 números inteiros, caso o elemento X tenha sido removido do vetor <i>OU</i> mensagem <b>ELEMENTO NAO ENCONTRADO</b>, caso o elemento X não seja um dos elementos do vetor.</li>
+</ol>
+
+<p><b>Exemplo de entrada</b>:</p>
+<pre>5 
+13 49 23 6 21 
+13 
+</pre>
+<p><b>Exemplo de saída</b>:</p>
+<pre>49 23 6 21 
+</pre>
+
+<p><b>Exemplo de entrada</b>:</p>
+<pre>5 
+13 49 23 6 21 
+31 
+</pre>
+<p><b>Exemplo de saída</b>:</p>
+<pre>ELEMENTO NAO ENCONTRADO
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ8"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    14/11/2016 09:40:05</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="447" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="470" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="8" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial470');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial470">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    unsigned int n;
+    cin &gt;&gt; n;
+    int vetor[n];
+    for (unsigned int i = 0; i &lt; n; ++i) {
+        cin &gt;&gt; vetor[i];
+    }
+    int numRemov;
+    cin &gt;&gt; numRemov;
+    bool naoEncontrou = true;
+    for (unsigned int i = 0; i &lt; n and naoEncontrou; ++i) {
+        if (vetor[i] == numRemov) {
+            while (i != n) {
+                ++i;
+                vetor[(i-1)] = vetor[i];
+            }
+            vetor[(n-1)] = 0;
+            naoEncontrou = false;
+        }
+    }
+    if (!naoEncontrou) {
+        for ( unsigned int i = 0; i &lt; (n-1); ++i) {
+            if (i == (n-2)) {
+                cout &lt;&lt; vetor[i]&lt;&lt; endl;
+            }
+            else {
+                cout &lt;&lt; vetor[i] &lt;&lt; " ";
+            }
+        }
+    }
+    else {
+        cout &lt;&lt; "ELEMENTO NAO ENCONTRADO \n";
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q9"></a>
+                <h3>Questão 9:
+                            Vetores - Conta negativos e soma positivos</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que preencha um vetor com dez 
+números reais, calcule e mostre a quantidade de números negativos e a 
+soma dos números positivos desse vetor.</p>
+
+<p>Obs: para soluções em Python utilize as listas padrões da linguagem ao invés de vetores.</p>
+
+<p><b>Entrada:</b></p>
+<ol>
+<li>Dez números reais (a serem guardados em um vetor).</li>
+</ol>
+
+<p><b>Saída:</b></p>
+<ol>
+<li>Quantidade de números negativos no vetor.</li>
+<li>Soma dos números positivos do vetor.</li>
+</ol>
+
+<p><b>Exemplo de entrada</b>:</p>
+<pre>9.4 2.5 1 5.9 1.6 -1 -6.7 -8.1 -2.3 -9.5
+</pre>
+<p><b>Exemplo de saída</b>:</p>
+<pre>5
+20.4
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ9"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    10/11/2016 21:03:19</p>
+                <p><b>Tentativas:</b>
+                    4 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    72.9</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="447" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="482" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="5" type="hidden">
+            <input name="atenuacao" value="0.6561" type="hidden">
+            <input name="nroQuestao" value="9" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial482');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial482">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    float vetor[10];
+    float quantidade = 0;
+    float soma = 0;
+    for (int i = 0; i &lt; 10; ++i) {
+        cin &gt;&gt; vetor[i];
+        if (vetor[i] &gt;= 0) {
+            soma += vetor[i];
+        }
+        else {
+            ++quantidade;
+        }
+    }
+    cout &lt;&lt; quantidade &lt;&lt; endl
+         &lt;&lt; soma &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q10"></a>
+                <h3>Questão 10:
+                            Vetor – Múltiplos de 2 e 3</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que preencha um vetor com sete 
+números inteiros, calcule e mostre: os números múltiplos de 2; os 
+números múltiplos de 3; e os números múltiplos de 2 e 3. Os números 
+múltiplos de 2 e 3 podem aparecer nos casos isolados. Caso não exista 
+nenhum número o programa deve retornar 0 na respectiva saída.</p> 
+
+<p>Obs: para soluções em Python utilize as listas padrões da linguagem ao invés de vetores.</p>
+
+<p><b>Entradas:</b></p> 
+<ol>
+<li>Sequência de sete números inteiros</li>
+</ol>
+<p><b>Saídas:</b></p>
+<ol>
+<li>Números que são múltiplos de 2;</li>
+<li>Números que são múltiplos de 3;</li>
+<li>Números que são múltiplos de 2 e 3 simultaneamente.</li>
+</ol>
+
+<p><b>Exemplo de entrada:</b></p>
+<pre>4 6 3 9 7 10 13
+</pre>
+<p><b>Exemplo de saída:</b></p>
+<pre>4 6 10
+6 3 9 
+6
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ10"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    10/11/2016 23:51:33</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="447" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="494" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="10" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial494');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial494">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int vetor[7];
+    bool naoTemMulti2 = true;
+    for (int i = 0; i &lt; 7; ++i) {
+        cin &gt;&gt; vetor[i];
+        if (vetor[i] % 2 == 0) {
+            cout &lt;&lt; vetor[i] &lt;&lt; " ";
+            naoTemMulti2 = false;
+        }
+    }
+    if (naoTemMulti2) {
+        cout &lt;&lt; 0;
+    }
+    cout &lt;&lt; endl;
+    bool naoTemMulti3 = true;
+    for (int i = 0; i &lt; 7; ++i) {
+        if (vetor[i] % 3 == 0) {
+            cout &lt;&lt; vetor[i] &lt;&lt; " ";
+            naoTemMulti3 = false;
+        }
+    }
+    if (naoTemMulti3) {
+        cout &lt;&lt; 0;
+    }
+    cout &lt;&lt; endl;
+    bool naoTemMulti23 = true;
+    for (int i = 0; i &lt; 7; ++i) {
+        if (vetor[i] % 2 == 0 and vetor[i] % 3 == 0) {
+            cout &lt;&lt; vetor[i] &lt;&lt; " ";
+            naoTemMulti23 = false;
+        }
+    }
+    if (naoTemMulti23) {
+        cout &lt;&lt; 0;
+    }
+    cout &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q11"></a>
+                <h3>Questão 11:
+                            Vetores - Caracteres intermediários</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa com um vetor de tamanho <b>n</b> que irá receber um conjunto de caracteres. O tamanho <i>n</i>
+ deverá ser lido antes dos caracteres. O programa deve ler mais 2 
+caracteres que servirão como marcadores. O programa, então, deverá 
+escrever os caracteres do conjunto que estão entre os dois caracteres 
+digitados como marcadores.</p>
+
+<p>Os marcadores não precisam estar em ordem, ou seja, o primeiro marcador não necessariamente precisa vir antes do segundo.</p>
+
+<p>Obs: para soluções em Python utilize as listas padrões da linguagem ao invés de vetores.</p>
+
+<p>Entrada:</p>
+<ol>
+<li>Tamanho <b>n</b> do vetor.</li>
+<li>Linha contendo os caracteres do vetor (separados entre si por espaço).</li>
+<li>Linha contendo os dois caracteres delimitadores (separados entre si por espaço).</li>
+</ol>
+<p>Saídas:</p>
+<ol>
+<li>Caracteres do vetor entre os delimitadores.<p></p>
+</li></ol>
+<p>Exemplo de entrada:</p>
+<pre>6
+A B C D E F
+C F
+</pre>
+
+<p>Exemplo de saída:</p>
+<pre>D E
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ11"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    11/11/2016 12:04:55</p>
+                <p><b>Tentativas:</b>
+                    3 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    81</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="447" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="225" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="4" type="hidden">
+            <input name="atenuacao" value="0.729" type="hidden">
+            <input name="nroQuestao" value="11" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial225');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial225">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    char vetor[n];
+    for (int i = 0; i &lt; n; ++i) {
+        cin &gt;&gt; vetor[i];
+    }
+    char inicio;
+    cin &gt;&gt; inicio;
+    char fim;
+    cin &gt;&gt; fim;
+    bool continua = true;
+    int i = 0;
+    while (continua) {
+        if (vetor[i] == inicio and vetor[i] == fim) {
+            continua = false;
+        }
+        else {
+            if (vetor[i] == inicio or vetor[i] == fim) {
+                ++i;
+                while (vetor[i] != fim and vetor[i] != inicio) {
+                    cout &lt;&lt; vetor[i] &lt;&lt; " ";
+                    ++i;
+                }
+                continua = false;
+            }
+        }
+        ++i;
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q12"></a>
+                <h3>Questão 12:
+                            Vetores - Palíndromo</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Um palíndromo é um texto que pode ser lido igualmente
+ da esquerda para a direita e da direita para a esquerda. Por exemplo, 
+sem considerar sinais gráficos, acentos e letras maiúsculas e 
+minúsculas: "socorram me subi no onibus em marrocos". Outros exemplos de
+ palíndromos ocorrem com números (por exemplo: 12321) ou com datas (por 
+exemplo: 20-02-2002).</p>
+
+<p>Obs: para soluções em Python utilize as listas padrões da linguagem ao invés de vetores.</p>
+
+<p>Faça um programa que leia vários números inteiros, armazenando-os num
+ vetor. Depois determine se esse vetor é um palíndromo ou não. Em caso 
+positivo, escreva 1, em caso negativo, escreva 0.</p>
+
+<p>Entradas:</p>
+<ol>
+<li>A quantidade de valores que deve ser lida para criar o vetor.</li>
+<li>Linha contendo os valores do vetor (números inteiros).</li>
+</ol>
+
+<p>Saídas:</p>
+<ol>
+<li>A indicação se o vetor é palíndromo ou não.</li>
+</ol>
+
+<p><b>Exemplo de entrada</b>:</p>
+<pre>5
+1 2 3 2 1
+</pre>
+
+<p><b>Exemplo de saída</b>:</p>
+<pre>1</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ12"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    14/11/2016 10:14:47</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="447" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="105" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="12" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial105');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial105">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    unsigned int n;
+    cin &gt;&gt; n;
+    int vetor[n];
+    unsigned int i = 0;
+    while (i &lt; n) {
+        cin &gt;&gt; vetor[i];
+        ++i;
+    }
+    bool teste = true;
+    --n;
+    i = 0;
+    while (i &lt;= n and teste) {
+        if (vetor[i] != vetor[n]) {
+            teste = false;
+        }
+        else {
+            ++i;
+            --n;
+        }
+    }
+    cout &lt;&lt; teste &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q13"></a>
+                <h3>Questão 13:
+                            Vetores - Maior, Menor, Intermediário.</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um algoritmo que receba um vetor de N posições e o preencha. Após o preenchimento, busque no vetor, o <b>maior</b>, o <b>menor</b> número e o elemento <b>central</b>. Imprima-os nessa ordem e suas respectivas posições.</p>
+
+<p><b>Obs1:</b> Se o vetor não possuir elemento central imprima no lugar do elemento -1 e sua posição -1.</p>
+<p><b>Obs2:</b> Vetores em Python são implementados como listas cujos elementos são todos homogêneos.</p>
+
+
+<p><b>Entradas:</b></p>
+<ul style="text-align:left;padding-left:20px;">
+<li><code>int n</code> - Tamanho do vetor.</li>
+<li><code>float vet[n]</code> - Vetor que será preenchido.</li>
+</ul>
+
+<p><b>Saídas:</b></p>
+<ul style="text-align:left;padding-left:20px;">
+<li>Maior elemento do vetor (<code>float</code>).</li>
+<li>Menor elemento do vetor (<code>float</code>).</li>
+<li>Elemento central do vetor (<code>float</code>).</li>
+<li>Posição no vetor do maior elemento (<code>int</code>).</li>
+<li>Posição no vetor do menor elemento (<code>int</code>).</li>
+<li>Posição do elemento central do vetor (<code>int</code>).</li>
+</ul>
+
+<h3>Exemplos de Entradas e Saídas:</h3>
+
+<p><b>Entradas:</b><br>
+5<br>
+3<br>
+1<br>
+6<br>
+9<br>
+7</p>
+
+<p><b>Saídas:</b><br>
+9<br>
+1<br>
+6<br>
+3<br>
+1<br>
+2</p>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ13"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    14/11/2016 11:32:14</p>
+                <p><b>Tentativas:</b>
+                    2 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    90</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="447" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="102" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="3" type="hidden">
+            <input name="atenuacao" value="0.81" type="hidden">
+            <input name="nroQuestao" value="13" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial102');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial102">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    float vetor[n];
+    float maior, menor, meio;
+    int posMaior = 0, posMenor = 0, posMeio;
+    int i = 0;;
+    cin &gt;&gt; vetor[i];
+    maior = vetor[i];
+    menor = vetor[i];
+    for (i = 1; i &lt; n; ++i) {
+        cin &gt;&gt; vetor[i];
+        if (vetor[i] &gt; maior) {
+            maior = vetor[i];
+            posMaior = i;
+        }
+        else {
+            if (vetor[i] &lt; menor) {
+                menor = vetor[i];
+                posMenor = i;
+            }
+        }
+    }
+    if (n % 2 == 0) {
+        posMeio = -1;
+        meio = -1;
+    }
+    else {
+        posMeio = n  / 2;
+        meio = vetor[posMeio];
+    }
+    cout &lt;&lt; maior &lt;&lt; endl
+         &lt;&lt; menor &lt;&lt; endl
+         &lt;&lt; meio &lt;&lt; endl
+         &lt;&lt; posMaior &lt;&lt; endl
+         &lt;&lt; posMenor &lt;&lt; endl
+         &lt;&lt; posMeio &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q14"></a>
+                <h3>Questão 14:
+                            Vetores - Interseção</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que lê dois vetores de números reais, preencha-os e escreva a <b>interseção</b> entre eles. Caso não haja elementos na interseção, escreva -1.<br>
+
+</p><p><b>Entradas (em ordem):</b></p>
+<ol style="text-align:left;padding-left:20px;">
+<li>A quantidade de elementos do primeiro vetor,</li>
+<li>A quantidade de elementos do segundo vetor,</li>
+<li>Os elementos do primeiro vetor, na mesma linha,</li>
+<li>Os elementos do segundo vetor, na mesma linha.</li>
+</ol><p></p>
+
+<p><b>Obs.:</b> Vetores em Python são implementados como listas cujos elementos são todos homogêneos.</p><p>
+
+</p><p><b>Saídas:</b></p>
+<ul style="text-align:left;padding-left:20px;">
+<li>Os elementos que estão nos dois vetores, na ordem em que eles aparecem no primeiro vetor, um em cada linha.</li>
+</ul><p></p>
+
+<p></p><pre>Exemplo de entrada:
+5
+3
+4 2 9 8 6
+2 5 0
+
+Exemplo de saída:
+2
+</pre><p></p>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ14"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    14/11/2016 12:29:11</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="447" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="208" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="14" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial208');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial208">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    unsigned int n1;
+    cin &gt;&gt; n1;
+    unsigned int n2;
+    cin &gt;&gt; n2;
+    float vetor1[n1];
+    float vetor2[n2];
+    for (unsigned int i = 0; i &lt; n1; ++i) {
+        cin &gt;&gt; vetor1[i];
+    }
+    for (unsigned int i = 0; i &lt; n2; ++i) {
+        cin &gt;&gt; vetor2[i];
+    }
+    unsigned int i = 0;
+    bool naoAchou = true;
+    while (n1 &gt; i) {
+        unsigned int u = 0;
+        while (n2 &gt; u) {
+            if (vetor1[i] == vetor2[u]) {
+                cout &lt;&lt; vetor1[i] &lt;&lt; " ";
+                naoAchou = false;
+            }
+            ++u;
+        }
+        ++i;
+    }
+    if (naoAchou) {
+        cout &lt;&lt; -1 &lt;&lt; endl;
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q15"></a>
+                <h3>Questão 15:
+                            Vetores - Matrícula Repetida</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Uma escola deseja saber se existem alunos cursando, simultaneamente, as disciplinas de Lógica e AED1.</p>
+
+<p>Coloque os números das matrículas dos alunos que cursam Lógica em um 
+vetor de quinze alunos. Coloque os números das matrículas dos alunos que
+ cursam AED1 em outro vetor, de dez alunos. Mostre o número das 
+matrículas que aparecem nos dois vetores.</p>
+<p><b>Obs.:</b> Vetores em Python são implementados como listas cujos elementos são todos homogêneos.</p>
+
+<p><b>Entrada:</b><br>
+Cada linha da entrada deve conter um número de matrícula. Serão 
+necessários 25 números: 15 para o primeiro vetor e 10 para o segundo 
+vetor, nesta ordem. Cada número de matrícula é um valor inteiro.
+<br>
+<br>
+<b>Exemplo:</b><br>
+20122234<br>
+20122002<br>
+20122345<br>
+20122022<br>
+20122035<br>
+20122070<br>
+20122456<br>
+20122123<br>
+20122321<br>
+20122789<br>
+20122987<br>
+20122923<br>
+20122124<br>
+20122001<br>
+20122567<br>
+20122678<br>
+20122234<br>
+20122453<br>
+20122345<br>
+20122456<br>
+20122098<br>
+20122890<br>
+20122123<br>
+20122001<br>
+20122789<br>
+<br>
+<b>Saída:</b><br>
+Cada linha da saída deve conter um número de matrícula que esteja 
+simultaneamente nos dois vetores, mantendo a ordem em que eles aparecem 
+no vetor da disciplina de Lógica.
+<br>
+<br>
+<b>Exemplo:</b><br>
+20122234<br>
+20122345<br>
+20122456<br>
+20122123<br>
+20122789<br>
+20122001<br>
+<br>
+</p>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ15"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    15/11/2016 11:41:10</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="447" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="12" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="15" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial12');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial12">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int logica[15];
+    for (unsigned int i = 0; i &lt; 15; ++i) {
+        cin &gt;&gt; logica[i];
+    }
+    int AED1[10];
+    for (unsigned int i = 0; i &lt; 10; ++i) {
+        cin &gt;&gt; AED1[i];
+    }
+    for (unsigned int i = 0; i &lt; 15; ++i) {
+        for (unsigned int u = 0; u &lt; 10; ++u) {
+            if (logica[i] == AED1[u]) {
+                cout &lt;&lt; logica[i] &lt;&lt; endl;
+            }
+        }
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q16"></a>
+                <h3>Questão 16:
+                            Vetores - String - Contar vogais</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que dada uma string, somente com letras minúsculas, sem espaços, conta quantas vogais apareceram.</p>
+
+<p></p><pre>Exemplo de entrada:
+paralelogramo
+
+Exemplo de saída:
+6
+</pre><p></p>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ16"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    16/11/2016 10:25:56</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="447" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="227" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="16" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial227');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial227">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;cstring&gt;
+
+using namespace std;
+
+int main()
+{
+    string palavra;
+    cin &gt;&gt; palavra;
+    unsigned int vogais = 0;
+    for (unsigned int i = 0; i &lt; unsigned(palavra.size()); ++i) {
+        if (palavra[i] == 'a' or palavra[i] == 'e' or palavra[i] == 'i' or palavra[i] == 'o' or palavra[i] == 'u') {
+            ++vogais;
+        }
+    }
+    cout &lt;&lt; vogais &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q17"></a>
+                <h3>Questão 17:
+                            Vetores - Coletando consoantes</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que lê 10 caracteres (todos serão 
+letras minúsculas e sem acentuação) e os guarda num vetor de caracteres.
+ Em seguida, coloque todas as consoantes num outro vetor, mantendo a 
+ordem que existia entre elas. Escreva as consoantes.</p>
+<p>Entradas:</p>
+<ol>
+<li>10 caracteres (podem estar juntos ou separados - use o operador de leitura para não precisar preocupar com isso)</li>
+</ol>
+<p>Saídas:</p>
+<ol>
+<li>Todas as consoantes do vetor preenchido com os caracteres da entrada, sem qualquer separação entre as letras.</li>
+</ol>
+<pre>Exemplo de entrada:
+brasileiro
+
+Exemplo de saída:
+brslr
+</pre>
+
+<pre>Exemplo de entrada:
+c
+a
+p
+a
+c
+i
+d
+a
+d
+e
+
+Exemplo de saída:
+cpcdd</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ17"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    16/11/2016 10:40:45</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="447" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="160" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="17" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial160');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial160">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;cstring&gt;
+
+using namespace std;
+
+int main()
+{
+    char palavra[11];
+    char consoantes[11];
+    unsigned int u = 0;
+    for (unsigned int i = 0; i &lt; 10; ++i) {
+        cin &gt;&gt; palavra[i];
+        if (palavra[i] != 'a' and palavra[i] != 'e' and palavra[i] != 'i' and palavra[i] != 'o' and palavra[i] != 'u') {
+                consoantes[u] = palavra[i];
+                ++u;
+        }
+    }
+    u = 0;
+    unsigned int tamanho = unsigned(strlen(consoantes));
+    while (u &lt; tamanho) {
+        if (u == (tamanho - 1)) {
+            cout &lt;&lt; consoantes[u] &lt;&lt; endl;
+        }
+        else {
+            cout &lt;&lt; consoantes[u];
+        }
+        ++u;
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q18"></a>
+                <h3>Questão 18:
+                            Vetores - Moda (2)</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Em estatística, moda é o valor que ocorre com maior 
+frequência num conjunto de dados, não sendo necessariamente única. Por 
+exemplo a série {1, 3, 5, 5, 6, 6} apresenta 2 modas: 5 e 6.<br>
+Faça um programa que preencha um vetor de tamanho N, a ser definido, com
+ inteiros digitados pelo usuário. O programa deverá retornar quantas e 
+quais as  modas do vetor.</p>
+
+<h3>Exemplos de Entrada e Saída:</h3>
+
+<p><b>Entrada:</b><br>
+7<br>
+2 4 1 10 4 2 1</p>
+
+<p><b>Saída:</b><br>
+3<br>
+2   4   1</p>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ18"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    25/11/2016 15:54:25</p>
+                <p><b>Tentativas:</b>
+                    5 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    49.2</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    </p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="447" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="588" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="6" type="hidden">
+            <input name="atenuacao" value="0.59049" type="hidden">
+            <input name="nroQuestao" value="18" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial588');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial588">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    unsigned int n;
+    cin &gt;&gt; n;
+    int vetor[n];
+    unsigned int i;
+    for (i = 0; i &lt; n; ++i) {
+        cin &gt;&gt; vetor[i];
+    }
+    unsigned int qtdAnt = 1;
+    unsigned int tamVetor = 0;
+    int vetor2[n] = { };
+    unsigned int u;
+    for (i = 0; i &lt; n; ++i) {
+        unsigned int qtd = 0;
+        for (u = 0; u &lt; n; ++u) {
+            if (vetor[i] == vetor[u]) {
+                ++qtd;
+            }
+        }
+        if (qtd == qtdAnt) {
+            qtd = 0;
+            for (u = 0; u &lt; tamVetor; ++u) {
+                if (vetor[i] != vetor2[u]) {
+                    ++qtd;
+                }
+            }
+            if (tamVetor == qtd) {
+                vetor2[tamVetor] = vetor[i];
+                ++tamVetor;
+            }
+        }
+        else {
+            if (qtd &gt; qtdAnt) {
+                tamVetor = 0;
+                qtdAnt = qtd;
+                vetor2[tamVetor] = vetor[i];
+                ++tamVetor;
+            }
+        }
+    }
+    for (i = 0; i &lt; tamVetor; ++i) {
+        if (i == 0) {
+            cout &lt;&lt; tamVetor &lt;&lt; endl
+                 &lt;&lt; vetor2[i] &lt;&lt; " ";
+        }
+        else {
+            cout &lt;&lt; vetor2[i] &lt;&lt; " ";
+        }
+    }
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q19"></a>
+                <h3>Questão 19:
+                            Vetores - Apagando e Ganhando</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <img src="vetores_arquivos/apagando-e-ganhando.jpg" width="480" height="273">
+<p>O SBT comprou os direitos sobre um programa de auditório muito popular na Finlândia e resolveu chamá-lo de <i>Apagando e Ganhando</i>.
+ Neste programa, Silvio Santos apresenta um número ao participante e diz
+ para ele apagar uma certa quantidade de dígitos, formando um novo 
+número com os dígitos que sobraram, na sequência em que estavam. O 
+número formado é então dado em dinheiro para o participante.</p>
+<p>Seu amigo vai participar do programa, mas teme não conseguir pensar 
+direito na hora do show. Então ele pediu que você faça um programa que 
+leia:</p>
+<ol>
+<li>um número inteiro e</li>
+<li>uma quantidade de dígitos a serem removidos,</li>
+</ol>
+<p>e depois escreve qual o maior número possível de ser formado sob essas condições.</p>
+<p><b>Exemplo de entrada</b>:</p>
+<pre>324911285
+5</pre>
+<p><b>Exemplo de saída</b>:</p>
+<pre>9285</pre>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ19"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    26/11/2016 01:15:09</p>
+                <p><b>Tentativas:</b>
+                    2 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    75.5</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    O programa não resolve todas as instâncias do problema.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="447" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="362" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="3" type="hidden">
+            <input name="atenuacao" value="0.81" type="hidden">
+            <input name="nroQuestao" value="19" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial362');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial362">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;cstring&gt;
+
+using namespace std;
+
+int main()
+{
+    char vetor[100];
+    cin &gt;&gt; vetor;
+    int qtd;
+    cin &gt;&gt; qtd;
+    char maior = vetor[0];
+    int posicao = 0;
+    for (int i = 1; i &lt; qtd; ++i) {
+        if (maior &lt; vetor[i]) {
+            maior = vetor[i];
+            posicao = i;
+        }
+    }
+    int tamanho = int(strlen(vetor));
+    char resultante[tamanho];
+    for (int i = posicao, u = 0; i &lt; tamanho; ++i, ++u) {
+        resultante[u] = vetor[i];
+    }
+    int restante = qtd - posicao;
+    while (restante != 0) {
+        char menor = resultante[0];
+        int posicao2 = 0;
+        for (int i = 0; i &lt; (tamanho - posicao); ++i) {
+            if (menor &gt; resultante[i]) {
+                menor = resultante[i];
+                posicao2 = i;
+            }
+        }
+        for (int i = posicao2; i &lt; (tamanho - posicao); ++i) {
+            resultante[i] = resultante[i + 1];
+        }
+        ++posicao;
+        --restante;
+    }
+    for (int i = 0; i &lt; (tamanho - qtd); ++i) {
+        if (i == ((tamanho - qtd) - 1)) {
+            cout &lt;&lt; resultante[i] &lt;&lt; endl;
+        }
+        else {
+            cout &lt;&lt; resultante[i];
+        }
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q20"></a>
+                <h3>Questão 20:
+                            Vetores - Números Felizes</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Um número inteiro positivo é um <em>número feliz</em> se a soma dos quadrados de seus dígitos é 1 ou um outro número feliz.</p>
+<p>Por exemplo, 7 é um número feliz porque:</p>
+<ul>
+<li>7² = 49</li>
+<li>4² + 9² = 97</li>
+<li>9² + 7² = 130</li>
+<li>1² + 3² + 0 = 10</li>
+<li>1² + 0² = 1</li>
+</ul>
+<p>Números que não são felizes passam a eternidade procurando a 
+felicidade mas nunca encontram. É preciso ter cuidado para decidir que 
+um número não é feliz antes do final dos tempos. Por exemplo, o número 4
+ não é feliz porque:</p>
+<ul>
+<li>4² = 16</li>
+<li>1² + 6² = 37</li>
+<li>3² + 7² = 58</li>
+<li>5² + 8² = 89</li>
+<li>8² + 9² = 145</li>
+<li>1² + 4² + 5² = 42</li>
+<li>4² + 2² = 20</li>
+<li>2² + 0² = 4</li>
+</ul>
+<p>Se continuássemos calculando as somas dos quadrados dos dígitos, 
+continuaríamos infinitamente, o que claramente não deve acontecer.</p>
+<p>Faça um programa que dado um número inteiro positivo, diga se ele é 
+feliz ou não. O programa deve escrever também todas as somas de 
+quadrados de dígitos que foram encontrados.</p>
+<p><b>Entradas</b>:</p>
+<ol>
+<li>Um número inteiro positivo.</li>
+</ol>
+<p><b>Saídas</b>:</p>
+<ol>
+<li>Todos os números intermediários (no caso de um número feliz, a 
+sequência vai até o 1; em caso contrário vai até o número que permitiu a
+ classificação) e</li>
+<li>A palavra <code>sim</code> ou <code>nao</code> (letras minúsculas, sem acentos) indicando se o número é feliz.</li>
+</ol>
+<p><b>Exemplo de entrada</b>:</p>
+<pre>4</pre>
+<p><b>Exemplo de saída</b>:</p>
+<pre>16 37 58 89 145 42 20 4 
+nao</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ20"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    25/11/2016 15:43:05</p>
+                <p><b>Tentativas:</b>
+                    3 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    81</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="447" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="307" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="4" type="hidden">
+            <input name="atenuacao" value="0.729" type="hidden">
+            <input name="nroQuestao" value="20" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial307');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial307">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    unsigned int numero;
+    cin &gt;&gt; numero;
+    unsigned int vetor[50];
+    bool teste = true;
+    unsigned vetor2[50];
+    vetor2[0] = numero;
+    unsigned int n = 1;
+    while (teste) {
+        unsigned int contador = 0;
+        for (unsigned int i = 0; numero != 0; ++i) {
+            vetor[i] = (numero % 10);
+            numero /= 10;
+            ++contador;
+        }
+        for (unsigned int u = 0; u &lt; contador; ++u) {
+            numero += (vetor[u] * vetor[u]);
+            vetor2[n] = numero;
+        }
+        if (numero == 1) {
+            for (unsigned int i = 1; i &lt;= n; ++i) {
+                if (i != n) {
+                    cout &lt;&lt; vetor2[i] &lt;&lt; " ";
+                }
+                else {
+                    cout &lt;&lt; vetor2[i] &lt;&lt; endl
+                         &lt;&lt; "sim \n";
+                }
+            }
+            teste = false;
+        }
+        else {
+            for (unsigned int x = 0; x &lt; n; ++x) {
+                if (vetor2[n] == vetor2[x]) {
+                    x = n;
+                    for (unsigned int i = 1; i &lt;= n; ++i) {
+                        if (i != n) {
+                            cout &lt;&lt; vetor2[i] &lt;&lt; " ";
+                        }
+                        else {
+                            cout &lt;&lt; vetor2[i] &lt;&lt; endl
+                                 &lt;&lt; "nao \n";
+                        }
+                    }
+                    teste = false;
+                }
+            }
+        }
+        ++n;
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q21"></a>
+                <h3>Questão 21:
+                            Vetores - Inserindo elementos em um vetor.</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que receba dois vetores, sendo que o
+ segundo deverá ter o dobro do tamanho do primeiro.O usuário deverá 
+preencher completamente o primeiro vetor, enquanto o segundo vetor terá <b>apenas a metade de seu tamanho ocupado.</b></p>
+<p>O programa deverá inserir os elementos do primeiro vetor no segundos 
+vetor, em um determinada posição a ser informada pelo usuário.</p>
+<p><b>OBS.:</b>Todos os elementos do primeiro vetor devem ser inseridos 
+na mesma posição informada, sendo em que em cada passo da repetição, um 
+novo número,elemento do primeiro vetor, ocupará posição.</p>
+<p><b>OBS2.:</b>Considere que só poderá ter entradas de posição já ocupadas do segundo vetor.</p>
+<p>Entradas:</p>
+<ol>
+<li>Tamanho do primeiro vetor (int).</li>
+<li>Elementos do primeiro vetor (int).</li>
+<li>Elementos do segundo vetor (int)</li>
+<li>Posição a se inserir (int).</li>
+</ol>
+<p>Saídas:</p>
+<ol>
+<li>Cada passo da inserção dos elementos.</li>
+</ol>
+<p>Exemplo de Entrada:</p>
+<pre>5
+1 2 3 4 5
+10 35 11 2 1
+1</pre>
+<p>Exemplo de Saída:</p>
+<pre>10 1 35 11 2 1
+10 2 1 35 11 2 1
+10 3 2 1 35 11 2 1
+10 4 3 2 1 35 11 2 1
+10 5 4 3 2 1 35 11 2 1</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ21"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    18/11/2016 17:44:07</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    75.8</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    O programa não resolve todas as instâncias do problema.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="447" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="758" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="21" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial758');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial758">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    int vetor1[n];
+    for (int i = 0; i &lt; n; ++i) {
+        cin &gt;&gt; vetor1[i];
+    }
+    int vetor2[(2*n)];
+    for (int i = 0; i &lt; n; ++i) {
+        cin &gt;&gt; vetor2[i];
+    }
+    int posicao;
+    cin &gt;&gt; posicao;
+    for (int i = 0; i &lt; n; ++i) {
+        int teste = n + i;
+        while (teste &gt;= posicao) {
+            vetor2[(teste + 1)] = vetor2[teste];
+            --teste;
+        }
+        vetor2[posicao] = vetor1[i];
+        teste = n + i + 1;
+        for (int u = 0; u &lt; teste; ++u) {
+            cout &lt;&lt; vetor2[u] &lt;&lt; " ";
+        }
+        cout &lt;&lt; endl;
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q22"></a>
+                <h3>Questão 22:
+                            Vetores - Busca de sequências.</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que receba dois vetores de tamanho x
+ e y, a serem fornecidos pelo usúario. O programa deverá retornar todas 
+as sequências contidas no primeiro vetor, que também esteja presente no 
+segundo vetor, caso não contenha nenhum correspondente, exibir na tela: 
+ERRO.</p>
+<p><b>OBS.:</b>Considere que não haverá sequências repetidas.</p>
+<p><b>OBS2.:</b>Considere como sequência, quaisquer números no formato: n, n+1, (n+1)+1...</p>
+<p>Entradas:</p>
+<ol>
+<li>Tamanho do primeiro vetor (int).</li>
+<li>Tamanho do segundo vetor (int).</li>
+<li>Elementos do primeiro vetor (int).</li>
+<li>Elementos do segundo vetor (int).</li>
+</ol>
+<p>Saídas:</p>
+<ol>
+<li>Sequências que estajam contidas em ambos os vetores.</li>
+</ol>
+<p>Exemplo de Entrada 1:</p>
+<pre>11
+6
+3 4 5 6 5 1 2 7 8 1 3
+6 1 2 3 4 5 </pre>
+<p>Exemplo de Saída 1:</p>
+<pre>3 4 5
+1 2</pre>
+
+<p>Exemplo de Entrada 2:</p>
+<pre>4
+5
+5 6 7 8
+6 1 2 3 4 </pre>
+<p>Exemplo de Saída 2:</p>
+<pre>ERRO</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ22"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    21/11/2016 21:20:02</p>
+                <p><b>Tentativas:</b>
+                    4 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    58.9</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    A quantidade de dados escritos pelo programa é diferente da quantidade de dados esperados.
+O programa não resolve todas as instâncias do problema.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="447" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="757" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="5" type="hidden">
+            <input name="atenuacao" value="0.6561" type="hidden">
+            <input name="nroQuestao" value="22" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial757');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial757">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include
+ &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    unsigned int nx, ny;
+    cin &gt;&gt; nx &gt;&gt; ny;
+    int x[nx];
+    for (unsigned int w = 0; w &lt; nx; ++w) {
+        cin &gt;&gt; x[w];
+    }
+    int y[ny];
+    for (unsigned int z = 0; z &lt; ny; ++z) {
+        cin &gt;&gt; y[z];
+    }
+    bool naoAchou = true;
+    for (unsigned int i = 0; i &lt; nx; ++i) {
+        for (unsigned int u = 0; u &lt; ny; ++u) {
+            if (x[i] == y[u] and (x[i + 1] == y[u + 1] and ((x[i] + 1) 
+== x[i + 1] and ((u + 1) &lt; ny and ((i + 1) &lt; nx))))) {
+                unsigned int n = 0;
+                do {
+                    if (x[i + n + 1] != (1 + x[n + i]) or (y[u + n + 1] 
+!= (1 + y[n + u]))) {
+                        cout &lt;&lt; x[i + n] &lt;&lt; endl;
+                        ++n;
+                    }
+                    else {
+                        cout &lt;&lt; x[i + n] &lt;&lt; " ";
+                        ++n;
+                    }
+                } while (x[i + n] == (1 + x[n + i - 1]) and (y[u + n] ==
+ (1 + y[n + u - 1]) and (n &lt; nx and (n &lt; ny))));
+                naoAchou = false;
+                i += n;
+            }
+        }
+    }
+    if (naoAchou) {
+        cout &lt;&lt; "ERRO \n";
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q23"></a>
+                <h3>Questão 23:
+                            Vetores - Triângulo de Pascal.</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um algoritmo que, dado n, imprime as n primeiras linhas do triângulo de Pascal. </p>
+<p>Sendo que o triângulo de Pascal é montado da seguinte forma:</p>
+<a href="http://pt-br.tinypic.com/?ref=sm836v" target="_blank"><img src="vetores_arquivos/sm836v.jpg" alt="Image and video hosting by TinyPic" border="0"></a>
+<p>Entradas:</p>
+<ol>
+<li>n linhas do triângulo de Pascal (int).</li>
+</ol>
+<p>Saídas:</p>
+<ol>
+<li>Triângulo de Pascal.</li>
+</ol>
+<p>Exemplo de Entrada:</p>
+<pre>9</pre>
+<p>Exemplo de Saída:</p>
+<pre>1 
+1 1 
+1 2 1 
+1 3 3 1 
+1 4 6 4 1 
+1 5 10 10 5 1 
+1 6 15 20 15 6 1 
+1 7 21 35 35 21 7 1 
+1 8 28 56 70 56 28 8 1 
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ23"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    24/11/2016 17:31:05</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="447" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="759" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="23" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial759');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial759">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int nLinhas;
+    cin &gt;&gt; nLinhas;
+    int pascal[nLinhas];
+    int nColunas = 0;
+    int valor[nLinhas];
+    for ( int i = 0; i &lt; nLinhas; ++i) {
+        pascal[i] = 1;
+        valor[i] = 1;
+    }
+    do {
+        for (int u = 0; u &lt;= nColunas; ++u) {
+            if (u &gt; 0 and u &lt; nColunas) {
+                valor[u] = (pascal[u] + pascal[u - 1]);
+                cout &lt;&lt; valor[u] &lt;&lt; " ";
+            }
+            else {
+                cout &lt;&lt; valor[u] &lt;&lt; " ";
+            }
+        }
+        for (int i = 0; i &lt; nColunas; ++i) {
+            pascal[i] = valor[i];
+        }
+        cout &lt;&lt; endl;
+        ++nColunas;
+    } while (nColunas != nLinhas);
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                </div><!-- prova -->
+<script type="text/javascript">
+    var serverTime = 1485382362000;
+    var localTime = +Date.now();
+    var timeDiff = serverTime - localTime;
+    var closingTime = 1485997200000;
+    var nomeUsuario = "Samir Carvalho";
+    $('#usuario').text(nomeUsuario);
+    if (true) {
+        setInterval(function () {
+            var realtime = +Date.now() + timeDiff;
+            var minutosRestantes = (closingTime - realtime) / 60000;
+            if (minutosRestantes < 0)
+                window.location = 'testTrials.php?encerrar';
+            else if (minutosRestantes < 5)
+                minutosRestantes = minutosRestantes.toFixed(1)
+            else
+                minutosRestantes = minutosRestantes.toFixed(0);
+            $('#clock').text(minutosRestantes);
+        }, 5000);
+    }
+    else
+        $('#clock').text('ENCERRADO');
+    //window.onclose = function() {alert("Close window?");}
+</script>
+    <br></div></div><div id="bottomct" class="ui-corner-top"><div id="footer">
+        <table boder="0" style="width: 100%;">
+            <tbody><tr>
+                <td style="width:33%;">
+                    <a href="http://www.ufla.br/" style="float:left;">
+                        <img src="vetores_arquivos/ufla.png" width="92" height="40">
+                    </a>
+                </td>
+                <td style="width:34%;text-align: center;">
+                    Desenvolvido por <a href="http://www.dcc.ufla.br/%7Ebruno/" style="color: #DDF">Bruno Schneider</a>
+                    a partir do programa original (Algod) de Renato R. R. de Oliveira (GPLv3).
+                </td>
+                <td style="width:33%;">
+                    <a href="http://www.dcc.ufla.br/">
+                        <img src="vetores_arquivos/logo-dcc.png" style="float:right" width="128" height="40">
+                    </a>
+                </td>
+            </tr>
+        </tbody></table>
+    </div></div>
+
+
+<div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable ui-dialog-buttons" style="outline: 0px none; z-index: 1002; position: absolute; height: auto; width: auto; top: 261.534px; left: 634px; display: none;" tabindex="-1" role="dialog" aria-labelledby="ui-id-1"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-1" class="ui-dialog-title">Aviso</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div><div id="alert-dialog" style="width: auto; min-height: 32px; height: auto;" class="ui-dialog-content ui-widget-content" scrolltop="0" scrollleft="0"></div><div class="ui-resizable-handle ui-resizable-n" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-e" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-s" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se ui-icon-grip-diagonal-se" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 1000;"></div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button></div></div></div><div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable ui-dialog-buttons" style="outline: 0px none; z-index: 1002; position: absolute; height: auto; width: 800px; top: 261.534px; left: 274.5px; display: none;" tabindex="-1" role="dialog" aria-labelledby="ui-id-2"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-2" class="ui-dialog-title">&nbsp;</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div><div id="data-view-dialog" style="text-align: center; width: auto; min-height: 32px; height: auto;" class="ui-dialog-content ui-widget-content" scrolltop="0" scrollleft="0"></div><div class="ui-resizable-handle ui-resizable-n" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-e" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-s" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se ui-icon-grip-diagonal-se" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 1000;"></div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button></div></div></div><div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable ui-dialog-buttons" style="outline: 0px none; z-index: 1004; position: absolute; height: auto; width: auto; top: 2320.53px; left: 255px; display: none;" tabindex="-1" role="dialog" aria-labelledby="ui-id-3"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-3" class="ui-dialog-title">&nbsp;</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div><div style="width: auto; min-height: 32px; height: auto;" id="lastTrial478" class="ui-dialog-content ui-widget-content" scrolltop="0" scrollleft="0">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int v1[10];
+    int v2[5];
+    for (int i = 0; i &lt; 10; ++i) {
+        cin &gt;&gt; v1[i];
+    }
+    for (int i = 0; i &lt; 5; ++i) {
+        cin &gt;&gt; v2[i];
+    }
+    for (int i = 0; i &lt; 10; ++i) {
+        int contador = 0;
+        int u = 0;
+        for (; u &lt; 5; ++u) {
+            int resto = 0;
+            resto = (v1[i] % v2[u]);
+            if (resto == 0) {
+                ++contador;
+            }
+        }
+    cout &lt;&lt; v1[i] &lt;&lt; " " &lt;&lt; contador &lt;&lt; endl;
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><div class="ui-resizable-handle ui-resizable-n" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-e" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-s" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se ui-icon-grip-diagonal-se" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 1000;"></div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button></div></div></div></body></html>

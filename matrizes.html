@@ -1,0 +1,2381 @@
+<!DOCTYPE html>
+<html><head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Dredd - Juiz Online</title>
+    <link rel="stylesheet" type="text/css" href="matrizes_files/style.css">
+    <link rel="stylesheet" type="text/css" href="matrizes_files/jquery-ui-1.css">
+    <script src="matrizes_files/jquery-1.js"></script>
+    <script src="matrizes_files/jquery-ui.js"></script>
+    <script src="matrizes_files/jquery_002.js"></script>
+    <script src="matrizes_files/jquery.js"></script>
+    <script>
+    $(document).ready(function() {
+        $(document).tooltip();
+        $("button, input[type='submit'], input[type='reset']").button();
+
+        $("input.date").mask("99/99/9999").attr("title","Exemplo: 11/09/2001").tooltip();
+        $("input.datetime").mask("99/99/9999 99:99:99").attr("title","Exemplo: 11/09/2001 10:17:37").tooltip();
+        $("input.integer").numeric().attr("title","Exemplo: 2").tooltip();
+        $("input.number").numeric({allow:"."}).attr("title","Exemplo: 0.5").tooltip();
+        $("textarea").keypress(function(event) {
+            if (event.ctrlKey && (event.which == 112)) {
+                event.preventDefault();
+                $("#data-view-dialog").html("<div class='data-view-box' style='width: 90%;'>"+$(this).val()+"</div>").dialog("open");
+            }
+        });
+
+        $("textarea.cpp-code-view").attr("readonly","readonly");
+        $("div.cpp-code-view").each(function() {
+            var text = $(this).html();
+            text.replace("&","&amp;");
+            text.replace("<","&lt;");
+            text.replace(">","&gt;");
+            text.replace("\r","");
+
+            // Keywords
+            text.replace("float ","<b>float</b> ");
+            text.replace("double ","<b>double</b> ");
+            text.replace("int ","<b>int</b> ");
+            text.replace("long ","<b>long</b> ");
+            text.replace("if ","<b>if</b> ");
+            text.replace("else ","<b>else</b> ");
+            text.replace("for ","<b>for</b> ");
+            text.replace("while ","<b>while</b> ");
+            text.replace("return","<b>return</b>");
+            text.replace("break","<b>break</b>");
+            text.replace("using","<b>using</b>");
+            text.replace("namespace","<b>namespace</b>");
+            text.replace("#include","<b>#include</b>");
+
+            text.replace(" ","&nbsp;");
+            text.replace("\t","&nbsp;&nbsp;&nbsp;&nbsp;");
+            text.replace("\n","<br />");
+            $(this).html(text);
+        });
+
+        $("#alert-dialog").dialog({
+            title: "Aviso",
+            width: "auto",
+            height: "auto",
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $(this).dialog("close");
+                }
+            }
+        }).dialog("close");
+
+        $("#data-view-dialog").dialog({
+            title: "",
+            width: 800,
+            height: "auto",
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $(this).dialog("close");
+                }
+            }
+        }).dialog("close");
+
+        $("form").submit(function() {
+            var $validationText = "";
+            $(this).find(".notempty").each(function() {
+                if (($(this).val() == undefined) || ($(this).val() == "")) {
+                    $validationText += "<li>"+$("label[for='"+$(this).attr('name')+"']").html()+"</li>";
+                }
+            });
+            if ($validationText != "") {
+                $validationText = "<p>Os seguintes campos não podem estar vazios:</p><ul>"+$validationText+"</ul>";
+                $("#alert-dialog").html($validationText).dialog({modal: true}).dialog("open");
+                return false;
+            } else {
+                var $form = $(this);
+                $form.find("input.passwordconfirm").each(function() {
+                    if ($(this).val() != $form.find("input.password").val()) {
+                        $validationText = "As senhas digitadas não conferem.";
+                    }
+                });
+                if ($validationText != "") {
+                    $("#alert-dialog").html($validationText).dialog({modal: true}).dialog("open");
+                    return false;
+                } else
+                    return true;
+            }
+        });
+    });
+    function openDivAsDialog(id) {
+        $("div#"+id).dialog({
+            title: "",
+            width: "auto",
+            height: "auto",
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $(this).dialog("close");
+                }
+            }
+        }).dialog("open");
+    };
+    </script>
+</head>
+<body>
+    
+    
+    <div id="topct" class="ui-corner-bottom"><div id="banner">
+        <h1>Dredd - Juiz Online</h1>
+        <div id="topmenu">
+            <button id="menu-bt-home" onclick="location.assign('./');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Principal</span></button>
+            <button id="menu-bt-profile" onclick="location.assign('./testsMine.php');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Minhas Provas</span></button>
+            <button id="menu-bt-profile" onclick="location.assign('./profile.php');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Perfil</span></button>
+            <button id="menu-bt-logout" onclick="location.assign('./logout.php');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Sair</span></button>
+        </div>
+    </div></div><div id="contentct"><div id="content">
+<div id="painel-info">
+    <b>Minutos<br>Restantes</b>:<br>
+    <span id="clock">1134</span><br><br>
+    <b>Usuário</b>:<br>
+    <div id="usuario">Samir Carvalho</div><br>
+    <b>Notas</b>:<br>
+    <span id="notas">
+Q1: 100<br>Q2: 100<br>Q3: 100<br>Q4: 100<br>Q5: 100<br>Q6: 100<br>Q7: 100<br>Q8: 100<br>Q9: 100<br>Q10: 100<br>Q11: 100<br>Q12: 100<br>Q13: 90<br>Q14: 100<br>Q15: 100<br>Q16: 100<br>Q17: 81<br>Q18: 100<br>    </span><br>
+</div>
+<div id="prova">
+    <h1>IAlg - Lista busca binária,  matrizes</h1>
+    <p><b>Prova Aberta Até:</b>
+        27/03/2017 16:00:00</p>
+    <p><b>Número Máximo de Tentativas:</b>
+        8</p>
+    <p><b>Atenuação da Nota por Tentativa (multiplicativa):</b>
+        0.9</p>
+    <p><b>Nota Máxima por Tentativa:</b>
+        </p><ol style="text-align: left; padding-left: 12ex;">
+                            <li>100</li>
+                            <li>90</li>
+                            <li>81</li>
+                            <li>72.9</li>
+                            <li>65.61</li>
+                            <li>59.049</li>
+                            <li>53.1441</li>
+                            <li>47.82969</li>
+                            </ol><p></p>
+    <p><b>Descrição:</b></p>
+    <div class="description-display-box">
+        Exercícios de vetores e matrizes para as turmas de IAlg. Pode ser acessada de casa.    </div>
+    <h3>QUESTÕES</h3>
+                                <div class="problem-try-ct">
+                <a name="Q1"></a>
+                <h3>Questão 1:
+                            Busca binária - ordem decrescente</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que realiza busca binária de números
+ inteiros em ordem decrescente. O programa deve escrever a posição do 
+valor procurado. Se o valor procurado não estiver no vetor, a posição -1
+ (menos um) deverá ser escrita. Se o valor procurado ocorrer mais de uma
+ vez no vetor, a primeira ocorrência que for encontrada é a que deve ser
+ informada.</p>
+<p><b>Entradas</b>:</p>
+<ol>
+<li>A quantidade de números a ser lida.</li>
+<li>Vários números inteiros em ordem decrescente.</li>
+<li>O valor procurado (número inteiro).</li>
+</ol>
+
+<p><b>Saída</b>:</p>
+<ul>
+<li>A posição do valor procurado.</li>
+</ul>
+
+<p>Exemplo de entrada:</p>
+<pre>6
+8 7 5 4 2 2
+5</pre>
+<p>Exemplo de saída:</p>
+<pre>2</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ1"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    11/11/2016 19:23:29</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    8</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="463" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="298" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="1" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial298');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial298">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main ()
+{
+    int n;
+    cin &gt;&gt; n;
+    int vetor[n];
+    for (int i = 0; i &lt; n; ++i) {
+        cin &gt;&gt; vetor[i];
+    }
+    int menor =0;
+    int meio = n/2;
+    int maior = n -1;
+    int numeroProcurado;
+    cin &gt;&gt; numeroProcurado;
+    while (menor &lt;= maior and vetor[meio] != numeroProcurado) {
+        meio = (menor + maior) / 2;
+        if (vetor[meio] &gt; numeroProcurado) {
+            menor = meio + 1;
+        }
+        else {
+            maior = meio - 1;
+        }
+    }
+    if (vetor[meio] == numeroProcurado){
+        cout &lt;&lt; meio &lt;&lt; endl;
+    }
+    else {
+        cout &lt;&lt; -1 &lt;&lt; endl;
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q2"></a>
+                <h3>Questão 2:
+                            Matrizes - Média da Diagonal</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que leia uma matriz de números <b>n x n</b> e escreva a média dos elementos da sua diagonal principal.</p>
+
+<p><b>Obs.:</b> Matrizes em Python são implementadas como uma lista composta por listas cujos elementos são todos homogêneos.</p>
+
+<p><b>Entradas:</b></p>
+<ol>
+<li>Número inteiro representando a ordem da matriz (número de linhas e colunas)</li>
+<li>Os elementos da matriz, da esquerda para a direita, de cima para baixo.</li>
+</ol>
+
+<p><b>Saídas:</b></p> 
+<ol><li>Média da diagonal principal da matriz.</li></ol>
+
+<p><b>Exemplo de entrada:</b></p>
+<pre>3
+1 2 3
+4 5 6
+7 8 9
+</pre>
+
+<p><b>Exemplo de saída:</b></p>
+<pre>5
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ2"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    11/11/2016 20:56:26</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    8</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="463" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="57" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="2" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial57');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial57">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    int matriz[n][n];
+    int somatorio = 0;
+    int contador = 0;
+    for (int i = 0; i &lt; n; ++i) {
+        for (int u = 0; u &lt; n; ++u) {
+            cin &gt;&gt; matriz[i][u];
+            if (i == u) {
+                somatorio += matriz[i][u];
+                ++contador;
+            }
+        }
+    }
+    cout &lt;&lt; somatorio / contador &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q3"></a>
+                <h3>Questão 3:
+                            Matrizes - pares, ímpares e média</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>
+Faça um programa que preencha uma matriz 3x4 de valores reais, calcule e mostre:
+</p><ul>
+<li>a quantidade de elementos pares</li>
+<li>a quantidade de elementos ímpares</li>
+<li>a média de todos os elementos</li>
+</ul>
+<p></p>
+
+<p> Exemplo de Entrada: </p>
+<p>
+1 2 3 4<br>
+5 6 7 7<br>
+1 2 3 4<br>
+</p>
+
+<p> Exemplo de Saída: </p>
+<p>
+5<br>
+7<br>
+3.75</p>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ3"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    11/11/2016 21:07:22</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    8</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="463" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="46" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="3" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial46');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial46">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int matriz[3][4];
+    int pares = 0;
+    int impares = 0;
+    int media = 0;
+    for (int i = 0; i &lt; 3; ++i) {
+        for ( int u = 0; u &lt; 4; ++u) {
+            cin &gt;&gt; matriz[i][u];
+            media += matriz[i][u];
+            if (matriz[i][u] % 2 == 0) {
+                ++pares;
+            }
+            else {
+                ++impares;
+            }
+        }
+    }
+    cout &lt;&lt; pares &lt;&lt; endl
+         &lt;&lt; impares &lt;&lt; endl
+         &lt;&lt; float(media)/12.0f &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q4"></a>
+                <h3>Questão 4:
+                            Matrizes - Determinante de matriz 3x3</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>O determinante de uma matriz quadrada é um número real que podemos associar à matriz.</p>
+
+<p>O cálculo do determinante de uma matriz 3x3 pode ser feito
+pela acumulação dos produtos das suas diagonais, ou seja:<br></p>
+
+<p><img src="matrizes_files/det33.png" width="484" height="73"></p>
+
+<p>Faça um programa que calcula o determinante de uma matriz 3x3 de números reais.</p>
+
+<p><b>Obs.:</b> Matrizes em Python são implementadas como uma lista composta por listas cujos elementos são todos homogêneos.</p>
+
+<p><b>Entrada:</b></p>
+<ol><li>Os elementos de uma matriz 3x3, da esquerda para direita, de cima para baixo.</li></ol>
+
+<p><b>Saída:</b></p>
+<ol><li>O determinante dessa matriz.</li></ol>
+
+<p><b>Exemplo de entrada:</b></p>
+ <pre>1 3 10
+-1 1 10
+0 2 10
+</pre>
+
+<p><b>Exemplo de saída:</b></p>
+<pre>0
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ4"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    11/11/2016 21:22:34</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    8</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="463" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="243" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="4" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial243');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial243">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include
+ &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    float matriz[3][3];
+    for (int i = 0; i &lt; 3; ++i) {
+        for (int u = 0; u &lt; 3; ++u) {
+            cin &gt;&gt; matriz[i][u];
+        }
+    }
+    cout &lt;&lt; ((matriz[0][0]*matriz[1][1]*matriz[2][2]) + 
+(matriz[0][1]*matriz[1][2]*matriz[2][0]) + 
+(matriz[0][2]*matriz[1][0]*matriz[2][1])) - 
+            ((matriz[0][2]*matriz[1][1]*matriz[2][0]) + 
+(matriz[0][0]*matriz[1][2]*matriz[2][1]) + 
+(matriz[1][0]*matriz[0][1]*matriz[2][2])) &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q5"></a>
+                <h3>Questão 5:
+                            Matrizes - Percorrer em zigue-zague</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que leia uma matriz de números 
+inteiros. Em seguida, o programa deve escrever todos os elementos da 
+matriz em zigue-zague, ou seja: inicialmente são escritos todos os 
+valores da primeira linha, da esquerda para direita; depois os valores 
+da segunda linha, da direita para esquerda; e assim por diante.</p>
+<p><b>Obs.:</b> Matrizes em Python são implementadas como uma lista composta por listas cujos elementos são todos homogêneos.</p>
+<p><b>Entradas:</b></p>
+<ol>
+<li>O número de linhas e em seguida o número de colunas da matriz (na mesma linha).</li>
+<li>Os elementos da matriz (números inteiros).</li>
+</ol>
+<p><b>Saídas:</b></p>
+<ol>
+<li>Todos os valores da matriz, em ordem de zigue-zague.</li>
+</ol>
+<p><b>Exemplo de entrada:</b></p>
+<pre>3 6
+1 2 3 4 5 6
+7 8 9 0 1 2 
+3 4 5 6 7 8
+</pre>
+<p><b>Exemplo de saída:</b></p>
+<pre>1 2 3 4 5 6 2 1 0 9 8 7 3 4 5 6 7 8
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ5"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    11/11/2016 21:53:22</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    8</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="463" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="308" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="5" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial308');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial308">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int l;
+    cin &gt;&gt; l;
+    int c;
+    cin &gt;&gt; c;
+    int matriz[l][c];
+    for (int i = 0; i &lt; l; ++i) {
+        for (int u = 0; u &lt; c; ++u) {
+            cin &gt;&gt; matriz[i][u];
+        }
+    }
+    bool teste = true;
+    for (int i = 0; i &lt; l; ++i) {
+        if (teste) {
+            for (int x = 0; x &lt; c; ++x) {
+                if (x == (c - 1) and (l - 1) == i) {
+                    cout &lt;&lt; matriz[i][x] &lt;&lt; endl;
+                }
+                else {
+                    cout &lt;&lt; matriz[i][x] &lt;&lt; " ";
+                }
+            }
+            teste = false;
+        }
+        else {
+            for (int y = (c - 1); y &gt;= 0; --y) { 
+                if (y == 0 and (l - 1) == i) {
+                    cout &lt;&lt; matriz[i][y] &lt;&lt; endl;
+                }
+                else { 
+                    cout &lt;&lt; matriz[i][y] &lt;&lt; " ";
+                }
+            }
+            teste = true;
+        }
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q6"></a>
+                <h3>Questão 6:
+                            Matrizes - Linha do menor</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Crie um programa que lê os dados de uma matriz 
+quadrada de inteiros. Depois, o programa deverá imprimir o número da 
+linha que contém o menor valor da matriz.</p>
+
+<p><b>Obs.:</b> Matrizes em Python são implementadas como uma lista composta por listas cujos elementos são todos homogêneos.</p>
+
+<p><b>Entradas:</b></p>
+<ol>
+<li>Número inteiro representando a ordem da matriz (o número de linhas e colunas da matriz);</li>
+<li>Os elementos da matriz, da esquerda para a direita, de cima para baixo.</li>
+</ol>
+
+<p><b>Saídas:</b></p> 
+<ol><li>O número da linha onde está o menor valor da matriz.</li></ol>
+
+<p><b>Exemplo de entrada:</b></p>
+<pre>3
+45 56 32
+48 92 21
+10 -5 78
+</pre>
+
+<p><b>Exemplo de saída:</b></p>
+<pre>2</pre>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ6"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    11/11/2016 22:36:15</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    8</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="463" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="121" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="6" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial121');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial121">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    int matriz[n][n];
+    cin &gt;&gt; matriz[0][0];
+    int teste = matriz[0][0];
+    int contador = 0;
+    int u = 1;
+    for (int i = 0; i &lt; n; ++i) {
+        while (u &lt; n) {
+            cin &gt;&gt; matriz[i][u];
+            if (matriz[i][u] &lt; teste) {
+                teste = matriz[i][u];
+                contador = i;
+            }
+            ++u;
+        }
+        u = 0;
+    }
+    cout &lt;&lt; contador &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q7"></a>
+                <h3>Questão 7:
+                            Matrizes - Matriz Transposta</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que transpõe uma matriz. Transpor 
+uma matriz significa trocar as linhas pelas colunas da matriz. Escrever a
+ matriz transposta é suficiente, não sendo necessário criar antes uma 
+matriz transposta.</p>
+
+<p>Entradas:</p>
+<ol>
+<li>o número de linhas da matriz,</li>
+<li>o número de colunas da matriz,</li>
+<li>os elementos da matriz (números inteiros).</li>
+</ol>
+
+<p>Saídas: O programa deverá escrever a matriz transposta.</p>
+
+<p>Exemplo de entrada:</p>
+<pre>3 5
+1 2 3 4 5
+6 7 8 9 0
+4 5 6 7 8</pre>
+<p>Exemplo de saída:</p>
+<pre>1 6 4 
+2 7 5 
+3 8 6 
+4 9 7 
+5 0 8</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ7"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    11/11/2016 23:43:30</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    8</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="463" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="233" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="7" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial233');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial233">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int lin;
+    cin &gt;&gt; lin;
+    int col;
+    cin &gt;&gt; col;
+    int matriz[lin][col];
+    for (int i = 0; i &lt; lin; ++i) {
+        for ( int u = 0; u &lt; col; ++u) {
+            cin &gt;&gt; matriz [i][u];
+        }
+    }
+    for (int i = 0; i &lt; col; ++i) {
+        for (int u = 0; u &lt; lin; ++u) {
+            cout &lt;&lt; matriz[u][i] &lt;&lt; " ";
+        }
+        cout &lt;&lt; endl;
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q8"></a>
+                <h3>Questão 8:
+                            Vetores - Busca sequencial - String</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que procura um texto dentro de outro texto.</p>
+
+<p>O programa deve informar a posição da primeira ocorrência do texto 
+procurado. Caso o texto procurado não seja encontrado, a posição 
+informada deverá ser -1 para indicar essa situação especial.</p>
+
+<p>O textos terão no máximo 254 caracteres. Todos os caracteres do texto serão não-brancos.</p>
+
+<p><b>Entradas</b>:</p>
+<ol>
+<li>O texto no qual será realizada a busca,</li>
+<li>O texto que será buscado no anterior.</li>
+</ol>
+
+<p><b>Saída</b>:</p>
+<ol>
+<li>a posição em que o texto procurado começou a ser encontrado no outro texto, ou -1 se ele não for encontrado.</li>
+</ol>
+<p>Exemplo de entrada:</p>
+<pre>aabcbcbbacbbaa
+cbb</pre>
+
+<p>Exemplo de saída:</p>
+<pre>5</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ8"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    12/11/2016 01:42:54</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    8</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="463" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="279" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="8" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial279');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial279">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    char texto[254];
+    cin.getline(texto, 254);
+    char procurado[254];
+    cin.getline(procurado, 254);
+    bool naoAchou = true;
+    int i = 0;
+    int posicao;
+    int posicao2 = -1;
+    while (texto[i] != '\0' and naoAchou) {
+        int u = 0;
+        posicao = i;
+        while (texto[posicao] == procurado[u]) {
+            if (procurado[u] == texto[posicao] and procurado[(u+1)] == '\0') {
+                posicao2 = i;
+                naoAchou = false;
+            }
+            ++u;
+            ++posicao;
+        }
+         ++i;
+    }
+    cout &lt;&lt; posicao2 &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q9"></a>
+                <h3>Questão 9:
+                            Matrizes - Suavização por média</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>A Computação tem uma área de conhecimento chamada de 
+"Processamento de Imagens", nessa área é comum o processamento de todas 
+as submatrizes de uma matriz. Um algoritmo clássico consiste em suavizar
+ uma matriz, produzindo uma nova matriz em que cada elemento é a média 
+dos nove elementos de uma submatriz 3x3 dos elementos em volta de uma 
+posição qualquer. Como os elementos das bordas não têm submatrizes 3x3 
+correspondentes, eles podem ficar iguais aos elementos da matriz 
+original.</p>
+<p>Faça um programa que lê uma matriz de inteiros e calcula uma nova 
+matriz em que a média de cada submatriz 3x3 da matriz original define um
+ elemento do resultado. As bordas do resultado devem ser iguais às 
+bordas da matriz original. Use divisão inteira no cálculo da média.</p>
+<p>Entradas:</p>
+<ol>
+<li>Número de linhas da matriz (sempre será maior que 2);</li>
+<li>número de colunas da matriz (sempre será maior que 2);</li>
+<li>vários valores inteiros que são os elementos da matriz.</li>
+</ol>
+<p>Saídas:</p>
+<ol>
+<li>A matriz que resulta da suavização pela média 3x3.</li>
+</ol>
+<p>Exemplo de Entrada:</p>
+<pre>8 10
+ 178   3  99 231  53  72 184   1 164  32
+  96  69 191  32 226 171  89 135  10   8
+ 106   3  11 216 252  77 216 154  48 147
+  53 226 150 152 202 203 225 130 204 133
+ 162  44 202  97  77 172  12 166  52  23
+ 174 158  26 185 118  22   6  78 177  55
+ 225 230  25 119 127 227  66  96 101  14
+ 229   7  59 175 105 136  92 117  46 144</pre>
+<p>Exemplo de Saída:</p>
+<pre> 178   3  99 231  53  72 184   1 164  32
+  96  84  95 145 147 148 122 111  77   8
+ 106 100 116 159 170 184 155 134 107 147
+  53 106 122 151 160 159 150 134 117 133
+ 162 132 137 134 136 115 112 116 113  23
+ 174 138 120 108 127  91  93  83  84  55
+ 225 125 109 104 134  99  93  86  92  14
+ 229   7  59 175 105 136  92 117  46 144</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ9"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    25/12/2016 23:18:22</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    8</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="463" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="779" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="9" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial779');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial779">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;iomanip&gt;
+
+using namespace std;
+
+int main()
+{
+    unsigned int nLinhas;
+    cin &gt;&gt; nLinhas;
+    unsigned int nColunas;
+    cin &gt;&gt; nColunas;
+    int matriz[nLinhas][nColunas];
+    for (unsigned int i = 0; i &lt; nLinhas; ++i) {
+        for (unsigned int u = 0; u &lt; nColunas; ++u) {
+            cin &gt;&gt; matriz[i][u];
+        }
+    }
+    int resultante[nLinhas][nColunas];
+    for (unsigned int i = 0; i &lt; nLinhas; ++i) {
+        for (unsigned int u = 0; u &lt; nColunas; ++u) {
+            if (i == 0 or i == (nLinhas - 1)) {
+                resultante[i][u] = matriz[i][u];
+            }
+            else if (u == 0 or u == (nColunas - 1)) {
+                resultante[i][u] = matriz[i][u];
+            }
+            else {
+                int resultado = 0;
+                for (unsigned int y = (i - 1); y &lt;= (i + 1); ++y) {
+                    for (unsigned int x = (u - 1); x &lt;= (u + 1); ++x) {
+                        resultado += matriz[y][x];
+                    }
+                }
+                resultante[i][u] = (resultado / 9);
+            }
+        }
+    }
+    for (unsigned int i = 0; i &lt; nLinhas; ++i) {
+        for (unsigned int u = 0; u &lt; nColunas; ++u) {
+                cout &lt;&lt; setw(4) &lt;&lt; resultante[i][u];
+        }
+        cout &lt;&lt; endl;
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q10"></a>
+                <h3>Questão 10:
+                            Matrizes - Encontrando Pokemons</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Um caçador de Pokémons criou um aparelho para coletar
+ múltiplos Pokémons simultaneamente, entretanto o aparelho tem duas 
+restrições: Só pode ser disparado uma vez e só consegue coletar Pokémons
+ a uma determinada distância (nem menos, nem mais). O caçador tem à sua 
+disposição um mapa no formato de uma matriz. A matriz é sempre de um 
+tamanho ímpar e o centro da matriz possui sempre o número 9 
+representando o caçador. As outras posições da matriz possuem números de
+ 0 a 8. Os números representam a importância do Pokémon. Faça um 
+algoritmo que informada a distância do centro da matriz calcule a soma 
+das importâncias dos Pokémons encontrados.</p>
+<p>Os elementos a serem somados são definidos pela distância a partir do
+ centro. No exemplo, esses elementos estão destacados em vermelho. A 
+distância será sempre um número válido, ou seja, que represente um 
+quadrado dentro do tamanho da matriz definida.</p>
+<p>Entradas:</p>
+<ol>
+<li>Tamanho da Matriz (sempre será um número ímpar).</li>
+<li>Distância que representa o quadrado que deseja utilizar para calcular a soma das importâncias dos Pokémons.</li>
+<li>Matriz contendo as importâncias dos Pokémons.</li>
+</ol>
+<p>Saídas:</p>
+<ol>
+<li>Soma das importâncias dos Pokémons no quadrado definido.</li>
+</ol>
+<p>Exemplo de Entrada:</p>
+<pre>7
+2
+1 1 1 1 1 1 1
+1 <span style="color: red">5 0 2 0 0</span> 1
+1 <span style="color: red">5</span> 2 2 2 <span style="color: red">0</span> 1
+1 <span style="color: red">0</span> 4 9 5 <span style="color: red">0</span> 1
+1 <span style="color: red">0</span> 3 3 3 <span style="color: red">5</span> 1
+1 <span style="color: red">5 0 0 3 0</span> 1
+1 1 1 1 1 1 1</pre>
+<p>Exemplo de Saída:</p>
+<pre>25</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ10"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    26/12/2016 00:14:04</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    8</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="463" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="650" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="10" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial650');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial650">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    unsigned int tam;
+    cin &gt;&gt; tam;
+    unsigned int centro = tam / 2;
+    unsigned int dist;
+    cin &gt;&gt; dist;
+    unsigned int matriz[tam][tam];
+    unsigned int pokemons = 0;
+    for (unsigned int i = 0; i &lt; tam; ++i) {
+        for (unsigned int u = 0; u &lt; tam; ++u) {
+            cin &gt;&gt; matriz[i][u];
+            if (u &gt;= centro - dist and u &lt;= centro + dist) {
+                if (i == centro - dist or i == centro + dist) {
+                    pokemons += matriz[i][u];
+                }
+                else if (i &gt; centro - dist and i &lt; centro + dist) {
+                    if (u == centro - dist or u == centro +dist) {
+                        pokemons += matriz[i][u];
+                    }
+                }
+            }
+        }
+    }
+    cout &lt;&lt; pokemons &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q11"></a>
+                <h3>Questão 11:
+                            Matrizes - Minimax</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Na teoria de sistemas define-se como elemento minimax
+ de uma matriz o menor elemento da linha onde se encontra o maior 
+elemento da matriz. Escreva um programa que receba uma matriz quadrada 
+de inteiros, 10x10, e retorne seu elemento minimax, juntamente com sua 
+posição. Em caso de números iguais considere o que aparece primeiro.<b> Caso existam números iguais o programa deverá considerar a última posição que o número foi encontrado.</b></p>
+
+<p><b>Entrada</b></p>
+<ol><li>Um matriz de inteiros de tamanho 10x10</li></ol>
+
+<p><b>Saida</b></p>
+<ol>
+<li>O menor elemento da linha que tem o maior elemento da matriz.</li>
+<li>A linha e a coluna onde está o elemento do item anterior.</li>
+</ol>
+
+<p><b>Exemplo de entrada</b></p>
+<pre>1&nbsp;&nbsp;2&nbsp;&nbsp;3&nbsp;&nbsp;4&nbsp;&nbsp;5&nbsp;&nbsp;6&nbsp;&nbsp;7&nbsp;&nbsp;8&nbsp;&nbsp;9&nbsp;&nbsp;0
+11&nbsp;&nbsp;4&nbsp;&nbsp;32&nbsp;&nbsp;5&nbsp;&nbsp;6&nbsp;&nbsp;8&nbsp;&nbsp;9&nbsp;&nbsp;2&nbsp;&nbsp;3&nbsp;&nbsp;1
+2&nbsp;&nbsp;3&nbsp;&nbsp;5&nbsp;&nbsp;6&nbsp;&nbsp;7&nbsp;&nbsp;8&nbsp;&nbsp;1&nbsp;&nbsp;0&nbsp;&nbsp;3&nbsp;&nbsp;1
+1&nbsp;&nbsp;3&nbsp;&nbsp;45&nbsp;&nbsp;2&nbsp;&nbsp;6&nbsp;&nbsp;8&nbsp;&nbsp;9&nbsp;&nbsp;0&nbsp;&nbsp;2&nbsp;&nbsp;1
+4&nbsp;&nbsp;30&nbsp;&nbsp;4&nbsp;&nbsp;2&nbsp;&nbsp;6&nbsp;&nbsp;18&nbsp;&nbsp;5&nbsp;&nbsp;0&nbsp;&nbsp;1&nbsp;&nbsp;0
+2&nbsp;&nbsp;3&nbsp;&nbsp;40&nbsp;&nbsp;2&nbsp;&nbsp;6&nbsp;&nbsp;8&nbsp;&nbsp;19&nbsp;&nbsp;0&nbsp;&nbsp;0&nbsp;&nbsp;0
+3&nbsp;&nbsp;2&nbsp;&nbsp;5&nbsp;&nbsp;7&nbsp;&nbsp;7&nbsp;&nbsp;8&nbsp;&nbsp;10&nbsp;&nbsp;0&nbsp;&nbsp;2&nbsp;&nbsp;2
+1&nbsp;&nbsp;3&nbsp;&nbsp;22&nbsp;&nbsp;2&nbsp;&nbsp;13&nbsp;&nbsp;6&nbsp;&nbsp;9&nbsp;&nbsp;1&nbsp;&nbsp;1&nbsp;&nbsp;0
+4&nbsp;&nbsp;30&nbsp;&nbsp;4&nbsp;&nbsp;2&nbsp;&nbsp;6&nbsp;&nbsp;18&nbsp;&nbsp;5&nbsp;&nbsp;0&nbsp;&nbsp;9&nbsp;&nbsp;10
+2&nbsp;&nbsp;3&nbsp;&nbsp;34&nbsp;&nbsp;2&nbsp;&nbsp;6&nbsp;&nbsp;8&nbsp;&nbsp;19&nbsp;&nbsp;0&nbsp;&nbsp;0&nbsp;&nbsp;0
+</pre>
+
+<p><b>Exemplo de saída</b></p>
+<pre>0
+3 7
+</pre>
+
+<p>                </p></div><!-- Descrição (description-display-box) -->
+                <a name="JQ11"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    26/12/2016 17:41:35</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    8</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="463" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="380" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="11" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial380');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial380">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main() 
+{
+    int matriz[10][10];
+    unsigned int posLinha, posColuna;
+    unsigned int u = 1;
+    cin &gt;&gt; matriz[0][0];
+    int menor = matriz[0][0];
+    int maior = matriz[0][0];
+    for (unsigned int i = 0; i &lt; 10; ++i) {
+        while (u &lt; 10) {
+            cin &gt;&gt; matriz[i][u];
+            if (matriz[i][u] &gt; maior) {
+                maior = matriz[i][u];
+                posLinha = i;
+            }
+            ++u;
+        }
+        u = 0;
+    }
+    while (u &lt; 10) {
+        if (menor &gt; matriz[posLinha][u]) {
+            menor = matriz[posLinha][u];
+            posColuna = u;
+        }
+        ++u;
+    }
+    cout &lt;&lt; menor &lt;&lt; endl
+         &lt;&lt; posLinha &lt;&lt; " " &lt;&lt; posColuna &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q12"></a>
+                <h3>Questão 12:
+                            Matrizes - Operações com matrizes</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <!-- não está claro se as operações devem ser aplicadas à matriz original ou ao resultado da operação anterior -->
+<p>Elabore um programa que preencha uma matriz 10 x 10 com números 
+inteiros, execute as trocas especificadas a seguir e mostre a matriz 
+resultante:</p>
+
+<ol>
+   <li>a linha 2 com a linha 8;</li>
+   <li>a coluna 4 com a coluna 10;</li>
+   <li>a diagonal principal com a diagonal secundária;</li>
+   <li>a linha 5 com a coluna 10.</li>
+</ol>
+
+<p><b>Entrada:</b></p>
+<ol>
+   <li>Uma matriz 10 x 10 de inteiros.</li>
+</ol>
+
+<p><b>Saída:</b></p>
+<ol>
+   <li>A matriz 10 x 10 resultante das devidas operações descritas em 1,
+ 2, 3, e 4 (utilizando um índice numérico antes de exibir cada matriz).</li>
+</ol>
+
+<p><b>Exemplo de entrada</b>:</p>
+<pre>1 2 3 4 5 6 7 8 9 0
+2 3 4 5 6 7 8 9 0 1
+3 4 5 6 7 8 9 0 1 2
+4 5 6 7 8 9 0 1 2 3
+5 6 7 8 9 0 1 2 3 4
+6 7 8 9 0 1 2 3 4 5
+7 8 9 0 1 2 3 4 5 6
+8 9 0 1 2 3 4 5 6 7
+9 0 1 2 3 4 5 6 7 8
+0 1 2 3 4 5 6 7 8 9
+</pre>
+
+<p><b>Exemplo de saí­da</b>:</p>
+
+<pre>
+1.
+1 2 3 4 5 6 7 8 9 0
+8 9 0 1 2 3 4 5 6 7
+3 4 5 6 7 8 9 0 1 2
+4 5 6 7 8 9 0 1 2 3
+5 6 7 8 9 0 1 2 3 4
+6 7 8 9 0 1 2 3 4 5
+7 8 9 0 1 2 3 4 5 6
+2 3 4 5 6 7 8 9 0 1
+9 0 1 2 3 4 5 6 7 8
+0 1 2 3 4 5 6 7 8 9
+2.
+1 2 3 0 5 6 7 8 9 4
+2 3 4 1 6 7 8 9 0 5
+3 4 5 2 7 8 9 0 1 6
+4 5 6 3 8 9 0 1 2 7
+5 6 7 4 9 0 1 2 3 8
+6 7 8 5 0 1 2 3 4 9
+7 8 9 6 1 2 3 4 5 0
+8 9 0 7 2 3 4 5 6 1
+9 0 1 8 3 4 5 6 7 2
+0 1 2 9 4 5 6 7 8 3
+3.
+0 2 3 4 5 6 7 8 9 1
+2 0 4 5 6 7 8 9 3 1
+3 4 0 6 7 8 9 5 1 2
+4 5 6 0 8 9 7 1 2 3
+5 6 7 8 0 9 1 2 3 4
+6 7 8 9 1 0 2 3 4 5
+7 8 9 3 1 2 0 4 5 6
+8 9 5 1 2 3 4 0 6 7
+9 7 1 2 3 4 5 6 0 8
+9 1 2 3 4 5 6 7 8 0
+4.
+1 2 3 4 5 6 7 8 9 5
+2 3 4 5 6 7 8 9 0 6
+3 4 5 6 7 8 9 0 1 7
+4 5 6 7 8 9 0 1 2 8
+0 1 2 3 4 5 6 7 8 9
+6 7 8 9 0 1 2 3 4 0
+7 8 9 0 1 2 3 4 5 1
+8 9 0 1 2 3 4 5 6 2
+9 0 1 2 3 4 5 6 7 3
+0 1 2 3 4 5 6 7 8 4
+</pre>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ12"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    01/01/2017 22:55:33</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    8</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="463" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="502" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="12" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial502');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial502">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int matriz[10][10];
+    int resultante[10][10];
+    for (unsigned int i = 0; i &lt; 10; ++i) {
+        for (unsigned int u = 0; u &lt; 10; ++u) {
+            cin &gt;&gt; matriz[i][u];
+            if (i == 1) {
+                resultante[7][u] = matriz[i][u];
+            }
+            else if (i == 7) {
+                resultante[1][u] = matriz[i][u];
+            }
+            else {
+                resultante[i][u] = matriz[i][u];
+            }
+        }
+    }
+    for (unsigned int i = 0; i &lt; 10; ++i) {
+        for (unsigned int u = 0; u &lt; 10; ++u) {
+            if (i == 0 and u == 0) {
+                cout &lt;&lt; "1. \n"
+                     &lt;&lt; resultante[i][u] &lt;&lt; " ";
+            }
+            else {
+                cout &lt;&lt; resultante[i][u] &lt;&lt; " ";
+                if (u == 10 - 1) {
+                    cout &lt;&lt; endl;
+                }
+            }
+        }
+    }
+    for (unsigned int i = 0; i &lt; 10; ++i) {
+        for (unsigned int u = 0; u &lt; 10; ++u) {
+            if (u == 3) {
+                resultante[i][9] = matriz[i][u];
+            }
+            else if (u == 9) {
+                resultante[i][3] = matriz[i][u];
+            }
+            else {
+                resultante[i][u] = matriz[i][u];
+            }
+        }
+    }
+    for (unsigned int i = 0; i &lt; 10; ++i) {
+        for (unsigned int u = 0; u &lt; 10; ++u) {
+            if (i == 0 and u == 0) {
+                cout &lt;&lt; "2. \n"
+                     &lt;&lt; resultante[i][u] &lt;&lt; " ";
+            }
+            else {
+                cout &lt;&lt; resultante[i][u] &lt;&lt; " ";
+                if (u == 10 - 1) {
+                    cout &lt;&lt; endl;
+                }
+            }
+        }
+    }
+    unsigned int linSecun = 0, colSecun = 9;
+    for (unsigned int i = 0; i &lt; 10; ++i) {
+        for (unsigned int u = 0; u &lt; 10; ++u) {
+            if (i == u) {
+                resultante[i][u] = matriz[linSecun][colSecun];
+                resultante[linSecun][colSecun] = matriz[i][u];
+            }
+            else if (not(linSecun == i and colSecun == u)) {
+                resultante[i][u] = matriz[i][u];
+            }
+        }
+        ++linSecun;
+        --colSecun;
+    }
+    for (unsigned int i = 0; i &lt; 10; ++i) {
+        for (unsigned int u = 0; u &lt; 10; ++u) {
+            if (i == 0 and u == 0) {
+                cout &lt;&lt; "3. \n"
+                     &lt;&lt; resultante[i][u] &lt;&lt; " ";
+            }
+            else {
+                cout &lt;&lt; resultante[i][u] &lt;&lt; " ";
+                if (u == 10 - 1) {
+                    cout &lt;&lt; endl;
+                }
+            }
+        }
+    }
+    colSecun = 0;
+    for (unsigned int i = 0; i &lt; 10; ++i) {
+        for (unsigned int u = 0; u &lt; 10; ++u) {
+            if (u == 9) {
+                resultante[4][colSecun] = matriz[i][u];
+                resultante[i][u] = matriz[4][colSecun];
+                ++colSecun;
+            }
+            else if (i != 4) {
+                resultante[i][u] = matriz[i][u];
+            }
+        }
+    }
+    for (unsigned int i = 0; i &lt; 10; ++i) {
+        for (unsigned int u = 0; u &lt; 10; ++u) {
+            if (i == 0 and u == 0) {
+                cout &lt;&lt; "4. \n"
+                     &lt;&lt; resultante[i][u] &lt;&lt; " ";
+            }
+            else {
+                cout &lt;&lt; resultante[i][u] &lt;&lt; " ";
+                if (u == 10 - 1) {
+                    cout &lt;&lt; endl;
+                }
+            }
+        }
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q13"></a>
+                <h3>Questão 13:
+                            Matrizes - Divisão pelo maior em módulo da linha</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>
+Faça um programa que crie uma matriz NxM e a preencha com números 
+inteiros. Após isso, divida todos elementos de cada linha pelo maior 
+elemento em módulo da linha. O programa deverá escrever a matriz 
+original e a modificada.<br><br>
+
+
+<b>Obs: Caso o maior elemento em módulo da linha seja 0, ou seja, se 
+houver divisão por zero, imprima APENAS -1 ao final do programa.</b></p>
+
+<p><b>Entradas:</b></p>
+<ul style="text-align:left;padding-left:20px;">
+<li><code>int n, m</code> - Tamanho da matriz.</li>
+<li><code>float vetor [n][m]</code> - Elementos da matriz.</li>
+</ul>
+
+<p><b>Saídas:</b></p>
+<ul style="text-align:left;padding-left:20px;">
+<li>Matriz original.</li>
+<li>Matriz após as operações.</li>
+</ul>
+
+<br><h3>Exemplos de Entradas e Saídas:</h3>
+
+<p><b>Entradas:</b></p>
+<pre>3 3 1.8 9 18 -50 10 5 -4 -8 -16</pre>
+<p><b>Saídas:</b></p>
+<pre> 1.8  9   18
+-50   10  5
+-4   -8  -16
+
+ 0.1    0.5   1	
+-1      0.2   0.1	
+-0.25  -0.5  -1	
+</pre>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ13"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    26/03/2017 20:57:21</p>
+                <p><b>Tentativas:</b>
+                    2 de
+                    8</p>
+                <p><b>Nota (0 a 100):</b>
+                    90</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="463" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="45" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="3" type="hidden">
+            <input name="atenuacao" value="0.81" type="hidden">
+            <input name="nroQuestao" value="13" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial45');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial45">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+float abs(float num) {
+    if (num &lt; 0)
+        return num*-1;
+    return num;
+}
+
+int main() {
+    int lin, col;
+    cin &gt;&gt; lin &gt;&gt; col;
+    float** matriz = new float*[lin];
+    for (int i = 0; i &lt; lin; ++i) {
+        matriz[i] = new float[col];
+    }
+    float resultante[lin][col];
+    bool existeDivisao = true;
+    for (int i = 0; i &lt; lin and existeDivisao; ++i) {
+        float num = 0;
+        for (int j = 0; j &lt; col; ++j) {
+            cin &gt;&gt; matriz[i][j];
+            if (num &lt; abs(matriz[i][j])) {
+                num = abs(matriz[i][j]);
+            }
+        }
+        if (num == 0) {
+            existeDivisao = false;
+        }
+        else {
+            int j = 0;
+            while (j &lt; col) {
+                resultante[i][j] = matriz[i][j] / num;
+                ++j;
+            }
+        }
+    }
+    if (not existeDivisao) {
+        cout &lt;&lt; -1 &lt;&lt; endl;
+    }
+    else {
+        for (int i = 0; i &lt; lin; ++i) {
+            for (int j = 0; j &lt; col; ++j) {
+                cout &lt;&lt; matriz[i][j] &lt;&lt; ' ';
+            }
+            cout &lt;&lt; endl;
+        }
+        for (int i = 0; i &lt; lin; ++i) {
+            for (int j = 0; j &lt; col; ++j) {
+                cout &lt;&lt; resultante[i][j] &lt;&lt; ' ';
+            }
+            cout &lt;&lt; endl;
+        }
+    }
+    for (int i = 0; i &lt; lin; ++i) {
+        delete[] matriz[i];
+    }
+    delete[] matriz;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q14"></a>
+                <h3>Questão 14:
+                            Matrizes - Caixas de um restaurante (matriz tridimensional)</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que receba informações de <b>dois</b> caixas de um restaurante durante <b>5 dias</b> em <b>três</b>
+ períodos diários (café, almoço e jantar). Ao fim disso, o programa deve
+ informar a soma dos períodos por dia de cada caixa e o total dos 5 dias
+ em cada caixa.</p>
+
+<img src="matrizes_files/matriz3d.jpg">
+
+<p><b>Obs.:</b> Matrizes tridimensionais em Python são implementadas como uma <b>lista principal</b> composta por <b>listas secundárias</b>, sendo que cada <b>lista secundária</b> é composta por <b>listas terciárias</b> cujos elementos são todos homogêneos.</p>
+
+<p><b>Entrada:</b></p>
+<ol>
+<li>As informações dos <b>2 caixas</b> nos <b>5 dias</b> em <b>3 períodos</b>. Primeiro serão lidos os <b>3 períodos</b> do <b>dia 1</b> para o <b>caixa 1</b>, depois os <b>3 períodos</b> do <b>dia 2</b> para o <b>caixa 1</b>, e assim por diante. Todos valores são <b>inteiros</b>, e a entrada consiste em <b>um valor por linha</b>.</li>
+</ol>
+
+<p><b>Saída:</b></p>
+<ol>
+<li>As informações do caixa 1 <b>(um dia por linha)</b>.</li>
+<li>O total do caixa 1.</li>
+<li>As informações do caixa 2 <b>(um dia por linha)</b>.</li>
+<li>O total do caixa 2.</li>
+</ol>
+
+<p><b>Exemplo de entradas</b>:</p>
+<pre>10
+15
+20
+31
+5
+9
+8
+9
+10
+45
+50
+9
+70
+10
+9
+32
+43
+10
+56
+78
+10
+85
+11
+13
+7
+3
+98
+12
+15
+68</pre>
+<p><b>Exemplo de saídas:</b></p>
+<pre>45
+45
+27
+104
+89
+310
+85
+144
+109
+108
+95
+541</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ14"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    05/01/2017 20:50:46</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    8</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="463" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="215" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="14" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial215');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial215">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int matriz[2][5][3];
+    int resultado[2][5];
+    for (unsigned int u = 0; u &lt; 2; ++u) {
+        for (unsigned int i = 0; i &lt; 5; ++i) {
+            int somatorio = 0;
+            for (unsigned int j = 0; j &lt; 3; ++j) {
+                cin &gt;&gt; matriz[u][i][j];
+                somatorio += matriz[u][i][j];
+            }
+            resultado[u][i] = somatorio;
+        }
+    }
+    for (unsigned int i = 0; i &lt; 2; ++i) {
+        int total = 0;
+        for (unsigned int j = 0; j &lt; 5; ++j) {
+            cout &lt;&lt; resultado[i][j] &lt;&lt; endl;
+            total += resultado[i][j];
+        }
+        cout &lt;&lt; total &lt;&lt; endl;
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q15"></a>
+                <h3>Questão 15:
+                            Matrizes - Repetições</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que lê uma matriz de números 
+inteiros entre 0 e 9 (extremos inclusive). O programa deve contar 
+quantas vezes cada elemento ocorre na matriz para então informar quais 
+elementos repetem na matriz e quantas vezes cada um deles foi 
+encontrado.</p>
+
+<p><b>Obs.:</b> Matrizes em Python são implementadas como uma lista composta por listas cujos elementos são todos homogêneos.</p>
+
+<p><b>Entradas:</b></p>
+<ol>
+<li>O número de linhas e colunas da matriz.</li>
+<li>Os elementos da matriz (números inteiros, de 0 até 9), da esquerda para a direita, de cima para baixo.</li>
+</ol>
+
+<p><b>Saídas:</b></p> 
+<ol><li>Número que se repete na matriz, seguido do número de ocorrências
+ do valor. Os valores devem aparecer em ordem crescente. A ordem é dada 
+pelo valor e não pelo número de repetições. Caso a matriz não tenha 
+nenhum valor repetido, o programa deve escrever -1 para sinalizar tal 
+situação.</li></ol>
+
+<p><b>Exemplo de entrada 1:</b></p>
+<pre>3 6
+9 2 9 4 5 9
+6 1 1 9 0 9
+0 1 2 3 8 1
+</pre>
+
+<p><b>Exemplo de saída 1:</b></p>
+<pre>0 2
+1 4
+2 2
+9 5
+</pre>
+
+<p><b>Exemplo de entrada 2:</b></p>
+<pre>3 2
+9 8
+7 6
+5 4
+</pre>
+
+<p><b>Exemplo de saída 2:</b></p>
+<pre>-1
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ15"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    05/01/2017 21:28:03</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    8</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="463" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="56" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="15" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial56');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial56">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    unsigned int lin, col;
+    cin &gt;&gt; lin &gt;&gt; col;
+    int matriz[lin][col];
+    int qtd[10] = { };
+    for (unsigned int i = 0; i &lt; lin; ++i) {
+        for (unsigned int j = 0; j &lt; col; ++j) {
+            cin &gt;&gt; matriz[i][j];
+            qtd[matriz[i][j]] += 1;
+        }
+    }
+    unsigned int contador = 0;
+    for (unsigned int i = 0; i &lt; 10; ++i) {
+        if (qtd[i] &gt; 1) {
+            cout &lt;&lt; i &lt;&lt; " " &lt;&lt; qtd[i] &lt;&lt; endl;
+        }
+        else {
+            ++contador;
+        }
+    }
+    if (contador == 10) {
+        cout &lt;&lt; -1 &lt;&lt; endl;
+    }
+    
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q16"></a>
+                <h3>Questão 16:
+                            Matrizes - Determinante de matriz 4x4</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um algoritmo que calcule o determinante de uma matriz 4x4.<br><br></p>
+
+<p><b>Entradas:</b></p>
+<ul style="text-align:left;padding-left:20px;">
+<li><code>float matriz[4][4]</code> - Matriz que será usada para o cálculo do determinante.</li></ul>
+
+<p><b>Saídas:</b></p>
+<ul style="text-align:left;padding-left:20px;">
+<li>Determinante da matriz.</li>
+</ul>
+
+<h3>Exemplos de Entradas e Saídas:</h3>
+
+<p><b>Entrada:</b></p>
+<pre>1.0 &nbsp; 0 &nbsp;5.0 &nbsp;0
+2.0 -1.0 &nbsp;0 &nbsp;3.0
+3.0 &nbsp; 0 &nbsp;2.0 &nbsp;0
+7.0 &nbsp; 0 &nbsp;6.0 5.0
+</pre>
+<p><b>Saída:</b><br>
+65<br><br></p>
+<p><b>Referências:</b></p>
+<ul style="text-align:left;padding-left:20px;">
+<li><a href="http://pt.wikipedia.org/wiki/Determinante#Determinantes_de_ordem_maior_ou_igual_a_4">http://pt.wikipedia.org/wiki/Determinante#Determinantes_de_ordem_maior_ou_igual_a_4</a></li>                </ul></div><!-- Descrição (description-display-box) -->
+                <a name="JQ16"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    08/01/2017 21:34:29</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    8</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="463" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="129" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="16" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial129');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial129">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include
+ &lt;iostream&gt;
+#include &lt;cmath&gt;
+
+using namespace std;
+
+int main()
+{
+    float matriz[4][4];
+    for (unsigned int i = 0; i &lt; 4; ++i) {
+        for (unsigned int j = 0; j &lt; 4; ++j) {
+            cin &gt;&gt; matriz[i][j];
+        }
+    }
+    float cofator[3][3];
+    float determinante = 0.0f;
+    unsigned int col = 0, y = 0, x = 0;
+    do {
+        x = 0;
+        for (unsigned int i = 1; i &lt; 4; ++i) {
+            y = 0;
+            for (unsigned int j = 0; j &lt; 4; ++j) {
+                if (j != col) {
+                    cofator[x][y] = matriz[i][j];
+                    ++y;
+                }
+            }
+            ++x;
+        }
+        determinante += float(matriz[0][col] * (pow(-1, (2 + col)) * 
+(((cofator[0][0]*cofator[1][1]*cofator[2][2]) + 
+(cofator[0][1]*cofator[1][2]*cofator[2][0]) + 
+(cofator[0][2]*cofator[1][0]*cofator[2][1])) - 
+            ((cofator[0][2]*cofator[1][1]*cofator[2][0]) + 
+(cofator[0][0]*cofator[1][2]*cofator[2][1]) + 
+(cofator[1][0]*cofator[0][1]*cofator[2][2])))));
+        ++col;
+    } while (col &lt; 4);
+    cout &lt;&lt; determinante &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q17"></a>
+                <h3>Questão 17:
+                            Matrizes - Movimento Cavalo</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que receba o tamanho N e a matriz NxN. A matriz conterá os números <b>0 (vazio), 1 (cavalo), 2 (peões)</b>.</p>
+
+<p>A matriz possuirá apenas um número 1, que reprensentará o cavalo como
+ dito acima. Localize o "cavalo" e verifique quantos "peões" (2) o 
+"cavalo" conseguirá eliminar, ou seja, <b>de zero a oito peões posicionados ao redor do cavalo</b>. O programa deverá escrever a quantidade de peões que podem ser eliminados.</p>
+
+<p><b>Obs: O cavalo pode estar em qualquer posição da matriz e não pode eliminar um peão posicionado "atrás" de outro.</b></p>
+
+<img src="matrizes_files/cavalo.jpg" alt="Movimentos possíveis do cavalo no xadrez">
+
+<p><b>Entradas:</b></p>
+<ol>
+<li>Tamanho da matriz (inteiro).</li>
+<li>Tabuleiro do jogo (matriz de inteiros).</li>
+</ol>
+
+<p><b>Saídas:</b></p>
+<ul>
+<li>Quantos peões podem ser comidos (inteiro).</li>
+</ul>
+
+<p><b>Exemplo de entradas</b>:</p>
+<pre>5
+2   0   0   2   2
+0   2   0   2   2
+0   0   1   2   2
+2   2   2   0   0
+0   0   0   0   0</pre>
+
+<p><b>Exemplo de saída:</b></p>
+<pre>3</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ17"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    08/01/2017 23:33:28</p>
+                <p><b>Tentativas:</b>
+                    3 de
+                    8</p>
+                <p><b>Nota (0 a 100):</b>
+                    81</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="463" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="578" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="4" type="hidden">
+            <input name="atenuacao" value="0.729" type="hidden">
+            <input name="nroQuestao" value="17" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial578');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial578">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    int tabuleiro[n][n];
+    int lin, col;
+    for (int i = 0; i &lt; n; ++i) {
+        for (int j = 0; j &lt; n; ++j) {
+            cin &gt;&gt; tabuleiro[i][j];
+            if (tabuleiro[i][j] == 1) {
+                lin = i;
+                col = j;
+            }
+        }
+    }
+    int contador = 0;
+    if (lin - 2 &gt;= 0) {
+        if (tabuleiro[lin - 2][col - 1] == 2 and (col - 1) &gt;= 0){
+            ++contador;
+        }
+        if (tabuleiro[lin - 2][col + 1] == 2 and (col + 1) &lt; n) {
+            ++contador;
+        }
+    }
+    if (lin + 2 &lt; n) {
+        if (tabuleiro[lin + 2][col - 1] == 2 and (col - 1) &gt;= 0) {
+            ++contador;
+        }
+        if (tabuleiro[lin + 2][col + 1] == 2 and (col + 1) &lt; n) {
+            ++contador;
+        }
+    }
+    if (col - 2 &gt;= 0) {
+        if (tabuleiro[lin + 1][col - 2] == 2 and (lin + 1) &lt; n) {
+            ++contador;
+        }
+        if (tabuleiro[lin - 1][col - 2] == 2 and (lin - 1) &gt;= 0) {
+            ++contador;
+        }
+    }
+    if (col + 2 &lt; n) {
+        if (tabuleiro[lin + 1][col + 2] == 2 and (lin + 1) &lt; n) {
+            ++contador;
+        }
+        if (tabuleiro[lin - 1][col + 2] == 2 and (lin - 1) &gt;= 0) {
+            ++contador;
+        }
+    }
+    cout &lt;&lt; contador &lt;&lt; endl;
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q18"></a>
+                <h3>Questão 18:
+                            Matriz - Método de Gauss-Jordan</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>
+Implemente um programa que recebe uma matriz que representa um sistema 
+linear. Através do algoritmo de Gauss-Jordan você deve escalonar a 
+matriz passada e escrever a matriz reduzida na tela.
+</p>
+<p><b>Entradas:</b></p>
+<ul style="text-align:left;padding-left:20px;">
+<li><code>int n</code> - Número de linhas da matriz.</li>
+<li><code>float matriz[n][m]</code> - Matriz NxM que deve ser escalonada.</li>
+</ul>
+
+<p><b>Saídas:</b></p>
+<ul style="text-align:left;padding-left:20px;">
+<li>Matriz escalonada.</li>
+</ul>
+
+<h3>Exemplos de Entradas e Saídas:</h3>
+
+<p><b>Entradas:</b></p>
+<pre> 3
+ 1.0  10.0 -12.0 120.0
+ 4.0  -2.0 -20.0  60.0
+-1.0   1.0  5.0   10.0
+</pre>
+
+<p><b>Saídas:</b></p>
+<pre> 1.0   0    0   340.0
+  0   1.0   0    50.0
+  0    0   1.0   60.0
+</pre>
+<p><b>Referências:</b></p>
+<ul style="text-align:left;padding-left:20px;">
+<li><a href="http://www.itescam.edu.mx/principal/sylabus/fpdb/recursos/r41611.PDF">http://www.itescam.edu.mx/principal/sylabus/fpdb/recursos/r41611.PDF</a></li>
+<li><a href="http://pt.wikipedia.org/wiki/Elimina%C3%A7%C3%A3o_de_Gauss-Jordan">http://pt.wikipedia.org/wiki/Elimina%C3%A7%C3%A3o_de_Gauss-Jordan</a></li>
+<li><a href="http://pt.wikipedia.org/wiki/Elimina%C3%A7%C3%A3o_de_Gauss">http://pt.wikipedia.org/wiki/Elimina%C3%A7%C3%A3o_de_Gauss</a></li>
+<li><a href="http://w3.math.uminho.pt/%7Epedro/Aulas0607/AlgLinear/seqlin/node4.html">http://w3.math.uminho.pt/~pedro/Aulas0607/AlgLinear/seqlin/node4.html</a></li>
+</ul>
+
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ18"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    18/01/2017 17:16:23</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    8</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="463" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="137" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="18" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial137');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial137">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+#include &lt;iomanip&gt;
+
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    float matriz[n][n + 1];
+    for (int i = 0; i &lt; n; ++i) {
+        for (int j = 0; j &lt; (n+1); ++j) {
+            cin &gt;&gt; matriz[i][j];
+        }
+    }
+    int lin = 0, col = 0;
+    bool naoRepetir = true;
+    do {
+        do {
+            naoRepetir = true;
+            if (matriz[lin][col] == 0 and col &lt; n) {
+                int i = lin;
+                while (i != -1 and i &lt; n) {
+                    if (matriz[i][col] != 0) {
+                        for (int j = 0; j &lt; (n + 1); ++j) {
+                            float valor = matriz[lin][j];
+                            matriz[lin][j] = matriz[i][j];
+                            matriz[i][j] = valor;
+                        }
+                        i = -2;
+                    }
+                    ++i;
+                }
+                if (i == n) {
+                    naoRepetir = false;
+                    ++col;
+                }
+            }
+            if (matriz[lin][col] &lt; 0 and col &lt; n) {
+                for (int j = 0; j &lt; (n + 1); ++j) {
+                    if (matriz[lin][j] != 0) {
+                        matriz[lin][j] *= -1;
+                    }
+                }
+            }
+            if (matriz[lin][col] != 1 and col &lt; n) {
+                float valor = matriz[lin][col];
+                for (int j = 0; j &lt; (n+1); ++j) {
+                    matriz[lin][j] /= valor;
+                }
+            }
+        } while (not(naoRepetir));
+        for (int i = 0; i &lt; n; ++i) {
+            if (lin != i and col &lt; n) {
+                float valor = matriz[i][col];
+                valor = -valor;
+                for (int j = 0; j &lt; (n + 1); ++j) {
+                    matriz[i][j] += (matriz[lin][j] * valor);
+                }
+            }
+        }
+        ++col;
+        ++lin;
+    } while (lin &lt; n and col &lt; n);
+    for (int i = 0; i &lt; n; ++i) {
+        for (int j = 0; j &lt; (n+1); ++j) {
+            cout &lt;&lt; setw(5) &lt;&lt; left &lt;&lt; matriz[i][j];
+        }
+        cout &lt;&lt; endl;
+    }
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                </div><!-- prova -->
+<script type="text/javascript">
+    var serverTime = 1490572641000;
+    var localTime = +Date.now();
+    var timeDiff = serverTime - localTime;
+    var closingTime = 1490641200000;
+    var nomeUsuario = "Samir Carvalho";
+    $('#usuario').text(nomeUsuario);
+    if (true) {
+        setInterval(function () {
+            var realtime = +Date.now() + timeDiff;
+            var minutosRestantes = (closingTime - realtime) / 60000;
+            if (minutosRestantes < 0)
+                window.location = 'testTrials.php?encerrar';
+            else if (minutosRestantes < 5)
+                minutosRestantes = minutosRestantes.toFixed(1)
+            else
+                minutosRestantes = minutosRestantes.toFixed(0);
+            $('#clock').text(minutosRestantes);
+        }, 5000);
+    }
+    else
+        $('#clock').text('ENCERRADO');
+    //window.onclose = function() {alert("Close window?");}
+</script>
+    <br></div></div><div id="bottomct" class="ui-corner-top"><div id="footer">
+        <table boder="0" style="width: 100%;">
+            <tbody><tr>
+                <td style="width:33%;">
+                    <a href="http://www.ufla.br/" style="float:left;">
+                        <img src="matrizes_files/ufla.png" width="92" height="40">
+                    </a>
+                </td>
+                <td style="width:34%;text-align: center;">
+                    Desenvolvido por <a href="http://www.dcc.ufla.br/%7Ebruno/" style="color: #DDF">Bruno Schneider</a>
+                    a partir do programa original (Algod) de Renato R. R. de Oliveira (GPLv3).
+                </td>
+                <td style="width:33%;">
+                    <a href="http://www.dcc.ufla.br/">
+                        <img src="matrizes_files/logo-dcc.png" style="float:right" width="128" height="40">
+                    </a>
+                </td>
+            </tr>
+        </tbody></table>
+    </div></div>
+
+
+<div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable ui-dialog-buttons" style="outline: 0px none; z-index: 1002; position: absolute; height: auto; width: auto; top: 15227.5px; left: 632px; display: none;" tabindex="-1" role="dialog" aria-labelledby="ui-id-1"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-1" class="ui-dialog-title">Aviso</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div><div id="alert-dialog" style="width: auto; min-height: 32px; height: auto;" class="ui-dialog-content ui-widget-content" scrolltop="0" scrollleft="0"></div><div class="ui-resizable-handle ui-resizable-n" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-e" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-s" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se ui-icon-grip-diagonal-se" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 1000;"></div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button></div></div></div><div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable ui-dialog-buttons" style="outline: 0px none; z-index: 1002; position: absolute; height: auto; width: 800px; top: 15227.5px; left: 272.5px; display: none;" tabindex="-1" role="dialog" aria-labelledby="ui-id-2"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-2" class="ui-dialog-title">&nbsp;</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div><div id="data-view-dialog" style="text-align: center; width: auto; min-height: 32px; height: auto;" class="ui-dialog-content ui-widget-content" scrolltop="0" scrollleft="0"></div><div class="ui-resizable-handle ui-resizable-n" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-e" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-s" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se ui-icon-grip-diagonal-se" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 1000;"></div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button></div></div></div></body></html>

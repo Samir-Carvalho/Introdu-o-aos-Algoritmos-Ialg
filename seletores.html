@@ -1,0 +1,2494 @@
+<!DOCTYPE html>
+<html><head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Dredd - Juiz Online</title>
+    <link rel="stylesheet" type="text/css" href="seletores_files/style.css">
+    <link rel="stylesheet" type="text/css" href="seletores_files/jquery-ui-1.css">
+    <script src="seletores_files/jquery-1.js"></script>
+    <script src="seletores_files/jquery-ui.js"></script>
+    <script src="seletores_files/jquery_002.js"></script>
+    <script src="seletores_files/jquery.js"></script>
+    <script>
+    $(document).ready(function() {
+        $(document).tooltip();
+        $("button, input[type='submit'], input[type='reset']").button();
+
+        $("input.date").mask("99/99/9999").attr("title","Exemplo: 11/09/2001").tooltip();
+        $("input.datetime").mask("99/99/9999 99:99:99").attr("title","Exemplo: 11/09/2001 10:17:37").tooltip();
+        $("input.integer").numeric().attr("title","Exemplo: 2").tooltip();
+        $("input.number").numeric({allow:"."}).attr("title","Exemplo: 0.5").tooltip();
+        $("textarea").keypress(function(event) {
+            if (event.ctrlKey && (event.which == 112)) {
+                event.preventDefault();
+                $("#data-view-dialog").html("<div class='data-view-box' style='width: 90%;'>"+$(this).val()+"</div>").dialog("open");
+            }
+        });
+
+        $("textarea.cpp-code-view").attr("readonly","readonly");
+        $("div.cpp-code-view").each(function() {
+            var text = $(this).html();
+            text.replace("&","&amp;");
+            text.replace("<","&lt;");
+            text.replace(">","&gt;");
+            text.replace("\r","");
+
+            // Keywords
+            text.replace("float ","<b>float</b> ");
+            text.replace("double ","<b>double</b> ");
+            text.replace("int ","<b>int</b> ");
+            text.replace("long ","<b>long</b> ");
+            text.replace("if ","<b>if</b> ");
+            text.replace("else ","<b>else</b> ");
+            text.replace("for ","<b>for</b> ");
+            text.replace("while ","<b>while</b> ");
+            text.replace("return","<b>return</b>");
+            text.replace("break","<b>break</b>");
+            text.replace("using","<b>using</b>");
+            text.replace("namespace","<b>namespace</b>");
+            text.replace("#include","<b>#include</b>");
+
+            text.replace(" ","&nbsp;");
+            text.replace("\t","&nbsp;&nbsp;&nbsp;&nbsp;");
+            text.replace("\n","<br />");
+            $(this).html(text);
+        });
+
+        $("#alert-dialog").dialog({
+            title: "Aviso",
+            width: "auto",
+            height: "auto",
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $(this).dialog("close");
+                }
+            }
+        }).dialog("close");
+
+        $("#data-view-dialog").dialog({
+            title: "",
+            width: 800,
+            height: "auto",
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $(this).dialog("close");
+                }
+            }
+        }).dialog("close");
+
+        $("form").submit(function() {
+            var $validationText = "";
+            $(this).find(".notempty").each(function() {
+                if (($(this).val() == undefined) || ($(this).val() == "")) {
+                    $validationText += "<li>"+$("label[for='"+$(this).attr('name')+"']").html()+"</li>";
+                }
+            });
+            if ($validationText != "") {
+                $validationText = "<p>Os seguintes campos não podem estar vazios:</p><ul>"+$validationText+"</ul>";
+                $("#alert-dialog").html($validationText).dialog({modal: true}).dialog("open");
+                return false;
+            } else {
+                var $form = $(this);
+                $form.find("input.passwordconfirm").each(function() {
+                    if ($(this).val() != $form.find("input.password").val()) {
+                        $validationText = "As senhas digitadas não conferem.";
+                    }
+                });
+                if ($validationText != "") {
+                    $("#alert-dialog").html($validationText).dialog({modal: true}).dialog("open");
+                    return false;
+                } else
+                    return true;
+            }
+        });
+    });
+    function openDivAsDialog(id) {
+        $("div#"+id).dialog({
+            title: "",
+            width: "auto",
+            height: "auto",
+            modal: true,
+            buttons: {
+                Ok: function() {
+                    $(this).dialog("close");
+                }
+            }
+        }).dialog("open");
+    };
+    </script>
+</head>
+<body>
+    
+    
+    <div id="topct" class="ui-corner-bottom"><div id="banner">
+        <h1>Dredd - Juiz Online</h1>
+        <div id="topmenu">
+            <button id="menu-bt-home" onclick="location.assign('./');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Principal</span></button>
+            <button id="menu-bt-profile" onclick="location.assign('./testsMine.php');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Minhas Provas</span></button>
+            <button id="menu-bt-profile" onclick="location.assign('./profile.php');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Perfil</span></button>
+            <button id="menu-bt-logout" onclick="location.assign('./logout.php');" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Sair</span></button>
+        </div>
+    </div></div><div id="contentct"><div id="content">
+<div id="painel-info">
+    <b>Minutos<br>Restantes</b>:<br>
+    <span id="clock">74666</span><br><br>
+    <b>Usuário</b>:<br>
+    <div id="usuario">Samir Carvalho</div><br>
+    <b>Notas</b>:<br>
+    <span id="notas">
+Q1: 100<br>Q2: 100<br>Q3: 100<br>Q4: 90<br>Q5: 100<br>Q6: 90<br>Q9: 100<br>Q10: 100<br>Q11: 100<br>Q12: 90<br>Q13: 100<br>Q14: ?<br>Q15: 100<br>Q16: 100<br>Q17: 90<br>Q18: ?<br>Q19: 100<br>Q20: ?<br>Q21: 100<br>Q22: 90<br>Q23: 90<br>Q24: 100<br>Q25: 100<br>    </span><br>
+</div>
+<div id="prova">
+    <h1>Seletores 10/14ABC</h1>
+    <p><b>Prova Aberta Até:</b>
+        12/05/2017 08:55:00</p>
+    <p><b>Número Máximo de Tentativas:</b>
+        6</p>
+    <p><b>Atenuação da Nota por Tentativa (multiplicativa):</b>
+        0.9</p>
+    <p><b>Nota Máxima por Tentativa:</b>
+        </p><ol style="text-align: left; padding-left: 12ex;">
+                            <li>100</li>
+                            <li>90</li>
+                            <li>81</li>
+                            <li>72.9</li>
+                            <li>65.61</li>
+                            <li>59.049</li>
+                            </ol><p></p>
+    <p><b>Descrição:</b></p>
+    <div class="description-display-box">
+        Lista de exercícios sobre seletores (estruturas condicionais)    </div>
+    <h3>QUESTÕES</h3>
+                                <div class="problem-try-ct">
+                <a name="Q1"></a>
+                <h3>Questão 1:
+                            Estrutura Condicional - Maior número</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p> Faça um programa que receba dois números inteiros, um em cada linha, e exiba na tela o maior deles.</p>
+<p><b>Entradas:</b></p>
+<ol>
+<li>Dois números inteiros (um em cada linha).</li>
+</ol>
+
+<p><b>Saída:</b></p>
+<ol>
+<li>O número maior.</li>
+</ol>
+
+<h3>Exemplos de Entradas e Saídas:</h3>
+<p><b>Entradas:</b><br>
+</p><pre>17
+50
+</pre>
+<p><b>Saídas:</b><br>
+</p><pre>50
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ1"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    05/10/2016 16:38:08</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="438" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="435" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="1" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial435');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial435">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+
+{
+    float numero1;
+    cin &gt;&gt; numero1;
+    float numero2;
+    cin &gt;&gt; numero2;
+    if (numero1 &gt; numero2)
+        cout &lt;&lt; numero1;
+    else
+        cout &lt;&lt; numero2 &lt;&lt; endl;
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q2"></a>
+                <h3>Questão 2:
+                            Estrutura Condicional - Para ou ímpar</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p> Faça um programa que receba um número inteiro e verifique se ele é par ou ímpar.</p>
+<p><b>Entrada:</b></p>
+<ol>
+<li>Um número inteiro</li>
+</ol>
+<p><b>Saída:</b></p>
+<ol>
+<li> “par” caso o número seja par, ou “impar”, caso contrário. Obs: ambas as palavras sem acento.</li>
+</ol>
+<p><b>Exemplos de Entradas e Saídas:</b></p>
+<p><b>Entrada:</b><br>
+</p><pre>62
+</pre>
+<p><b>Saída:</b><br>
+</p><pre>par
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ2"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    15/10/2016 15:04:31</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="438" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="442" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="2" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial442');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial442">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int num;
+    cin &gt;&gt; num;
+    if (num % 2 == 0) cout &lt;&lt; "par \n";
+    else cout &lt;&lt; "impar \n";
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q3"></a>
+                <h3>Questão 3:
+                            Estrutura Condicional - Rendimentos Bancários</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>O gerente de seu banco te ligou e ofereceu dois tipos
+ de investimento que, segundo ele, seriam uma boa opção em tempos de 
+crise financeira. Para ter mais segurança da sua decisão, você pediu a 
+ele a taxa de juros (rendimento) mensal e a taxa de administração (valor
+ fixo) de cada um dos investimentos para que pudesse tomar a sua decisão
+ fazendo calculando o quanto ganharia de acordo com o que pretende 
+investir.</p>
+
+<p>As opções de investimento do banco são dadas abaixo.</p>
+
+<table>
+<tbody><tr> <td> <b>Tipo</b></td> <td> <b>Descrição</b></td> <td><b>Rendimento</b> </td> <td><b>Taxa</b> </td></tr>
+<tr> <td> 1 </td> <td> Poupança </td> <td> 0,5% </td> <td> isento </td> </tr>
+<tr> <td> 2 </td> <td> Renda fixa </td> <td> 3% </td> <td> R$ 30,00 </td> </tr>
+</tbody></table>
+
+<p>De posse dos dados você decidiu fazer um programa que faça os 
+cálculos que você precisa. Seu programa receberá o código do tipo de 
+investimento (1 ou 2) e o valor inicial de investimento e deverá 
+calcular o quanto terá na conta após o primeiro mês de rendimento.</p>
+
+<p>Obs: como foi você mesmo quem fez o programa, você digitará apenas os valores 1 ou 2 para o tipo de investimento.</p>
+
+<p><b>Entradas:</b></p>
+<ol>
+<li>Tipo de investimento (1 ou 2).</li>
+<li>Valor do investimento inicial.</li>
+</ol>
+<p><b>Saída:</b></p>
+<ol>
+<li>Valor na conta após o primeiro mês de rendimento.</li>
+</ol>
+
+<p><b>Exemplo de entrada</b>:</p>
+<pre>2
+500
+</pre>
+<p><b>Exemplo de saída</b>:</p>
+<pre>485
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ3"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    15/10/2016 15:18:20</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="438" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="440" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="3" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial440');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial440">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    float p;
+    cin &gt;&gt; p;
+    float n;
+    cin &gt;&gt; n;
+    if (p == 1) cout &lt;&lt; (n * 1.005) &lt;&lt; "\n";
+    if (p == 2) cout &lt;&lt; (n * 1.03) - 30 &lt;&lt; "\n";
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q4"></a>
+                <h3>Questão 4:
+                            Estrutura Condicional - Valor Final do Carro</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Tião gostaria de comprar um carro. Ele foi até a 
+concessionária viu os preços e não acreditou quando viu o quanto eles 
+estavam caros. Ele questionou o vendedor e este resolveu lhe explicar em
+ detalhes como é formado o preço dos carros.</p>
+
+<p>Segundo o vendedor os carros são recebidos da fábrica com um 
+determinado custo, chamado custo de fábrica. A concessionária cobra uma 
+porcentagem acima desse valor para cobrir seus custos e garantir seus 
+lucros. Em cima desse valor o governo cobra um imposto (IPI). Tanto a 
+porcentagem da concessionária quanto o IPI variam de acordo com o custo 
+de fábrica do carro.</p>
+
+<p>Tião teve acesso à tabela com todos esses dados e agora pede para que
+ você faça um programa para calcular o preço final de um carro. Seu 
+programa deverá receber o custo de fábrica de um carro e informar qual 
+seria o preço final para o consumidor.</p>
+
+<table>
+<tbody><tr> <td> <b>Custo de Fábrica</b></td> <td> <b>% Concessionária</b></td> <td><b>% Imposto</b> </td> </tr>
+<tr> <td> Até R$ 20 mil </td> <td> 5 </td> <td> isento </td>
+</tr> <tr> <td> Entre R$ 20 mil e R$ 40 mil (inclusive)</td> <td> 10 </td> <td> 30 </td> </tr>
+<tr> <td> Acima de R$ 40 mil </td> <td> 15 </td> <td> 45 </td> </tr>
+</tbody></table>
+
+<p><b>Entrada:</b></p>
+<ol>
+<li>Custo de fábrica de um carro.</li>
+</ol>
+<p><b>Saída:</b></p>
+<ol>
+<li>Preço final do carro para o consumidor.</li>
+</ol>
+
+<p><b>Exemplo de entrada</b>:</p>
+<pre>30000
+</pre>
+<p><b>Exemplo de saída</b>:</p>
+<pre>42900
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ4"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    15/10/2016 15:40:33</p>
+                <p><b>Tentativas:</b>
+                    2 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    90</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="438" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="439" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="3" type="hidden">
+            <input name="atenuacao" value="0.81" type="hidden">
+            <input name="nroQuestao" value="4" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial439');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial439">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    float custo;
+    cin &gt;&gt; custo;
+    if (custo &lt;= 20000) cout &lt;&lt; custo * 1.05 &lt;&lt; "\n";
+    if (custo &gt; 20000 and custo &lt;= 40000) cout &lt;&lt; custo * 1.1 * 1.3 &lt;&lt; "\n";
+    if (custo &gt; 40000) cout &lt;&lt; custo * 1.15 * 1.45 &lt;&lt; "\n";
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q5"></a>
+                <h3>Questão 5:
+                            Estrutura Condicional -  Maiúscula ou Minúscula</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que classifica uma letra qualquer 
+como maiúscula ou minúscula. Não é permitido usar nenhuma instrução de 
+biblioteca que determine se a letra é maiúscula ou minúscula, a 
+determinação deve ser feita a partir de operações básicas. Caso a letra 
+digitada seja maiúscula, seu programa deverá exibir no dispositivo de 
+saída padrão a mensagem <i>MAIUSCULA</i>, caso contrário, seu programa deverá exibir a mensagem. <i>MINUSCULA</i>.
+ Note que, em ambos os casos, a mensagem a ser exibida deve apresentar 
+apenas letras maiúsculas e nenhuma delas deve possuir acentuação. Assuma
+ que o caractere a ser digitado sempre será uma letra válida.</p>
+
+<p><b>Entradas:</b></p>
+<ol>
+<li>Uma letra</li>
+</ol>
+<p><b>Saídas:</b></p>
+<ol>
+<li>A mensagem: <i>MAIUSCULA</i> <b>OU</b> <i>MINUSCULA</i>.</li>
+</ol>
+
+<p><b>Exemplo de entrada</b>:</p>
+<pre>R
+</pre>
+<p><b>Exemplo de saída</b>:</p>
+<pre>MAIUSCULA
+</pre>
+
+<p><b>Exemplo de entrada</b>:</p>
+<pre>p
+</pre>
+<p><b>Exemplo de saída</b>:</p>
+<pre>MINUSCULA
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ5"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    17/10/2016 23:16:00</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="438" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="422" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="5" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial422');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial422">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    char letra;
+    cin &gt;&gt; letra;
+    if (letra == 'a' or letra == 'b' or letra == 'c' or letra == 'd' or letra == 'e' or letra == 'f' or letra == 'g' 
+        or letra == 'h' or letra == 'i' or letra == 'j' or letra == 'k' or letra == 'l' or letra == 'm' or letra == 'n' 
+        or letra == 'o' or letra == 'p' or letra == 'q' or letra == 'r' or letra == 's' or letra == 't' or letra == 'u' 
+        or letra == 'v' or letra == 'w' or letra == 'x' or letra == 'y' or letra == 'z')
+    {
+        cout &lt;&lt; "MINUSCULA \n";
+    }
+    else 
+    {
+        cout &lt;&lt; "MAIUSCULA \n";
+    }
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q6"></a>
+                <h3>Questão 6:
+                            Estrutura Condicional - Calculando novos salários.</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que receba o salário atual de um 
+funcionário e, usando a tabela a seguir, calcule e mostre o valor do 
+aumento e o novo salário.</p>
+<center><table>
+<tbody><tr>
+<th> <b>Salário</b></th>
+<th> <b>Percentual de Aumento</b> </th>
+</tr>
+<tr>
+<td> Até R$ 300,00 </td>
+<td> 15% </td>
+</tr>
+<tr>
+<td> Entre R$ 300,00 e R$ 600,00 (incluso) </td>
+<td> 10%  </td>
+</tr>
+<tr>
+<td> Entre R$ 600,00 e R$ 900,00 (incluso) </td>
+<td> 5% </td>
+</tr>
+<tr>
+<td> Acima de R$ 900,00 </td>
+<td> 0% </td>
+</tr>
+</tbody></table>
+</center>
+
+<p>Entradas:</p>
+<ol>
+<li>Salário atual do funcionário (real).</li>
+</ol>
+<p>Saídas:</p>
+<ol>
+<li>Valor do aumento.</li>
+<li>Novo salário.</li>
+</ol>
+<p>Exemplo de Entrada:</p>
+<pre>500</pre>
+<p>Exemplo de Saída:</p>
+<pre>50
+550</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ6"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    15/10/2016 18:44:12</p>
+                <p><b>Tentativas:</b>
+                    2 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    90</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="438" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="728" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="3" type="hidden">
+            <input name="atenuacao" value="0.81" type="hidden">
+            <input name="nroQuestao" value="6" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial728');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial728">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    double salario;
+    cin &gt;&gt; salario;
+    double num;
+    if (salario &lt;= 300) { 
+    num = salario * 0.15;
+    cout &lt;&lt; num &lt;&lt; "\n"
+         &lt;&lt; num + salario &lt;&lt; "\n";
+    }
+    if (salario &gt; 300 and salario &lt;= 600) {
+        num = salario * 0.10;
+        cout &lt;&lt; num &lt;&lt; "\n"
+             &lt;&lt; num + salario &lt;&lt; "\n";
+    }
+    if (salario &gt; 600 and salario &lt;= 900) {
+        num = salario * 0.05;
+        cout &lt;&lt; num &lt;&lt; "\n"
+             &lt;&lt; num + salario &lt;&lt; "\n";
+    }
+    if (salario &gt; 900) {
+        cout &lt;&lt; 0 &lt;&lt; "\n"
+             &lt;&lt; salario &lt;&lt; "\n";
+    }
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q9"></a>
+                <h3>Questão 9:
+                            Estrutura Condicional - Definindo triângulos.</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Dados três valores X, Y e Z, verifique se eles podem 
+ser os comprimentos dos lados de um triângulo e, se forem, verifique se é
+ um triângulo equilátero, isósceles ou escaleno. Se eles não formarem um
+ triângulo, escreva uma mensagem. Considere que:</p>
+<p>● O comprimento de cada lado de um triângulo é menor do que a soma dos outros dois lados. </p>
+<p>● Chama­-se equilátero o triângulo que tem 3 lados iguais. </p>
+<p>● Denomina-­se isósceles o triângulo que tem o comprimento de dois lados iguais.</p> 
+<p>● Recebe o nome de escaleno o triângulo que tem os três lados diferentes.</p>
+<p><b>OBS.:</b> As strings não devem conter acentuação.</p>
+<p>Entradas:</p>
+<ol>
+<li>Valor dos 3 lados de um triângulo (int).</li>
+</ol>
+<p>Saídas:</p>
+<ol>
+<li>Denomição do triângulo caso seja um, se não, imprimir na tela -1. </li>
+</ol>
+<p>Exemplo de Entrada:</p>
+<pre>3 4 5</pre>
+<p>Exemplo de Saída:</p>
+<pre>escaleno</pre>                 </div><!-- Descrição (description-display-box) -->
+                <a name="JQ9"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    16/10/2016 09:51:36</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="438" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="724" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="9" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial724');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial724">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int x;
+    cin &gt;&gt; x;
+    int y;
+    cin &gt;&gt; y;
+    int z;
+    cin &gt;&gt; z;
+    if ( x &gt;= (y + z) or y &gt;= (x + z) or z &gt;= (x + y)){ 
+    cout &lt;&lt; "-1 \n";
+    }
+    else {
+        if ( x == y and y == z and x == z) cout &lt;&lt; "equilatero \n";
+        else
+            if ( x != y and y != z and x != z) cout &lt;&lt; "escaleno \n";
+            else cout &lt;&lt; "isosceles \n";
+    }
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q10"></a>
+                <h3>Questão 10:
+                            Estrutura Condicional - Data maior</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que a partir de duas datas informe 
+qual é a data que ocorre depois da outra (a maior data). As datas são 
+compostas por três valores inteiros representando, o dia, o mês e o ano,
+ nessa ordem, e cada dado deve ser recebido em uma linha.</p>
+<p><b>Entradas:</b></p>
+<ol>
+<li>Número inteiro representando o dia da primeira data.</li>
+<li>Número inteiro representando o mês da primeira data.</li>
+<li>Número inteiro representando o ano da primeira data.</li>
+<li>Número inteiro representando o dia da segunda data.</li>
+<li>Número inteiro representando o mês da segunda data.</li>
+<li>Número inteiro representando o ano da segunda data.</li>
+</ol>
+<p><b>Saída:</b></p>
+<ol>
+<li>Os três valores que representam a maior data, em uma mesma linha, na ordem: dia, mês e ano.</li>
+</ol>
+<p>Exemplos de Entradas e Saídas:</p>
+<p><b>Entradas:</b></p>
+<pre>3
+11
+1995
+5
+6
+2015
+</pre>
+<p><b>Saídas:</b></p>
+<pre>5 6 2015</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ10"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    15/10/2016 19:07:26</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="438" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="443" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="10" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial443');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial443">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int dia, mes, ano;
+    cin &gt;&gt; dia &gt;&gt; mes &gt;&gt; ano;
+    int dia2, mes2, ano2;
+    cin &gt;&gt; dia2 &gt;&gt; mes2 &gt;&gt; ano2;
+    if (ano &gt; ano2) cout &lt;&lt; dia &lt;&lt; " " &lt;&lt; mes &lt;&lt; " " &lt;&lt; ano &lt;&lt; "\n";
+    if (ano &lt; ano2) cout &lt;&lt; dia2 &lt;&lt; " " &lt;&lt; mes2 &lt;&lt; " " &lt;&lt; ano2 &lt;&lt; "\n";
+    if (ano == ano2) {
+        if (mes &gt; mes2) cout &lt;&lt; dia &lt;&lt; " " &lt;&lt; mes &lt;&lt; " " &lt;&lt; ano &lt;&lt; "\n";
+        if (mes &lt; mes2) cout &lt;&lt; dia2 &lt;&lt; " " &lt;&lt; mes2 &lt;&lt; " " &lt;&lt; ano2 &lt;&lt; "\n";
+        if (mes == mes2) {
+            if (dia &gt; dia2) cout &lt;&lt; dia &lt;&lt; " " &lt;&lt; mes &lt;&lt; " " &lt;&lt; ano &lt;&lt; "\n";
+            if (dia &lt; dia2) cout &lt;&lt; dia2 &lt;&lt; " " &lt;&lt; mes2 &lt;&lt; " " &lt;&lt; ano2 &lt;&lt; "\n";
+            if (dia == dia2) cout &lt;&lt; dia &lt;&lt; " " &lt;&lt; mes &lt;&lt; " " &lt;&lt; ano &lt;&lt; "\n";
+        }
+    }
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q11"></a>
+                <h3>Questão 11:
+                            Estrutura Condicional - Diferença</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Escreva um programa que leia dois números e retorne a diferença do maior pelo menor, sem usar a função abs() da biblioteca <cmath>. </cmath></p>
+
+<p><b>Entradas:</b><pr>
+</pr></p><ul>
+<li>dois números inteiros</li>
+</ul><p></p>
+
+
+<p><b>Saídas:</b><pr>
+</pr></p><ul>
+<li>valor da diferença do maior número pelo menor número</li>
+</ul><p></p>
+
+<p><b>Exemplo de entrada:</b><br>
+</p><pre>3
+7
+</pre><p></p>
+
+<p><b>Exemplo de saída:</b><br>
+</p><pre>4
+</pre><p></p>
+                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ11"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    16/10/2016 09:57:28</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="438" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="303" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="11" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial303');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial303">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int num1;
+    cin &gt;&gt; num1;
+    int num2;
+    cin &gt;&gt; num2;
+    if (num1 &gt;= num2) cout &lt;&lt; num1 - num2 &lt;&lt; "\n";
+    if (num1 &lt; num2) cout &lt;&lt; num2 - num1 &lt;&lt; "\n";
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q12"></a>
+                <h3>Questão 12:
+                            Estrutura Condicional - Encontrando desconto de produtos.</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <!-- Problema ruim. Não usa a informação do código. Não deixa claro os limites dos intervalos. Bruno. -->
+<p>Uma empresa decide aplicar descontos nos seus preços usando a tabela a
+ seguir. Faça   um programa que receba o preço atual de um produto e seu
+ código e que calcule e mostre o valor do desconto e o novo preço.</p>
+<center><table>
+<tbody><tr>
+<th> <b>Preço atual</b></th>
+<th> <b>% de desconto</b> </th>
+</tr>
+<tr>
+<td> Até R$ 30,00 </td>
+<td> Sem desconto </td>
+</tr>
+<tr>
+<td> Entre R$ 30,00 e R$ 100,00 (incluso) </td>
+<td> 10%  </td>
+</tr><tr>
+<td> Acima de R$ 100,00 </td>
+<td> 15% </td>
+</tr>
+</tbody></table>
+</center>
+<p>Entradas:</p>
+<ol>
+<li>Preço atual do produto (float).</li>
+<li>Código do produto (int).</li>
+</ol>
+<p>Saídas:</p>
+<ol>
+<li>Valor do desconto.</li>
+<li>Novo preço do produto.</li>
+</ol>
+<p>Exemplo de Entrada:</p>
+<pre>100
+291095</pre>
+<p>Exemplo de Saída:</p>
+<pre>10
+90</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ12"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    18/10/2016 14:27:29</p>
+                <p><b>Tentativas:</b>
+                    2 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    90</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="438" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="729" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="3" type="hidden">
+            <input name="atenuacao" value="0.81" type="hidden">
+            <input name="nroQuestao" value="12" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial729');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial729">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    float preco;
+    cin &gt;&gt; preco;
+    int cod;
+    cin &gt;&gt; cod;
+    if (preco &lt;= 30) {
+        cout &lt;&lt; preco * 0 &lt;&lt; endl &lt;&lt; preco &lt;&lt; "\n";
+    }
+    else {
+        if (preco &gt; 30 and preco &lt;= 100) {
+            cout &lt;&lt; preco * 0.10 &lt;&lt; endl &lt;&lt; preco - (preco * 0.10) &lt;&lt; "\n";
+        }
+        else {
+            if (preco &gt; 100) {
+                cout &lt;&lt; preco * 0.15 &lt;&lt; endl &lt;&lt; preco - (preco * 0.15) &lt;&lt; "\n";
+            }
+        }
+     }
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q13"></a>
+                <h3>Questão 13:
+                            Estrutura Condicional - Maior entre três números.</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que receba três números e mostre o maior. </p>
+<p><b>OBS.:</b> Considere que não conterá número iguais.</p>
+<p>Entradas:</p>
+<ol>
+<li>Valores de três números reais (float).</li>
+</ol>
+<p>Saídas:</p>
+<ol>
+<li>Maior entre os três.</li>
+</ol>
+<p>Exemplo de Entrada:</p>
+<pre>11 15 1</pre>
+<p>Exemplo de Saída:</p>
+<pre>15</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ13"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    16/10/2016 10:16:08</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="438" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="726" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="13" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial726');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial726">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    float num1;
+    cin &gt;&gt; num1;
+    float num2;
+    cin &gt;&gt; num2;
+    float num3;
+    cin &gt;&gt; num3;
+    if (num1 &gt; num2 and num1 &gt; num3) cout &lt;&lt; num1 &lt;&lt; "\n";
+    else if (num2 &gt; num1 and num2 &gt; num3) cout &lt;&lt; num2 &lt;&lt; "\n";
+         else cout &lt;&lt; num3 &lt;&lt; "\n";
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q14"></a>
+                <h3>Questão 14:
+                            Estrutura Condicional - Seno ou Cosseno</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Muitos programas comumente oferecem diversas funções 
+para o usuário. Em um programa gráfico o usuário escolhe a função que 
+deseja através de componentes gráficos como menus e botões. Já em 
+programas de linha de comando podemos deixar o usuário escolher uma 
+função através de códigos ou símbolos.</p>
+
+<p>Seguindo essa linha faça um programa que permita ao usuário solicitar
+ o cálculo do seno ou do cosseno de um ângulo, e este ângulo pode ser 
+fornecido em graus ou radianos.</p>
+
+<p>Para isso o usuário deverá primeiro informar uma letra para dizer se deseja o cálculo de seno ou cosseno (<em>s</em> ou <em>c</em>). Em seguida, ele deve informar outra letra dizer se o ângulo a ser fornecido será dado em graus ou radianos (<em>g</em> ou <em>r</em>).
+ Por fim, o usuário deve informar um número decimal com o ângulo 
+desejado. O programa deve então calcular o seno ou cosseno do ângulo 
+informado de acordo com a definição do usuário.</p>
+<p>Obs.: soluções em Python devem utilizar funções da biblioteca math.</p>
+<p><b>Entradas:</b></p>
+<ol>
+<li>Uma letra, <em>s</em> ou <em>c</em>, indicando se será calculado o seno ou o cosseno, respectivamente.</li>
+<li>Uma letra, <em>g</em> ou <em>r</em>, indicando se o ângulo a ser informado está em graus ou radianos.</li>
+<li>Um número decimal representando o ângulo desejado, que pode estar em graus ou radianos</li>
+</ol>
+<p><b>Saídas:</b></p>
+<ol>
+<li>O valor do seno ou cosseno do ângulo passado.</li>
+</ol>
+
+<p>Obs: você pode usar as funções <em>sin</em> para calcular o seno e <em>cos</em> para cosseno, presentes na biblioteca <em>math.h</em>.
+
+</p><p><b>Exemplo de entrada</b>:</p>
+<pre>c
+g
+90
+</pre>
+<p><b>Exemplo de saída</b>:</p>
+<pre>0
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ14"></a>
+                <p><b>Peso:</b> 1</p>
+                <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="438" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="433" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="1" type="hidden">
+            <input name="atenuacao" value="1" type="hidden">
+            <input name="nroQuestao" value="14" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q15"></a>
+                <h3>Questão 15:
+                            Estrutura Condicional - Cálculo Compra de Produtos</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Um comerciante decidiu te contratar para fazer um 
+software que o permita calcular o valor a ser pago pelos seus clientes. 
+Em sua loja os produtos possuem códigos de 1 a 40 e os preços dos mesmos
+ são dados pela tabela a seguir.</p>
+
+<table>
+<tbody><tr> <td> <b>Código</b></td> <td> <b>Preço</b></td> </tr>
+<tr> <td> 1 a 10 </td> <td> R$ 10,00 </td> </tr>
+<tr> <td> 11 a 20 </td> <td> R$ 15,00 </td> </tr> 
+<tr> <td> 21 a 30 </td> <td> R$ 20,00 </td> </tr> 
+<tr> <td> 31 a 40 </td> <td> R$ 30,00 </td> </tr> 
+</tbody></table>
+
+<p>E como estratégia de marketing ele oferece descontos e acordo com o 
+valor da compra. Quanto mais um cliente compra, maior é o desconto. Ele 
+segue a tabela de descontos dada abaixo.</p>
+
+<table>
+<tbody><tr> <td> <b>Compra</b></td> <td> <b>Desconto</b></td> </tr>
+<tr> <td> Abaixo de R$ 250,00 </td> <td> 5% </td> </tr>
+<tr> <td> De R$ 250,00 a R$ 500,00 </td> <td> 10% </td> </tr> 
+<tr> <td> Acima de R$ 500,00 </td> <td> 15% </td> </tr>
+</tbody></table>
+
+<p>O comerciante lhe pediu que o programa receba o código e a quantidade
+ de um produto e exiba: o preço unitário do produto, o valor bruto da 
+compra, o valor do desconto e o preço final a ser pago pelo cliente.</p>
+
+<p>Obs: considere que serão digitados apenas códigos de produto válidos (1 a 40) e quantidades positivas.</p>
+
+<p><b>Entradas:</b></p>
+<ol>
+<li>Código do produto (1 a 40).</li>
+<li>Quantidade a ser comprada do produto.</li>
+</ol>
+<p><b>Saídas:</b></p>
+<ol>
+<li>Preço unitário do produto comprado.</li>
+<li>Valor bruto da compra (preço unitário x quantidade).</li>
+<li>Valor do desconto a ser concedido.</li>
+<li>Preço final a ser pago pelo consumidor.</li>
+</ol>
+
+<p><b>Exemplo de entrada</b>:</p>
+<pre>30
+25
+</pre>
+<p><b>Exemplo de saída</b>:</p>
+<pre>20
+500
+50
+450
+</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ15"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    17/10/2016 01:26:18</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="438" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="441" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="15" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial441');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial441">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    unsigned int cod;
+    cin &gt;&gt; cod;
+    double qtd;
+    cin &gt;&gt; qtd;
+    double preco;
+    if (cod &gt;= 1 and cod &lt;= 10) preco = 10;
+    if (cod &gt;= 11 and cod &lt;= 20) preco = 15;
+    if (cod &gt;= 21 and cod &lt;= 30) preco = 20;
+    if (cod &gt;= 31 and cod &lt;= 40) preco = 30;
+    double desconto = 0;
+    if ((preco * qtd) &lt;= 250) desconto = 0.05;
+    if ((preco * qtd) &gt; 250 and (preco * qtd) &lt;= 500) desconto = 0.10;
+    if ((preco * qtd) &gt; 500) desconto = 0.15;
+    cout &lt;&lt; preco &lt;&lt; "\n"
+         &lt;&lt; preco * qtd &lt;&lt; "\n"
+         &lt;&lt; desconto * preco * qtd &lt;&lt; "\n"
+         &lt;&lt; (preco * qtd) - (preco * qtd * desconto) &lt;&lt; "\n";
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q16"></a>
+                <h3>Questão 16:
+                            Estrutura Condicional - Ano Bissexto</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que receba um ano. Se o ano for bissexto, o programa deve escrever <b>1</b>. Se não for, o programa deve escrever <b>0</b>.
+</p><p>Todos os anos múltiplos de 400 são bissextos. Dentre os outros, 
+são bissextos todos os anos múltiplos de 4 que não são múltiplos de 100.
+ Todos os demais não são bissextos.</p>
+
+<p><b>Exemplo de entrada:</b></p>
+<pre>1996</pre>
+<p><b>Exemplo de saída:</b></p>
+<pre>1</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ16"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    17/10/2016 01:33:20</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="438" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="106" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="16" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial106');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial106">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int ano;
+    cin &gt;&gt; ano;
+    if (ano % 400 == 0) cout &lt;&lt; "1 \n";
+    else if (ano % 4 == 0 and ano % 100 != 0) cout &lt;&lt; "1 \n";
+         else cout &lt;&lt; "0 \n";
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q17"></a>
+                <h3>Questão 17:
+                            Estrutura condicional - Calculadora</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que faz contas de dois operandos. O 
+programa deve ler um operando, um operador e um segundo número. Depois 
+deve calcular e escrever o resultado.</p>
+<p>As operações tratadas serão: soma, subtração, multiplicação e divisão
+ real. Os caracteres para as operações são respectivamente: <b>+</b>, <b>-</b>, <b>*</b> e <b>/</b>.
+ Não é necessário testar se o caractere é um desses quatro. Caso não 
+seja possível realizar a divisão, o programa deve escrever <code><b>erro</b></code>.</p>
+
+<p><b>Entradas:</b></p>
+<ol>
+<li>Primeiro operando (número real),</li>
+<li>operador (caractere),</li>
+<li>segundo operando (número real).</li>
+</ol>
+
+<p><b>Saídas:</b></p>
+<ol>
+<li>Resultado da operação (número real).</li>
+</ol>
+
+<p><b>Exemplo de entradas:</b></p>
+<pre>2 + 2</pre>
+
+<p><b>Exemplo de saída:</b></p>
+<pre>4</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ17"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    17/10/2016 19:56:34</p>
+                <p><b>Tentativas:</b>
+                    2 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    90</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="438" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="191" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="3" type="hidden">
+            <input name="atenuacao" value="0.81" type="hidden">
+            <input name="nroQuestao" value="17" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial191');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial191">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    float num1;
+    cin &gt;&gt; num1;
+    char operador;
+    cin &gt;&gt; operador;
+    float num2;
+    cin &gt;&gt; num2;
+    if (operador == '+')
+    {
+        cout &lt;&lt; num1 + num2 &lt;&lt; endl;
+    }
+    else
+    {
+        if (operador == '-')
+        {
+            cout &lt;&lt; num1 - num2 &lt;&lt; endl;
+        }
+        else
+        {
+            if (operador == '*')
+            {
+                cout &lt;&lt; num1 * num2 &lt;&lt; endl;
+            }
+            else
+            {
+                if (operador == '/' and num2 == 0) 
+                {
+                    cout &lt;&lt; "erro \n";
+                }
+                else 
+                {
+                    cout &lt;&lt; num1 / num2 &lt;&lt; endl;
+                }
+            }
+        }
+    }
+    return 0;   
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q18"></a>
+                <h3>Questão 18:
+                            Estrutura Condicional - Truque com cartas (1)</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Ilusionistas e trapaceiros bem treinados conseguem 
+passar a ilusão de que embaralharam cartas, quando na verdade 
+distribuíram elas em posições bem determinadas. Um método, conhecido 
+como "o corte de Faro" consiste em dividir o baralho ao meio e depois 
+juntar de maneira que a primeira carta da metade posterior fique no 
+início, a primeira carta da metade anterior fique em segundo, a segunda 
+carta da metade posterior fique em terceiro e assim por diante. No caso 
+de quantidade ímpar de cartas, supõe-se que a metade posterior terá uma 
+carta a mais.</p>
+<p>Assim, a sequência de cartas ♥A, ♠A, ♦A, ♥K, ♠K, ♦K e ♣K,  depois do corte de faro fica assim: ♥K, ♥A, ♠K, ♠A, ♦K, ♦A e ♣K.</p>
+<p>Faça um programa que dada uma quantidade de cartas e a posição de uma
+ carta, calcule e escreva a posição da mesma carta após o corte de Faro.</p>
+<p>Entradas:</p>
+<ol>
+<li>Quantidade de cartas e</li>
+<li>posição inicial da carta (a primeira carta está na posição zero, a segunda na posição 1 e assim por diante).</li>
+</ol>
+<p>Saídas:</p>
+<ol>
+<li>A posição da carta após o corte de Faro (as posições começam em zero).</li>
+</ol>
+<p>Exemplo de Entrada:</p>
+<pre>8
+2</pre>
+<p>Exemplo de Saída:</p>
+<pre>5</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ18"></a>
+                <p><b>Peso:</b> 1</p>
+                <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="438" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="660" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="1" type="hidden">
+            <input name="atenuacao" value="1" type="hidden">
+            <input name="nroQuestao" value="18" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q19"></a>
+                <h3>Questão 19:
+                            Estrutura Condicional - Separando Dígitos</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que receba um número inteiro 
+positivo formado por cinco dígitos e exiba os dígitos separados uns dos 
+outros por três pontos cada.</p>
+<p>Caso o número tenha menos de cinco dígitos, devem ser inseridos os 
+zeros necessários à esquerda. E caso o número tenha mais de cinco 
+dígitos deve ser exibida a mensagem <i>"invalido"</i> (minúsculo e sem acento).</p>
+<p>Obs: não deve ser usada nenhuma biblioteca de formatação de texto de saída.</p>
+<p><b>Entrada:</b></p>
+<ol>
+<li>Um número que terá seus dígitos separados pelo programa.</li>
+</ol>
+<p><b>Saída:</b></p>
+<ol>
+<li>Os 5 dígitos do número separados por três pontos entre si (sem espaços, com zeros à esquerda, se necessário). Ou, <i>"invalido"</i>, caso o número tenha mais de cinco dígitos.</li>
+</ol>
+<p><b>Exemplo de entrada:</b></p>
+<pre>23576</pre>
+<p><b>Exemplo de saída:</b></p>
+<pre>2...3...5...7...6</pre>
+<p><b>Exemplo de entrada:</b></p>
+<pre>3000</pre>
+<p><b>Exemplo de saída:</b></p>
+<pre>0...3...0...0...0</pre>
+<p><b>Exemplo de entrada:</b></p>
+<pre>234567</pre>
+<p><b>Exemplo de saída:</b></p>
+<pre>invalido</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ19"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    18/10/2016 15:11:26</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="438" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="339" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="19" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial339');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial339">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include
+ &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int num;
+    cin &gt;&gt; num;
+    if (num &gt;= 100000) {
+        cout &lt;&lt; "invalido \n";
+    }
+    else {
+        cout &lt;&lt; (num / 10000) % 10 &lt;&lt; "..." &lt;&lt; (num / 
+1000) % 10 &lt;&lt; "..." &lt;&lt; (num / 100) % 10 &lt;&lt; "..." 
+&lt;&lt; (num / 10) % 10 &lt;&lt; "..." &lt;&lt; num % 10 &lt;&lt; endl;
+        }
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q20"></a>
+                <h3>Questão 20:
+                            Estrutura Condicional - Interseção</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que calcula a interseção de um segmento de reta com um reta que pode ser vertical ou horizontal.</p>
+
+<p>A figura abaixo mostra o segmento de reta que vai de (2.2, 4.1) até (4.7, 5.9), interceptando a reta vertical <i>x = 3.9</i>. Calcular a interseção neste caso significa calcular o valor de <i>y</i>, para <i>x = 3.9</i>. Isso pode ser calculado por semelhança de triângulos, conforme mostra a figura.</p>
+
+<img src="seletores_files/intersecao-segmento.png" alt="ilustração: interseção do segmento" height="219" width="392">
+
+<p><b>Entrada</b>: A entrada de dados do programa consiste em, respetivamente:
+</p><ol style="text-align: left; padding-left: 5em">
+<li> coordenada x do ponto1,</li>
+<li> coordenada y do ponto1,</li>
+<li> coordenada x do ponto2,</li>
+<li> coordenada y do ponto2,</li>
+<li> um caractere que pode ser <b>x</b> ou <b>y</b> que indica qual tipo de reta será usada na interseção,</li>
+<li> a coordenada conhecida da reta com a qual a interseção deve ser calculada.</li>
+</ol><p></p>
+
+<p><b>Saída</b>: O programa deve escrever a coordenada desconhecida da interseção.</p>
+
+<p></p><pre>Exemplo de entrada:
+2.2 4.1 4.7 5.9
+x 3.9
+
+Exemplo de saída:
+5.324
+</pre><p></p>
+
+<p>Não existe nenhuma restrição sobre ordem ou orientação dos pontos. Eles podem formar um segmento em qualquer direção.</p>
+
+<p></p><pre>Exemplo de entrada:
+-2 1 -4 2
+x -3
+
+Exemplo de saída:
+1.5
+</pre><p></p>
+
+<p>Cuidado com casos extremos.</p>
+
+<p></p><pre>Exemplo de entrada:
+1.1 -5.3 1.1 5.3
+y 1
+
+Exemplo de saída:
+1.1
+</pre><p></p>
+
+<p>Por fim, considere que nem sempre existe uma interseção. Nesse caso, o programa deve escrever "nenhuma".</p>
+
+<p></p><pre>Exemplo de entrada:
+1.1 -5.3 1.1 5.3
+x 2
+
+Exemplo de saída:
+nenhuma
+</pre><p></p>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ20"></a>
+                <p><b>Peso:</b> 1</p>
+                <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="438" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="224" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="1" type="hidden">
+            <input name="atenuacao" value="1" type="hidden">
+            <input name="nroQuestao" value="20" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q21"></a>
+                <h3>Questão 21:
+                            Estrutura Condicional - Determinando a maior data.</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que determine a data 
+cronologicamente maior entre duas datas fornecidas pelo usuário.Cada 
+data deve ser composta por três valores inteiros, em que o primeiro 
+representa o dia, o segundo, o mês e o terceiro, o ano.</p>
+<p>Entradas:</p>
+<ol>
+<li>Dia, mês, ano da primeira data (int). </li>
+<li>Dia, mês, ano da segunda data (int).</li>
+</ol>
+<p>Saídas:</p>
+<ol>
+<li>Data cronologicamente maior entre as duas datas fornecidas.</li>
+</ol>
+<p>Exemplo de Entrada:</p>
+<pre>29 10 1995
+2 12 1984</pre>
+<p>Exemplo de Saída:</p>
+<pre>29 10 1995</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ21"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    17/10/2016 20:13:37</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="438" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="722" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="21" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial722');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial722">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int dia, mes, ano;
+    cin &gt;&gt; dia &gt;&gt; mes &gt;&gt; ano;
+    int dia2, mes2, ano2;
+    cin &gt;&gt; dia2 &gt;&gt; mes2 &gt;&gt; ano2;
+    if (ano &gt; ano2)
+    {
+        cout &lt;&lt; dia &lt;&lt; " " &lt;&lt; mes &lt;&lt; " " &lt;&lt; ano &lt;&lt; endl;
+    }
+    if (ano &lt; ano2)
+    {
+        cout &lt;&lt; dia2 &lt;&lt; " " &lt;&lt; mes2 &lt;&lt; " " &lt;&lt; ano2 &lt;&lt; endl;
+    }
+    if (ano == ano2)
+    {
+        if (mes &gt; mes2)
+        {
+            cout &lt;&lt; dia &lt;&lt; " " &lt;&lt; mes &lt;&lt; " " &lt;&lt; ano &lt;&lt; endl;
+        }
+        if (mes &lt; mes2)
+        {
+            cout &lt;&lt; dia2 &lt;&lt; " " &lt;&lt; mes2 &lt;&lt; " " &lt;&lt; ano2 &lt;&lt; endl;
+        }
+        if (mes == mes2)
+        {
+            if (dia &gt; dia2)
+            {
+                cout &lt;&lt; dia &lt;&lt; " " &lt;&lt; mes &lt;&lt; " " &lt;&lt; ano &lt;&lt; endl;
+            }
+            if (dia &lt; dia2)
+            {
+                cout &lt;&lt; dia2 &lt;&lt; " " &lt;&lt; mes2 &lt;&lt; " " &lt;&lt; ano2 &lt;&lt; endl;
+            }
+            if (dia == dia2)
+            {
+                cout &lt;&lt; dia &lt;&lt; " " &lt;&lt; mes &lt;&lt; " " &lt;&lt; ano &lt;&lt; endl;
+            }
+        }
+    }
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q22"></a>
+                <h3>Questão 22:
+                            Estrutura Condicional - Novos salários de funcionários.</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que receba o código correspondente 
+ao cargo de um funcionário e seu salário atual e mostre o cargo, o valor
+ do aumento e seu novo salário. Os cargos estão na tabela abaixo. </p>
+<p><b>OBS.:</b>As strings não devem conter acentuação.</p>
+<center>
+<table>
+<tbody><tr>
+<th> <b>Código</b></th>
+<th> <b>Cargo</b> </th>
+<th> <b> Percentual</b> </th>
+</tr>
+<tr>
+<td> 1 </td>
+<td> Escriturário </td>
+<td> 50% </td>
+</tr>
+<tr>
+<td> 2 </td>
+<td> Secretário  </td>
+<td> 35% </td>
+</tr>
+<tr>
+<td> 3 </td>
+<td> Caixa </td>
+<td> 20% </td>
+</tr>
+<tr>
+<td> 4 </td>
+<td> Gerente </td>
+<td> 10% </td>
+</tr>
+<tr>
+<td> 5 </td>
+<td> Diretor </td>
+<td> Não tem aumento. </td>
+</tr>
+</tbody></table>
+</center>
+<p></p>
+<p>Entradas:</p>
+<ol>
+<li>Código correspondente ao cargo (int).</li>
+<li>Salário atual (float).</li>
+</ol>
+<p>Saídas:</p>
+<ol>
+<li>Cargo do funcionário.</li>
+<li>Aumento.</li>
+<li>Novo Salário.
+</li></ol>
+<p>Exemplo de Entrada:</p>
+<pre>4
+8000</pre>
+<p>Exemplo de Saída:</p>
+<pre>Gerente
+800
+8800</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ22"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    17/10/2016 20:32:28</p>
+                <p><b>Tentativas:</b>
+                    2 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    90</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="438" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="723" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="3" type="hidden">
+            <input name="atenuacao" value="0.81" type="hidden">
+            <input name="nroQuestao" value="22" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial723');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial723">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int cod;
+    cin &gt;&gt; cod;
+    float salario;
+    cin &gt;&gt; salario;
+    if (cod == 1)
+    {
+        cout &lt;&lt; "Escriturario \n"
+             &lt;&lt; salario * 0.5 &lt;&lt; endl
+             &lt;&lt; salario * 1.5 &lt;&lt; endl;
+    }
+    if (cod == 2)
+    {
+        cout &lt;&lt; "Secretario \n"
+             &lt;&lt; salario * 0.35 &lt;&lt; endl
+             &lt;&lt; salario * 1.35 &lt;&lt; endl;
+    }
+    if (cod == 3)
+    {
+        cout &lt;&lt; "Caixa \n"
+             &lt;&lt; salario * 0.2 &lt;&lt; endl
+             &lt;&lt; salario * 1.2 &lt;&lt; endl;
+    }
+    if (cod == 4)
+    {
+        cout &lt;&lt; "Gerente \n"
+             &lt;&lt; salario * 0.1 &lt;&lt; endl
+             &lt;&lt; salario * 1.1 &lt;&lt; endl;
+    }
+    if (cod == 5)
+    {
+        cout &lt;&lt; "Diretor \n"
+             &lt;&lt; 0 &lt;&lt; endl
+             &lt;&lt; salario &lt;&lt; endl;
+    }
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q23"></a>
+                <h3>Questão 23:
+                            Estrutura Condicional - Classificando funcionários.</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que receba o salário base e o tempo de serviço de um funcionário. Calcule e mostre: </p>
+<p>a) O imposto, apresentado na tabela a seguir.</p>
+
+<center><table>
+<tbody><tr>
+<th> <b>Salário Base</b></th>
+<th> <b>% sobre o salário base</b> </th>
+</tr>
+<tr>
+<td> Menor que R$ 200,00 </td>
+<td> isento </td>
+</tr>
+<tr>
+<td> Entre R$ 200,00 (inclusive) e R$ 450,00 (inclusive) </td>
+<td> 3%  </td>
+</tr>
+<tr>
+<td> Entre R$ 450,00 e R$ 700,00</td>
+<td> 8% </td>
+</tr>
+<tr>
+<td> Maior igual que R$ 700,00 </td>
+<td> 12% </td>
+</tr>
+</tbody></table>
+</center>
+
+<p>b) A gratificação sobre o salário base, que se encontra na tabela abaixo. </p>
+
+<center><table>
+<tbody><tr>
+<th> <b>Salário Base</b></th>
+<th> <b>Tempo de Serviço</b> </th>
+<th> <b>Gratificação em %</b> </th>
+</tr>
+<tr>
+<td> Superior a R$ 500,00 </td>
+<td> Até 3 anos </td>
+<td> 20 </td>
+</tr>
+<tr>
+<td></td>
+<td> Mais de 3 anos </td>
+<td> 30 </td>
+</tr>
+<tr>
+<td> Até R$ 500,00 </td>
+<td> Até 3 anos </td>
+<td> 23 </td>
+</tr>
+<tr>
+<td></td>
+<td> Entre 3 e 6 anos </td>
+<td> 35 </td>
+</tr>
+<tr>
+<td></td>
+<td> De 6 anos pra cima </td>
+<td> 33 </td>
+</tr>
+</tbody></table>
+</center>
+
+<p>c) O salário líquido, ou seja, salário base menos imposto mais gratificação. </p>
+<p>d) A categoria, que está na tabela a seguir. </p>
+
+<center><table>
+<tbody><tr>
+<th> <b>Salário Líquido</b></th>
+<th> <b>Classificação</b> </th>
+</tr>
+<tr>
+<td> Até R$ 350,00 </td>
+<td> A </td>
+</tr>
+<tr>
+<td> Entre R$ 350,00 (inclusive) e R$ 600,00 </td>
+<td> B  </td>
+</tr>
+<tr>
+<td> De R$ 600,00 acima</td>
+<td> C </td>
+</tr>
+</tbody></table>
+</center>
+
+<p>Entradas:</p>
+<ol>
+<li>Salário Base (float).</li>
+<li>Tempo de Serviço (int).</li>
+</ol>
+<p>Saídas:</p>
+<ol>
+<li>Imposto.</li>
+<li>Gratificação.</li>
+<li>Salário Líquido.</li>
+<li>Categoria.</li>
+</ol>
+<p>Exemplo de Entrada:</p>
+<pre>5000
+5</pre>
+<p>Exemplo de Saída:</p>
+<pre>600
+1500
+5900
+C</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ23"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    19/10/2016 15:28:59</p>
+                <p><b>Tentativas:</b>
+                    2 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    90</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="438" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="725" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="3" type="hidden">
+            <input name="atenuacao" value="0.81" type="hidden">
+            <input name="nroQuestao" value="23" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial725');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial725">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    float salario;
+    cin &gt;&gt; salario;
+    int tempServ;
+    cin &gt;&gt; tempServ;
+    float imposto;
+    if (salario &lt; 200) {
+        imposto = 0;
+        cout &lt;&lt; salario * imposto &lt;&lt; endl;
+    }
+    else if (salario &gt;= 200 and salario &lt;= 450) {
+        imposto = 0.03f;
+        cout &lt;&lt; salario * imposto &lt;&lt; endl;
+    }
+    else if (salario &gt; 450 and salario &lt; 700) {
+        imposto = 0.08f;
+        cout &lt;&lt; salario * imposto &lt;&lt; endl;
+    }
+    else {
+        imposto = 0.12f;
+        cout &lt;&lt; salario * imposto &lt;&lt; endl;
+    }
+    float gratif;
+    if (salario &lt;= 500 and tempServ &lt;= 3) {
+        gratif = 0.23f;
+        cout &lt;&lt; salario * gratif &lt;&lt; endl;
+    }
+    else if (salario &lt;= 500 and tempServ &gt; 3 and tempServ &lt;= 6) {
+        gratif = 0.35f;
+        cout &lt;&lt; salario * gratif &lt;&lt; endl;
+    }
+    else if (salario &lt;= 500 and tempServ &gt; 6) {
+        gratif = 0.33f;
+        cout &lt;&lt; salario * gratif &lt;&lt; endl;
+    }
+    else if (salario &gt; 500 and tempServ &lt;= 3) {
+        gratif = 0.2f;
+        cout &lt;&lt; salario * gratif &lt;&lt; endl;
+    }
+    else {
+        gratif = 0.3f;
+        cout &lt;&lt; salario * gratif &lt;&lt; endl;
+    }
+    float total = (salario - (salario * imposto) + (salario * gratif));
+    cout &lt;&lt; total &lt;&lt; endl;
+    if ( total &lt; 350) {
+        cout &lt;&lt; "A \n";
+    }
+    else if ( total &gt;= 350 and total &lt; 600) {
+        cout &lt;&lt; "B \n";
+    }
+    else cout &lt;&lt; "C \n";
+    
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q24"></a>
+                <h3>Questão 24:
+                            Estrutura Condicional - Gratificação de Natal.</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Uma empresa decidiu dar uma gratificação de natal a 
+seus funcionários, baseada no número de horas extras e no número de 
+horas que o funcionário faltou ao trabalho. O valor do prêmio é obtido 
+pela consulta à tabela que se segue, na qual: </p>
+<p><b>H=número de horas extras - (2/3*(número de horas-faltas))</b></p>
+<center><table>
+<tbody><tr>
+<th> <b>H(Minutos)</b></th>
+<th> <b>Prêmio(R$)</b> </th>
+</tr>
+<tr>
+<td> Maior que 2400 </td>
+<td> 500 </td>
+</tr>
+<tr>
+<td> Entre 1800 e 2400 (incluso) </td>
+<td> 400  </td>
+</tr>
+<tr>
+<td> Entre 1200 e 1800 (incluso) </td>
+<td> 300  </td>
+</tr>
+<tr>
+<td> Entre 600 e 1200 (incluso) </td>
+<td> 200  </td>
+</tr>
+<tr>
+<td> Menor igual a 600 </td>
+<td> 100  </td>
+</tr>
+</tbody></table>
+</center>
+<p>Entradas:</p>
+<ol>
+<li>Número de horas extras (float).</li>
+<li>Número de horas-faltas (float).</li>
+</ol>
+<p>Saídas:</p>
+<ol>
+<li>Prêmio que o funcionário irá receber.</li>
+</ol>
+<p>Exemplo de Entrada:</p>
+<pre>24
+3</pre>
+<p>Exemplo de Saída:</p>
+<pre>300</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ24"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    17/10/2016 22:56:55</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="438" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="731" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="24" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial731');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial731">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    float horaExtra;
+    cin &gt;&gt; horaExtra;
+    float horaFalta;
+    cin &gt;&gt; horaFalta;
+    float H = horaExtra - (2/3 * horaFalta);
+          H *= 60;
+    if (H &lt;= 600) 
+    {
+        cout &lt;&lt; 100 &lt;&lt; endl;
+    }
+    else
+    {
+        if (H &gt; 600 and H &lt;= 1200)
+        {
+        cout &lt;&lt; 200 &lt;&lt; endl;
+        }
+        else
+        {
+            if (H &gt; 1200 and H &lt;= 1800)
+            {
+            cout &lt;&lt; 300 &lt;&lt; endl;
+            }
+            else
+            {
+                if (H &gt; 1800 and H &lt;= 2400)
+                {
+                cout &lt;&lt; 400 &lt;&lt; endl;
+                }
+                else
+                {
+                    if (H &gt; 2400)
+                    {
+                    cout &lt;&lt; 500 &lt;&lt; endl;
+                    }
+                }
+            }
+        }
+    }
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                            <div class="problem-try-ct">
+                <a name="Q25"></a>
+                <h3>Questão 25:
+                            Estrutura Condicional - Classificando idades.</h3>
+                <!-- Descrição do problema, vinda da BD -->
+                <div class="description-display-box">
+                <p>Faça um programa que receba a idade de um nadador e 
+mostre sua categoria, usando as regras a seguir. Para idade inferior a 
+5, deverá mostrar mensagem: "Nao registrado".</p>
+<p><b>Obs.:</b>As strings de saída, não devem conter acentuação.</p>
+<center><table>
+<tbody><tr>
+<th> <b>Categoria</b></th>
+<th> <b>Idade</b> </th>
+</tr>
+<tr>
+<td> Infantil </td>
+<td> 5 a 7 </td>
+</tr>
+<tr>
+<td> Juvenil </td>
+<td> 8 a 10  </td>
+</tr><tr>
+<td> Adolescente </td>
+<td> 11 a 15 </td>
+</tr>
+<tr>
+<td> Adulto </td>
+<td> 16 a 30 </td>
+</tr>
+<tr>
+<td> Sênior </td>
+<td> Acima de 30 </td>
+</tr>
+</tbody></table>
+</center>
+<p>Entradas:</p>
+<ol>
+<li>Idade do nadador (int).</li>
+</ol>
+<p>Saídas:</p>
+<ol>
+<li>Exibir categoria.</li>
+</ol>
+<p>Exemplo de Entrada:</p>
+<pre>16</pre>
+<p>Exemplo de Saída:</p>
+<pre>Adulto</pre>                </div><!-- Descrição (description-display-box) -->
+                <a name="JQ25"></a>
+                <p><b>Peso:</b> 1</p>
+                                <p><b>Última tentativa:</b>
+                    16/10/2016 10:38:03</p>
+                <p><b>Tentativas:</b>
+                    1 de
+                    6</p>
+                <p><b>Nota (0 a 100):</b>
+                    100</p>
+                <p><b>Status ou Justificativa de Nota:</b>
+                    Nenhum erro encontrado.</p>
+                    <div class="tentativas-resposta">
+<p><b>Tentativas de Resposta</b>:</p>
+    <div class="nova-tentativa">
+        <!-- formulário de enviar nova tentativa -->
+        <form method="POST" action="controller/TestTrialController.php" class="centering" enctype="multipart/form-data">
+            <input name="arquivo" id="arquivo" required="required" type="file">
+            <p style="margin-top: -0.3em">Selecione o arquivo com o código fonte do programa que resolve o problema para enviá-lo.</p>
+                                <input name="MAX_FILE_SIZE" value="20000" type="hidden">
+            <input name="ttl_tst_id" value="438" type="hidden">
+            <input name="tst_password" value="3334ae6608f4ed4b9da5a946aff43f4dabc3e6b6" type="hidden">
+            <input name="ttl_prb_id" value="730" type="hidden">
+            <input name="idUsuario" value="1754" type="hidden">
+            <input name="nroTentativa" value="2" type="hidden">
+            <input name="atenuacao" value="0.9" type="hidden">
+            <input name="nroQuestao" value="25" type="hidden">
+            <input name="_action" value="save" type="hidden">
+            <input value="Enviar Resposta" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false" type="submit">
+        </form>
+    </div><!-- Nova tentativa -->
+        <button class="ver-ultima-tentativa ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="openDivAsDialog('lastTrial730');" role="button" aria-disabled="false"><span class="ui-button-text">Ver Última Tentativa</span></button>
+    <div style="display:none;" id="lastTrial730">
+        <textarea class="cpp-code-view" style="font-family: monospace" readonly="readonly">#include &lt;iostream&gt;
+
+using namespace std;
+
+int main()
+{
+    int idade;
+    cin &gt;&gt; idade;
+    if (idade &lt; 5) cout &lt;&lt; "Nao registrado \n";
+    else
+        if (idade &gt;= 5 and idade &lt;= 7) cout &lt;&lt; "Infantil \n";
+        else
+            if (idade &gt;= 8 and idade &lt;= 10) cout &lt;&lt; "Juvenil \n";
+            else 
+                if (idade &gt;= 11 and idade &lt;= 15) cout &lt;&lt; "Adolescente \n";
+                else
+                    if (idade &gt;= 16 and idade &lt;= 30) cout &lt;&lt; "Adulto \n";
+                    else
+                        if (idade &gt; 30) cout &lt;&lt; "Senior \n";
+    return 0;
+}
+</textarea>
+    </div><!-- ultima tentativa -->
+    </div><!-- tentativas-resposta -->
+                        <div style="clear: both"></div>
+                        </div><!-- problem-try-ct -->
+                </div><!-- prova -->
+<script type="text/javascript">
+    var serverTime = 1490110099000;
+    var localTime = +Date.now();
+    var timeDiff = serverTime - localTime;
+    var closingTime = 1494590100000;
+    var nomeUsuario = "Samir Carvalho";
+    $('#usuario').text(nomeUsuario);
+    if (true) {
+        setInterval(function () {
+            var realtime = +Date.now() + timeDiff;
+            var minutosRestantes = (closingTime - realtime) / 60000;
+            if (minutosRestantes < 0)
+                window.location = 'testTrials.php?encerrar';
+            else if (minutosRestantes < 5)
+                minutosRestantes = minutosRestantes.toFixed(1)
+            else
+                minutosRestantes = minutosRestantes.toFixed(0);
+            $('#clock').text(minutosRestantes);
+        }, 5000);
+    }
+    else
+        $('#clock').text('ENCERRADO');
+    //window.onclose = function() {alert("Close window?");}
+</script>
+    <br></div></div><div id="bottomct" class="ui-corner-top"><div id="footer">
+        <table boder="0" style="width: 100%;">
+            <tbody><tr>
+                <td style="width:33%;">
+                    <a href="http://www.ufla.br/" style="float:left;">
+                        <img src="seletores_files/ufla.png" height="40" width="92">
+                    </a>
+                </td>
+                <td style="width:34%;text-align: center;">
+                    Desenvolvido por <a href="http://www.dcc.ufla.br/%7Ebruno/" style="color: #DDF">Bruno Schneider</a>
+                    a partir do programa original (Algod) de Renato R. R. de Oliveira (GPLv3).
+                </td>
+                <td style="width:33%;">
+                    <a href="http://www.dcc.ufla.br/">
+                        <img src="seletores_files/logo-dcc.png" style="float:right" height="40" width="128">
+                    </a>
+                </td>
+            </tr>
+        </tbody></table>
+    </div></div>
+
+
+<div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable ui-dialog-buttons" style="outline: 0px none; z-index: 1002; position: absolute; height: auto; width: auto; top: 260.466px; left: 632px; display: none;" tabindex="-1" role="dialog" aria-labelledby="ui-id-1"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-1" class="ui-dialog-title">Aviso</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div><div id="alert-dialog" style="width: auto; min-height: 32px; height: auto;" class="ui-dialog-content ui-widget-content" scrolltop="0" scrollleft="0"></div><div class="ui-resizable-handle ui-resizable-n" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-e" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-s" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se ui-icon-grip-diagonal-se" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 1000;"></div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button></div></div></div><div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable ui-dialog-buttons" style="outline: 0px none; z-index: 1002; position: absolute; height: auto; width: 800px; top: 260.466px; left: 272.5px; display: none;" tabindex="-1" role="dialog" aria-labelledby="ui-id-2"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-2" class="ui-dialog-title">&nbsp;</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div><div id="data-view-dialog" style="text-align: center; width: auto; min-height: 32px; height: auto;" class="ui-dialog-content ui-widget-content" scrolltop="0" scrollleft="0"></div><div class="ui-resizable-handle ui-resizable-n" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-e" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-s" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-w" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se ui-icon-grip-diagonal-se" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-sw" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-ne" style="z-index: 1000;"></div><div class="ui-resizable-handle ui-resizable-nw" style="z-index: 1000;"></div><div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button></div></div></div></body></html>
